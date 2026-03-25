@@ -2,7 +2,7 @@
   <announcement-bar
     class="announcement-bar full-width"
     style="background-color: {{ section.settings.background_color }}; color: {{ section.settings.text_color }};"
-    data-interval="{{ section.settings.interval }}"
+    data-interval="{{ section.settings.interval | times: 1000 }}"
   >
     {% for block in section.blocks %}
       <div class="announcement-bar__slide {% if forloop.first %}announcement-bar__slide--active{% endif %}" {{ block.shopify_attributes }}>
@@ -111,11 +111,11 @@
       "type": "range",
       "id": "interval",
       "label": "t:labels.interval",
-      "min": 1000,
-      "max": 10000,
-      "step": 500,
-      "unit": "ms",
-      "default": 3000
+      "min": 1,
+      "max": 10,
+      "step": 1,
+      "unit": "s",
+      "default": 3
     }
   ],
   "blocks": [
