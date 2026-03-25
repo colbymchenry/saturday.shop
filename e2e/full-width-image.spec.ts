@@ -34,4 +34,35 @@ test.describe('Full-width image', () => {
     const lineHeight = await section.evaluate(el => getComputedStyle(el).lineHeight);
     expect(lineHeight).toBe('0px');
   });
+
+  test('section has a height variant class', async ({ page }) => {
+    const section = page.locator('.full-width-image').first();
+    const classList = await section.evaluate(el => Array.from(el.classList));
+    const hasHeightClass = classList.some(c =>
+      ['full-width-image--auto', 'full-width-image--small', 'full-width-image--medium', 'full-width-image--large'].includes(c)
+    );
+    expect(hasHeightClass).toBe(true);
+  });
+
+  test('section has overflow hidden for height cropping', async ({ page }) => {
+    const section = page.locator('.full-width-image').first();
+    const overflow = await section.evaluate(el => getComputedStyle(el).overflow);
+    expect(overflow).toBe('hidden');
+  });
+
+  test('constrained height sections use object-fit cover on images', async ({ page }) => {
+    const section = page.locator('.full-width-image').first();
+    const classList = await section.evaluate(el => Array.from(el.classList));
+    const isConstrained = classList.some(c =>
+      ['full-width-image--small', 'full-width-image--medium', 'full-width-image--large'].includes(c)
+    );
+
+    if (isConstrained) {
+      const img = section.locator('img').first();
+      if (await img.count() > 0) {
+        const objectFit = await img.evaluate(el => getComputedStyle(el).objectFit);
+        expect(objectFit).toBe('cover');
+      }
+    }
+  });
 });
