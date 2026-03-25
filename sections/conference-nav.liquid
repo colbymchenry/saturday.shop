@@ -7,7 +7,11 @@
     {% for conference in shop.metaobjects.conference.values %}
       <a href="{{ routes.collections_url }}/{{ conference.slug.value }}" class="conference-nav__item">
         <div class="conference-nav__circle">
-          <span>{{ conference.abbreviation.value }}</span>
+          {% if conference.logo.value %}
+            {{ conference.logo.value | image_url: width: 128 | image_tag: loading: 'lazy' }}
+          {% else %}
+            <span>{{ conference.abbreviation.value }}</span>
+          {% endif %}
         </div>
         <span class="conference-nav__name">{{ conference.name.value }}</span>
       </a>
@@ -67,7 +71,14 @@
     font-size: 0.8rem;
     font-weight: 700;
     letter-spacing: 0.02em;
+    overflow: hidden;
     transition: transform 0.2s ease, opacity 0.2s ease;
+  }
+
+  .conference-nav__circle img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
   }
 
   .conference-nav__item:hover .conference-nav__circle {
