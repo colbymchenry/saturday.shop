@@ -62,7 +62,64 @@
     },
     "testimonials": {
       "type": "testimonials",
-      "settings": {}
+      "settings": {},
+      "blocks": {
+        "review-1": {
+          "type": "review",
+          "settings": {
+            "rating": 5,
+            "quote": "\"I can't overstate how much I enjoy this shirt, and the other two I received along with it. I am very happy with my order and am looking forward to purchasing more clothing from schools I have no affiliation with!\"",
+            "name": "Zach",
+            "school": "Tulane"
+          }
+        },
+        "review-2": {
+          "type": "review",
+          "settings": {
+            "rating": 5,
+            "quote": "\"Absolutely love this Q-zip. It's warm, feels durable, and the Spartan \"S\" Rose logo is just *chefs kiss*. Highly recommend this or any Saturday Co quarter zip.\"",
+            "name": "Eric",
+            "school": "Michigan State"
+          }
+        },
+        "review-3": {
+          "type": "review",
+          "settings": {
+            "rating": 5,
+            "quote": "\"Amazing quality and the vintage design is perfect. I've gotten so many compliments wearing this around campus. Will definitely be ordering more!\"",
+            "name": "Sarah K.",
+            "school": "Auburn"
+          }
+        },
+        "review-4": {
+          "type": "review",
+          "settings": {
+            "rating": 5,
+            "quote": "\"Best college apparel I've ever bought. The designs are so unique — you can tell they actually know the school. My friends keep asking where I got it.\"",
+            "name": "Marcus T.",
+            "school": "LSU"
+          }
+        },
+        "review-5": {
+          "type": "review",
+          "settings": {
+            "rating": 5,
+            "quote": "\"Ordered for my boyfriend's birthday and he hasn't taken it off since. The quality is incredible and the design is something you won't find at the campus bookstore.\"",
+            "name": "Jordan",
+            "school": "Alabama"
+          }
+        },
+        "review-6": {
+          "type": "review",
+          "settings": {
+            "rating": 5,
+            "quote": "\"Finally a brand that gets it. These aren't generic logo tees — they capture what makes each school special. Already planning my next order.\"",
+            "name": "Chris M.",
+            "school": "Arizona State"
+          }
+        }
+      },
+      "block_order": ["review-1", "review-2", "review-3", "review-4", "review-5", "review-6"]
     },
     "best-sellers": {
       "type": "featured-collection",

@@ -1,10 +1,14 @@
-<section class="collection-cards">
+<section class="collection-cards full-width">
   <div class="collection-cards__grid">
     {% for block in section.blocks %}
       <a href="{{ block.settings.url | default: '#' }}" class="collection-card" {{ block.shopify_attributes }}>
         {% if block.settings.image %}
           <div class="collection-card__image">
             {{ block.settings.image | image_url: width: 800, height: 900, crop: 'center' | image_tag: loading: 'lazy' }}
+          </div>
+        {% else %}
+          <div class="collection-card__image">
+            {{ 'collection-' | append: forloop.index | placeholder_svg_tag }}
           </div>
         {% endif %}
         <div class="collection-card__overlay"></div>
@@ -21,7 +25,7 @@
 
 {% stylesheet %}
   .collection-cards {
-    padding: 48px 0;
+    padding: 48px var(--page-margin);
   }
 
   .collection-cards__grid {

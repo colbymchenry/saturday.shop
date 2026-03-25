@@ -1,4 +1,4 @@
-<section class="conference-nav" style="background-color: {{ section.settings.background_color }};">
+<section class="conference-nav full-width" style="background-color: {{ section.settings.background_color }};">
   {% if section.settings.heading != blank %}
     <h2 class="conference-nav__heading">{{ section.settings.heading }}</h2>
   {% endif %}
@@ -21,7 +21,7 @@
 
 {% stylesheet %}
   .conference-nav {
-    padding: 40px 0;
+    padding: 40px var(--page-margin);
     text-align: center;
   }
 

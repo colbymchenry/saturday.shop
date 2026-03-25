@@ -1,4 +1,4 @@
-<section class="testimonials">
+<section class="testimonials full-width">
   {% if section.settings.heading != blank %}
     <h2 class="testimonials__heading">{{ section.settings.heading }}</h2>
   {% endif %}
@@ -30,6 +30,10 @@
           {% if block.settings.image %}
             <div class="testimonial-card__image">
               {{ block.settings.image | image_url: width: 300, height: 300, crop: 'center' | image_tag: loading: 'lazy' }}
+            </div>
+          {% else %}
+            <div class="testimonial-card__image">
+              {{ 'product-' | append: forloop.index | placeholder_svg_tag }}
             </div>
           {% endif %}
 
@@ -64,7 +68,7 @@
 
 {% stylesheet %}
   .testimonials {
-    padding: 56px 0;
+    padding: 56px var(--page-margin);
     text-align: center;
   }
 

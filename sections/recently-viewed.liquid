@@ -1,4 +1,4 @@
-<section class="recently-viewed" style="background-color: {{ section.settings.background_color }};">
+<section class="recently-viewed full-width" style="background-color: {{ section.settings.background_color }};">
   <h2 class="recently-viewed__title">{{ section.settings.heading }}</h2>
 
   <product-carousel class="recently-viewed__carousel">
@@ -32,7 +32,7 @@
 
 {% stylesheet %}
   .recently-viewed {
-    padding: 48px 0;
+    padding: 48px var(--page-margin);
   }
 
   .recently-viewed__title {

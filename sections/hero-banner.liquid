@@ -3,6 +3,10 @@
     <div class="hero-banner__image">
       {{ section.settings.image | image_url: width: 2000 | image_tag: loading: 'eager' }}
     </div>
+  {% else %}
+    <div class="hero-banner__image">
+      {{ 'hero-apparel-1' | placeholder_svg_tag }}
+    </div>
   {% endif %}
 
   <div class="hero-banner__overlay"></div>
