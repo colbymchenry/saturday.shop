@@ -58,18 +58,30 @@
 
               <div class="product-card__quick-add">
                 <div class="product-card__options">
-                  <select class="product-card__option-select" aria-label="Color">
-                    <option>WHITE</option>
-                    <option>BLACK</option>
-                    <option>GREY</option>
-                  </select>
-                  <select class="product-card__option-select" aria-label="Size">
-                    <option>S</option>
-                    <option>M</option>
-                    <option selected>L</option>
-                    <option>XL</option>
-                    <option>2XL</option>
-                  </select>
+                  <div class="product-card__dropdown">
+                    <button type="button" class="product-card__dropdown-trigger" aria-label="Color">
+                      <span>WHITE</span>
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+                    </button>
+                    <ul class="product-card__dropdown-menu">
+                      <li class="product-card__dropdown-item product-card__dropdown-item--selected" data-value="WHITE">WHITE</li>
+                      <li class="product-card__dropdown-item" data-value="BLACK">BLACK</li>
+                      <li class="product-card__dropdown-item" data-value="GREY">GREY</li>
+                    </ul>
+                  </div>
+                  <div class="product-card__dropdown">
+                    <button type="button" class="product-card__dropdown-trigger" aria-label="Size">
+                      <span>L</span>
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+                    </button>
+                    <ul class="product-card__dropdown-menu">
+                      <li class="product-card__dropdown-item" data-value="S">S</li>
+                      <li class="product-card__dropdown-item" data-value="M">M</li>
+                      <li class="product-card__dropdown-item product-card__dropdown-item--selected" data-value="L">L</li>
+                      <li class="product-card__dropdown-item" data-value="XL">XL</li>
+                      <li class="product-card__dropdown-item" data-value="2XL">2XL</li>
+                    </ul>
+                  </div>
                 </div>
                 <button type="button" class="product-card__add-to-cart">
                   {{ 'cart.add_to_cart' | t }}
@@ -136,13 +148,19 @@
                   {% if product.variants.size > 1 %}
                     <div class="product-card__options">
                       {% for option in product.options_with_values %}
-                        <select class="product-card__option-select" data-option-index="{{ forloop.index0 }}" aria-label="{{ option.name }}">
-                          {% for value in option.values %}
-                            <option value="{{ value | escape }}" {% if product.selected_or_first_available_variant.options[forloop.parentloop.index0] == value %}selected{% endif %}>
-                              {{ value }}
-                            </option>
-                          {% endfor %}
-                        </select>
+                        <div class="product-card__dropdown" data-option-index="{{ forloop.index0 }}">
+                          <button type="button" class="product-card__dropdown-trigger" aria-label="{{ option.name }}">
+                            <span>{{ product.selected_or_first_available_variant.options[forloop.index0] }}</span>
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+                          </button>
+                          <ul class="product-card__dropdown-menu">
+                            {% for value in option.values %}
+                              <li class="product-card__dropdown-item{% if product.selected_or_first_available_variant.options[forloop.parentloop.index0] == value %} product-card__dropdown-item--selected{% endif %}" data-value="{{ value | escape }}">
+                                {{ value }}
+                              </li>
+                            {% endfor %}
+                          </ul>
+                        </div>
                       {% endfor %}
                     </div>
                   {% endif %}
@@ -425,7 +443,7 @@
     z-index: 2;
     display: flex;
     flex-direction: column;
-    padding: 8px;
+    padding: 0;
     opacity: 0;
     transform: translateY(8px);
     transition: opacity 0.2s ease, transform 0.2s ease;
@@ -441,23 +459,84 @@
     gap: 0;
   }
 
-  .product-card__option-select {
+  /* Custom dropdown */
+  .product-card__dropdown {
     flex: 1;
+    position: relative;
+  }
+
+  .product-card__dropdown-trigger {
+    width: 100%;
     padding: 10px 12px;
     font-family: var(--font-heading--family);
     font-size: 0.8rem;
     font-weight: 600;
-    border: 2px solid var(--color-foreground);
+    border: 1px solid rgba(0, 0, 0, 0.1);
     background-color: var(--color-background);
     color: var(--color-foreground);
     cursor: pointer;
-    appearance: auto;
-    margin-right: -2px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    text-align: left;
+    transition: border-color 0.15s ease;
+  }
+
+  .product-card__dropdown-trigger:hover {
+    border-color: rgba(0, 0, 0, 0.25);
+  }
+
+  .product-card__dropdown-trigger svg {
+    transition: transform 0.2s ease;
+    flex-shrink: 0;
+  }
+
+  .product-card__dropdown--open .product-card__dropdown-trigger svg {
+    transform: rotate(180deg);
+  }
+
+  .product-card__dropdown-menu {
+    display: none;
+    position: absolute;
+    bottom: 100%;
+    left: -1px;
+    right: -1px;
+    background-color: var(--color-background);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-bottom: none;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    max-height: 200px;
+    overflow-y: auto;
+    z-index: 10;
+  }
+
+  .product-card__dropdown--open .product-card__dropdown-menu {
+    display: block;
+  }
+
+  .product-card__dropdown-item {
+    padding: 10px 12px;
+    font-family: var(--font-heading--family);
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+  }
+
+  .product-card__dropdown-item:hover {
+    background-color: rgba(0, 0, 0, 0.06);
+  }
+
+  .product-card__dropdown-item--selected {
+    font-weight: 700;
+    background-color: rgba(0, 0, 0, 0.04);
   }
 
   .product-card__add-to-cart {
     width: 100%;
-    padding: 14px;
+    padding: 10px;
     font-family: var(--font-heading--family);
     font-size: 0.8rem;
     font-weight: 600;
@@ -516,9 +595,27 @@
       this.variants = JSON.parse(this.querySelector('[data-variants]')?.textContent || '[]');
       this.variantInput = this.querySelector('[data-variant-id]');
 
-      this.querySelectorAll('.product-card__option-select').forEach(select => {
-        select.addEventListener('change', () => this.updateVariant());
+      this.querySelectorAll('.product-card__dropdown').forEach(dropdown => {
+        const trigger = dropdown.querySelector('.product-card__dropdown-trigger');
+        trigger.addEventListener('click', (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          this.toggleDropdown(dropdown);
+        });
+
+        dropdown.querySelectorAll('.product-card__dropdown-item').forEach(item => {
+          item.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            this.selectItem(dropdown, item);
+          });
+        });
       });
+
+      this._onDocClick = (e) => {
+        if (!this.contains(e.target)) this.closeAllDropdowns();
+      };
+      document.addEventListener('click', this._onDocClick);
 
       this.slides = this.querySelectorAll('.product-card__image-slide');
       this.currentSlide = 0;
@@ -531,9 +628,38 @@
       });
     }
 
+    disconnectedCallback() {
+      document.removeEventListener('click', this._onDocClick);
+    }
+
+    toggleDropdown(dropdown) {
+      const isOpen = dropdown.classList.contains('product-card__dropdown--open');
+      this.closeAllDropdowns();
+      if (!isOpen) dropdown.classList.add('product-card__dropdown--open');
+    }
+
+    closeAllDropdowns() {
+      this.querySelectorAll('.product-card__dropdown--open').forEach(d => {
+        d.classList.remove('product-card__dropdown--open');
+      });
+    }
+
+    selectItem(dropdown, item) {
+      dropdown.querySelectorAll('.product-card__dropdown-item--selected').forEach(el => {
+        el.classList.remove('product-card__dropdown-item--selected');
+      });
+      item.classList.add('product-card__dropdown-item--selected');
+      dropdown.querySelector('.product-card__dropdown-trigger span').textContent = item.dataset.value;
+      dropdown.classList.remove('product-card__dropdown--open');
+      this.updateVariant();
+    }
+
     updateVariant() {
-      const selects = this.querySelectorAll('.product-card__option-select');
-      const selected = Array.from(selects).map(s => s.value);
+      const dropdowns = this.querySelectorAll('.product-card__dropdown');
+      const selected = Array.from(dropdowns).map(d => {
+        const item = d.querySelector('.product-card__dropdown-item--selected');
+        return item ? item.dataset.value : '';
+      });
       const match = this.variants.find(v =>
         v.options.every((opt, i) => opt === selected[i])
       );
