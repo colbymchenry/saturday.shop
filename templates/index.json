@@ -77,7 +77,8 @@
       "type": "full-width-image",
       "settings": {
         "image": "shopify://shop_images/photo-1556906781-9a412961c28c.jpg",
-        "url": ""
+        "url": "",
+        "height": "auto"
       }
     },
     "featured-collection": {
@@ -233,7 +234,9 @@
     "full-width-image-2": {
       "type": "full-width-image",
       "settings": {
-        "url": ""
+        "image": "shopify://shop_images/photo-1489987707025-afc232f7ea0f.jpg",
+        "url": "",
+        "height": "medium"
       }
     },
     "core-collection": {
