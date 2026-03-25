@@ -15,3 +15,8 @@ node_modules/
 ## Release files
 release
 *.zip
+
+# Playwright
+test-results/
+playwright-report/
+e2e/.auth/
