@@ -11,11 +11,13 @@
   "sections": {
     "conference-nav": {
       "type": "conference-nav",
-      "settings": {}
+      "settings": {
+        "heading": "SHOP BY CONFERENCE",
+        "background_color": "#ffffff"
+      }
     },
     "marquee": {
       "type": "marquee",
-      "settings": {},
       "blocks": {
         "phrase-1": {
           "type": "phrase",
@@ -40,29 +42,54 @@
         "phrase-1",
         "phrase-2",
         "phrase-3"
-      ]
+      ],
+      "settings": {
+        "background_color": "#f5f2eb",
+        "text_color": "#ffb800",
+        "speed": 20
+      }
     },
     "hero-banner": {
       "type": "hero-banner",
-      "settings": {}
+      "settings": {
+        "subheading": "IT'S SATURDAY, Y'ALL.",
+        "heading_bold": "WESTERN",
+        "heading_script": "Collection",
+        "description": "Spirit of the west, soul of the college tradition.",
+        "button_text": "SHOP THE DROP",
+        "button_url": "",
+        "height": 80
+      }
     },
     "brand-statement": {
       "type": "brand-statement",
-      "settings": {}
+      "settings": {
+        "background_color": "#f5f2eb",
+        "eyebrow": "ROOTED IN TRADITION",
+        "subtitle": "",
+        "heading": "<p>We dig into your school's history, traditions & lore to craft apparel <em>that actually means something.</em></p>",
+        "body": "180+ schools. Thoughtful designs you won't find anywhere else. Premium quality that lasts longer than your college years.",
+        "button_text": "FIND YOUR SCHOOL",
+        "button_url": ""
+      }
     },
     "full-width-image": {
       "type": "full-width-image",
-      "settings": {}
+      "settings": {
+        "url": ""
+      }
     },
     "featured-collection": {
       "type": "featured-collection",
       "settings": {
-        "heading": "New Releases"
+        "heading": "New Releases",
+        "collection": "",
+        "limit": 10,
+        "background_color": "#f5f2eb"
       }
     },
     "testimonials": {
       "type": "testimonials",
-      "settings": {},
       "blocks": {
         "review-1": {
           "type": "review",
@@ -119,60 +146,123 @@
           }
         }
       },
-      "block_order": ["review-1", "review-2", "review-3", "review-4", "review-5", "review-6"]
+      "block_order": [
+        "review-1",
+        "review-2",
+        "review-3",
+        "review-4",
+        "review-5",
+        "review-6"
+      ],
+      "settings": {
+        "heading": "What our customers are saying...",
+        "review_count": "2,847",
+        "button_text": "READ ALL",
+        "button_url": ""
+      }
     },
     "best-sellers": {
       "type": "featured-collection",
       "settings": {
-        "heading": "Best Sellers"
+        "heading": "Best Sellers",
+        "collection": "",
+        "limit": 10,
+        "background_color": "#f5f2eb"
       }
     },
     "collection-cards": {
       "type": "collection-cards",
-      "settings": {},
       "blocks": {
-        "card-tees": { "type": "card", "settings": { "title": "TEES" } },
-        "card-hoodies": { "type": "card", "settings": { "title": "HOODIES" } },
-        "card-premium": { "type": "card", "settings": { "title": "PREMIUM" } }
+        "card-tees": {
+          "type": "card",
+          "settings": {
+            "image": "shopify://shop_images/category-tees-CODwuZRt.jpg",
+            "title": "TEES",
+            "button_text": "SHOP NOW",
+            "url": ""
+          }
+        },
+        "card-hoodies": {
+          "type": "card",
+          "settings": {
+            "image": "shopify://shop_images/category-hoodies-BgsS-AYf.jpg",
+            "title": "HOODIES",
+            "button_text": "SHOP NOW",
+            "url": ""
+          }
+        },
+        "card-premium": {
+          "type": "card",
+          "settings": {
+            "image": "shopify://shop_images/category-premium-CuUfMBB1.jpg",
+            "title": "PREMIUM",
+            "button_text": "SHOP NOW",
+            "url": ""
+          }
+        }
       },
-      "block_order": ["card-tees", "card-hoodies", "card-premium"]
+      "block_order": [
+        "card-tees",
+        "card-hoodies",
+        "card-premium"
+      ],
+      "settings": {}
     },
     "whos-your-team": {
       "type": "brand-statement",
       "settings": {
-        "background_color": "#FFFFFF",
+        "background_color": "#ffffff",
+        "eyebrow": "ROOTED IN TRADITION",
+        "subtitle": "",
         "heading": "<p>Who's Your Team?</p>",
         "body": "We carry unique, vintage-inspired apparel for over 180+ schools.",
-        "button_text": "SHOP ALL"
+        "button_text": "SHOP ALL",
+        "button_url": ""
       }
     },
     "heavyweight-tees": {
       "type": "featured-collection",
       "settings": {
-        "heading": "Heavyweight Tees"
+        "heading": "Heavyweight Tees",
+        "collection": "",
+        "limit": 10,
+        "background_color": "#f5f2eb"
       }
     },
     "full-width-image-2": {
       "type": "full-width-image",
-      "settings": {}
+      "settings": {
+        "url": ""
+      }
     },
     "core-collection": {
       "type": "brand-statement",
       "settings": {
-        "background_color": "#FFFFFF",
-        "heading": "<p>The <em>Core</em> Collection</p>",
+        "background_color": "#ffffff",
+        "eyebrow": "ROOTED IN TRADITION",
         "subtitle": "Basics, Better.",
+        "heading": "<p>The <em>Core</em> Collection</p>",
         "body": "The Core Collection offers your favorite styles without prints, giving wardrobe staples the Saturday Co treatment.",
-        "button_text": "SHOP NOW"
+        "button_text": "SHOP NOW",
+        "button_url": ""
       }
     },
     "newsletter-cta": {
       "type": "newsletter-cta",
-      "settings": {}
+      "settings": {
+        "background_color": "#ffffff",
+        "heading": "Sign Up and Save",
+        "body": "Subscribe to get special offers, free giveaways, and once-in-a-lifetime deals.",
+        "button_text": "SIGN UP & SAVE",
+        "button_url": ""
+      }
     },
     "recently-viewed": {
       "type": "recently-viewed",
-      "settings": {}
+      "settings": {
+        "heading": "RECENTLY VIEWED",
+        "background_color": "#f5f2eb"
+      }
     }
   },
   "order": [
