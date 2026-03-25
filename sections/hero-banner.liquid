@@ -1,0 +1,209 @@
+<section class="hero-banner full-width" style="--hero-height: {{ section.settings.height }}vh;">
+  {% if section.settings.image %}
+    <div class="hero-banner__image">
+      {{ section.settings.image | image_url: width: 2000 | image_tag: loading: 'eager' }}
+    </div>
+  {% endif %}
+
+  <div class="hero-banner__overlay"></div>
+
+  <div class="hero-banner__content">
+    {% if section.settings.subheading != blank %}
+      <p class="hero-banner__subheading">{{ section.settings.subheading }}</p>
+    {% endif %}
+
+    {% if section.settings.heading_bold != blank or section.settings.heading_script != blank %}
+      <h1 class="hero-banner__heading">
+        {%- if section.settings.heading_bold != blank -%}
+          <span class="hero-banner__heading-bold">{{ section.settings.heading_bold }}</span>
+        {%- endif -%}
+        {% if section.settings.heading_script != blank %}
+          <span class="hero-banner__heading-script">{{ section.settings.heading_script }}</span>
+        {% endif %}
+      </h1>
+    {% endif %}
+
+    {% if section.settings.description != blank %}
+      <p class="hero-banner__description">{{ section.settings.description }}</p>
+    {% endif %}
+
+    {% if section.settings.button_text != blank %}
+      <a href="{{ section.settings.button_url }}" class="hero-banner__button">
+        {{ section.settings.button_text }}
+      </a>
+    {% endif %}
+  </div>
+</section>
+
+{% stylesheet %}
+  .hero-banner {
+    position: relative;
+    display: flex;
+    align-items: flex-end;
+    min-height: var(--hero-height, 80vh);
+    overflow: hidden;
+  }
+
+  .hero-banner__image {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+  }
+
+  .hero-banner__image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .hero-banner__overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      to top,
+      rgba(0, 0, 0, 0.55) 0%,
+      rgba(0, 0, 0, 0.2) 40%,
+      transparent 70%
+    );
+    z-index: 1;
+  }
+
+  .hero-banner__content {
+    position: relative;
+    z-index: 2;
+    padding: 48px clamp(24px, 5vw, 64px);
+    color: #fff;
+    max-width: 800px;
+  }
+
+  .hero-banner__subheading {
+    font-family: var(--font-heading--family);
+    font-size: clamp(0.75rem, 1.2vw, 0.9rem);
+    font-weight: 500;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+    opacity: 0.9;
+  }
+
+  .hero-banner__heading {
+    font-size: clamp(2.5rem, 6vw, 5rem);
+    line-height: 1;
+    margin: 0;
+  }
+
+  .hero-banner__heading-bold {
+    font-family: var(--font-heading--family);
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+  }
+
+  .hero-banner__heading-script {
+    font-family: var(--font-body--family);
+    font-weight: 400;
+    font-style: italic;
+    margin-left: 0.15em;
+  }
+
+  .hero-banner__description {
+    font-family: var(--font-body--family);
+    font-size: clamp(0.9rem, 1.3vw, 1.05rem);
+    font-weight: 400;
+    line-height: 1.5;
+    margin-top: 12px;
+    opacity: 0.9;
+  }
+
+  .hero-banner__button {
+    display: inline-block;
+    margin-top: 24px;
+    padding: 14px 32px;
+    font-family: var(--font-heading--family);
+    font-size: 0.85rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    text-decoration: none;
+    color: var(--color-foreground);
+    background-color: var(--color-background);
+    transition: opacity 0.2s ease;
+  }
+
+  .hero-banner__button:hover {
+    opacity: 0.85;
+  }
+
+  @media (max-width: 768px) {
+    .hero-banner {
+      min-height: 60vh;
+    }
+
+    .hero-banner__content {
+      padding: 32px 20px;
+    }
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "t:general.hero_banner",
+  "settings": [
+    {
+      "type": "image_picker",
+      "id": "image",
+      "label": "t:labels.background"
+    },
+    {
+      "type": "text",
+      "id": "subheading",
+      "label": "t:labels.subheading",
+      "default": "IT'S SATURDAY, Y'ALL."
+    },
+    {
+      "type": "text",
+      "id": "heading_bold",
+      "label": "t:labels.heading_bold",
+      "default": "WESTERN"
+    },
+    {
+      "type": "text",
+      "id": "heading_script",
+      "label": "t:labels.heading_script",
+      "default": "Collection"
+    },
+    {
+      "type": "text",
+      "id": "description",
+      "label": "t:labels.description",
+      "default": "Spirit of the west, soul of the college tradition."
+    },
+    {
+      "type": "text",
+      "id": "button_text",
+      "label": "t:labels.button_text",
+      "default": "SHOP THE DROP"
+    },
+    {
+      "type": "url",
+      "id": "button_url",
+      "label": "t:labels.button_url"
+    },
+    {
+      "type": "range",
+      "id": "height",
+      "label": "t:labels.height",
+      "min": 40,
+      "max": 100,
+      "step": 5,
+      "unit": "vh",
+      "default": 80
+    }
+  ],
+  "presets": [
+    {
+      "name": "t:general.hero_banner"
+    }
+  ]
+}
+{% endschema %}

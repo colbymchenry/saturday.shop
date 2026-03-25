@@ -16,9 +16,15 @@
       },
       {
         "type": "font_picker",
-        "id": "type_primary_font",
-        "default": "work_sans_n4",
-        "label": "t:general.primary"
+        "id": "type_body_font",
+        "default": "space_grotesk_n4",
+        "label": "t:labels.body_font"
+      },
+      {
+        "type": "font_picker",
+        "id": "type_heading_font",
+        "default": "poppins_n6",
+        "label": "t:labels.heading_font"
       }
     ]
   },
@@ -57,16 +63,62 @@
     "name": "t:general.colors",
     "settings": [
       {
+        "type": "header",
+        "content": "t:labels.neutrals"
+      },
+      {
         "type": "color",
-        "id": "background_color",
+        "id": "color_background",
         "default": "#FFFFFF",
         "label": "t:labels.background"
       },
       {
         "type": "color",
-        "id": "foreground_color",
-        "default": "#333333",
+        "id": "color_foreground",
+        "default": "#000000",
         "label": "t:labels.foreground"
+      },
+      {
+        "type": "color",
+        "id": "color_cream",
+        "default": "#F5F2EB",
+        "label": "t:labels.warm_cream"
+      },
+      {
+        "type": "header",
+        "content": "t:labels.brand_accents"
+      },
+      {
+        "type": "color",
+        "id": "color_accent_gold",
+        "default": "#FFB800",
+        "label": "t:labels.accent_gold"
+      },
+      {
+        "type": "color",
+        "id": "color_accent_rust",
+        "default": "#A65A3A",
+        "label": "t:labels.accent_rust"
+      },
+      {
+        "type": "header",
+        "content": "t:labels.ui_tones"
+      },
+      {
+        "type": "color",
+        "id": "color_border",
+        "default": "#E0E0E0",
+        "label": "t:labels.border_color"
+      },
+      {
+        "type": "color",
+        "id": "color_muted",
+        "default": "#666666",
+        "label": "t:labels.muted_text"
+      },
+      {
+        "type": "header",
+        "content": "t:labels.inputs"
       },
       {
         "type": "range",

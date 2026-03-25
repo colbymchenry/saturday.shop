@@ -1,0 +1,49 @@
+{% if section.settings.image %}
+  <div class="full-width-image full-width">
+    {% if section.settings.url != blank %}
+      <a href="{{ section.settings.url }}">
+        {{ section.settings.image | image_url: width: 2000 | image_tag: loading: 'lazy' }}
+      </a>
+    {% else %}
+      {{ section.settings.image | image_url: width: 2000 | image_tag: loading: 'lazy' }}
+    {% endif %}
+  </div>
+{% endif %}
+
+{% stylesheet %}
+  .full-width-image {
+    line-height: 0;
+  }
+
+  .full-width-image img {
+    width: 100%;
+    height: auto;
+  }
+
+  .full-width-image a {
+    display: block;
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "t:general.full_width_image",
+  "settings": [
+    {
+      "type": "image_picker",
+      "id": "image",
+      "label": "t:labels.image"
+    },
+    {
+      "type": "url",
+      "id": "url",
+      "label": "t:labels.url"
+    }
+  ],
+  "presets": [
+    {
+      "name": "t:general.full_width_image"
+    }
+  ]
+}
+{% endschema %}

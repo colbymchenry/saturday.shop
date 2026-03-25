@@ -9,12 +9,130 @@
  */
 {
   "sections": {
-    "main": {
-      "type": "hello-world",
+    "conference-nav": {
+      "type": "conference-nav",
+      "settings": {}
+    },
+    "marquee": {
+      "type": "marquee",
+      "settings": {},
+      "blocks": {
+        "phrase-1": {
+          "type": "phrase",
+          "settings": {
+            "text": "CLC CERTIFIED"
+          }
+        },
+        "phrase-2": {
+          "type": "phrase",
+          "settings": {
+            "text": "AFFINITY LICENSED"
+          }
+        },
+        "phrase-3": {
+          "type": "phrase",
+          "settings": {
+            "text": "OFFICIALLY LICENSED"
+          }
+        }
+      },
+      "block_order": [
+        "phrase-1",
+        "phrase-2",
+        "phrase-3"
+      ]
+    },
+    "hero-banner": {
+      "type": "hero-banner",
+      "settings": {}
+    },
+    "brand-statement": {
+      "type": "brand-statement",
+      "settings": {}
+    },
+    "full-width-image": {
+      "type": "full-width-image",
+      "settings": {}
+    },
+    "featured-collection": {
+      "type": "featured-collection",
+      "settings": {
+        "heading": "New Releases"
+      }
+    },
+    "testimonials": {
+      "type": "testimonials",
+      "settings": {}
+    },
+    "best-sellers": {
+      "type": "featured-collection",
+      "settings": {
+        "heading": "Best Sellers"
+      }
+    },
+    "collection-cards": {
+      "type": "collection-cards",
+      "settings": {},
+      "blocks": {
+        "card-tees": { "type": "card", "settings": { "title": "TEES" } },
+        "card-hoodies": { "type": "card", "settings": { "title": "HOODIES" } },
+        "card-premium": { "type": "card", "settings": { "title": "PREMIUM" } }
+      },
+      "block_order": ["card-tees", "card-hoodies", "card-premium"]
+    },
+    "whos-your-team": {
+      "type": "brand-statement",
+      "settings": {
+        "background_color": "#FFFFFF",
+        "heading": "<p>Who's Your Team?</p>",
+        "body": "We carry unique, vintage-inspired apparel for over 180+ schools.",
+        "button_text": "SHOP ALL"
+      }
+    },
+    "heavyweight-tees": {
+      "type": "featured-collection",
+      "settings": {
+        "heading": "Heavyweight Tees"
+      }
+    },
+    "full-width-image-2": {
+      "type": "full-width-image",
+      "settings": {}
+    },
+    "core-collection": {
+      "type": "brand-statement",
+      "settings": {
+        "background_color": "#FFFFFF",
+        "heading": "<p>The <em>Core</em> Collection</p>",
+        "subtitle": "Basics, Better.",
+        "body": "The Core Collection offers your favorite styles without prints, giving wardrobe staples the Saturday Co treatment.",
+        "button_text": "SHOP NOW"
+      }
+    },
+    "newsletter-cta": {
+      "type": "newsletter-cta",
+      "settings": {}
+    },
+    "recently-viewed": {
+      "type": "recently-viewed",
       "settings": {}
     }
   },
   "order": [
-    "main"
+    "conference-nav",
+    "marquee",
+    "hero-banner",
+    "brand-statement",
+    "full-width-image",
+    "featured-collection",
+    "testimonials",
+    "best-sellers",
+    "collection-cards",
+    "whos-your-team",
+    "heavyweight-tees",
+    "full-width-image-2",
+    "core-collection",
+    "newsletter-cta",
+    "recently-viewed"
   ]
 }

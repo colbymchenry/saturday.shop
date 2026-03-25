@@ -1,0 +1,119 @@
+<div
+  class="marquee full-width"
+  style="background-color: {{ section.settings.background_color }}; --marquee-duration: {{ section.settings.speed }}s;"
+>
+  <div class="marquee__track">
+    {% for i in (1..4) %}
+      <div class="marquee__content" {% if i > 1 %}aria-hidden="true"{% endif %}>
+        {% for block in section.blocks %}
+          <span class="marquee__item" style="color: {{ section.settings.text_color }};" {{ block.shopify_attributes }}>
+            {{ block.settings.text }}
+          </span>
+          <span class="marquee__separator" style="color: {{ section.settings.text_color }};">✦</span>
+        {% endfor %}
+      </div>
+    {% endfor %}
+  </div>
+</div>
+
+{% stylesheet %}
+  .marquee {
+    overflow: hidden;
+    padding: 14px 0;
+  }
+
+  .marquee__track {
+    display: flex;
+    width: max-content;
+    animation: marquee-scroll var(--marquee-duration, 20s) linear infinite;
+  }
+
+  .marquee__content {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+  }
+
+  .marquee__item {
+    font-family: var(--font-heading--family);
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    padding: 0 16px;
+  }
+
+  .marquee__separator {
+    font-size: 0.5rem;
+    flex-shrink: 0;
+  }
+
+  @keyframes marquee-scroll {
+    from {
+      transform: translateX(0);
+    }
+    to {
+      transform: translateX(-25%);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .marquee__track {
+      animation: none;
+    }
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "t:general.marquee",
+  "settings": [
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "t:labels.background",
+      "default": "#F5F2EB"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "t:labels.foreground",
+      "default": "#FFB800"
+    },
+    {
+      "type": "range",
+      "id": "speed",
+      "label": "t:labels.speed",
+      "min": 10,
+      "max": 60,
+      "step": 5,
+      "unit": "s",
+      "default": 20
+    }
+  ],
+  "blocks": [
+    {
+      "type": "phrase",
+      "name": "t:labels.text",
+      "settings": [
+        {
+          "type": "text",
+          "id": "text",
+          "label": "t:labels.text"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "t:general.marquee",
+      "blocks": [
+        { "type": "phrase", "settings": { "text": "CLC CERTIFIED" } },
+        { "type": "phrase", "settings": { "text": "AFFINITY LICENSED" } },
+        { "type": "phrase", "settings": { "text": "OFFICIALLY LICENSED" } }
+      ]
+    }
+  ]
+}
+{% endschema %}

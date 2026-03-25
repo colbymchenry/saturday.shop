@@ -1,26 +1,40 @@
 <header>
-  <h2 class="header__title">
-    {{ shop.name | link_to: routes.root_url }}
-  </h2>
-
-  <div class="header__menu">
-    {% for link in section.settings.menu.links %}
-      {{ link.title | link_to: link.url }}
-    {% endfor %}
+  <div class="header__logo">
+    {% if section.settings.logo %}
+      <a href="{{ routes.root_url }}">
+        {{ section.settings.logo | image_url: height: 50 | image_tag: class: 'header__logo-image' }}
+      </a>
+    {% else %}
+      <a href="{{ routes.root_url }}" class="header__title">{{ shop.name }}</a>
+    {% endif %}
   </div>
 
+  <nav class="header__nav">
+    {% for link in section.settings.menu.links %}
+      <a href="{{ link.url }}" class="header__nav-link">{{ link.title }}</a>
+    {% endfor %}
+    {% if section.settings.promo_text != blank %}
+      <a href="{{ section.settings.promo_url }}" class="header__nav-link header__nav-link--promo">
+        {{ section.settings.promo_text }}
+      </a>
+    {% endif %}
+  </nav>
+
   <div class="header__icons">
+    <a href="{{ routes.search_url }}" class="header__icon" aria-label="Search">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    </a>
+
     {% if shop.customer_accounts_enabled %}
       <shopify-account menu="{{ section.settings.customer_account_menu }}">
         {{ 'icon-account.svg' | inline_asset_content }}
       </shopify-account>
     {% endif %}
 
-    <a href="{{ routes.cart_url }}">
+    <a href="{{ routes.cart_url }}" class="header__icon" aria-label="Cart">
       {% if cart.item_count > 0 %}
-        <sup>{{ cart.item_count }}</sup>
+        <span class="header__cart-count">{{ cart.item_count }}</span>
       {% endif %}
-
       {{ 'icon-cart.svg' | inline_asset_content }}
     </a>
   </div>
@@ -32,7 +46,66 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
+    gap: 1rem;
   }
+
+  .header__logo {
+    flex-shrink: 0;
+  }
+
+  .header__logo a {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    color: var(--color-foreground);
+  }
+
+  .header__logo-image {
+    height: 50px;
+    width: auto;
+  }
+
+  .header__title {
+    font-family: var(--font-heading--family);
+    font-size: 1.4rem;
+    font-weight: 700;
+    text-decoration: none;
+    color: var(--color-foreground);
+  }
+
+  .header__nav {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+  }
+
+  .header__nav-link {
+    font-family: var(--font-heading--family);
+    font-size: 0.85rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    text-decoration: none;
+    color: var(--color-foreground);
+    transition: opacity 0.2s ease;
+  }
+
+  .header__nav-link:hover {
+    opacity: 0.7;
+  }
+
+  .header__nav-link--promo {
+    color: var(--color-accent-gold);
+  }
+
+  .header__icons {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-shrink: 0;
+  }
+
+  .header__icon,
   header a {
     position: relative;
     text-decoration: none;
@@ -41,19 +114,36 @@
     align-items: center;
     justify-content: center;
   }
-  header a sup {
+
+  .header__icon:hover {
+    opacity: 0.7;
+  }
+
+  .header__cart-count {
     position: absolute;
-    left: 100%;
-    overflow: hidden;
-    max-width: var(--page-margin);
-  }
-  header svg {
-    width: 2rem;
-  }
-  header .header__menu,
-  header .header__icons {
+    top: -6px;
+    right: -8px;
+    background-color: var(--color-foreground);
+    color: var(--color-background);
+    font-size: 0.6rem;
+    font-weight: 700;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
     display: flex;
-    gap: 1rem;
+    align-items: center;
+    justify-content: center;
+  }
+
+  header svg {
+    width: 1.4rem;
+    height: 1.4rem;
+  }
+
+  @media (max-width: 768px) {
+    .header__nav {
+      display: none;
+    }
   }
 {% endstylesheet %}
 
@@ -62,9 +152,24 @@
   "name": "t:general.header",
   "settings": [
     {
+      "type": "image_picker",
+      "id": "logo",
+      "label": "t:labels.logo"
+    },
+    {
       "type": "link_list",
       "id": "menu",
       "label": "t:labels.menu"
+    },
+    {
+      "type": "text",
+      "id": "promo_text",
+      "label": "t:labels.promo_text"
+    },
+    {
+      "type": "url",
+      "id": "promo_url",
+      "label": "t:labels.promo_url"
     },
     {
       "type": "link_list",

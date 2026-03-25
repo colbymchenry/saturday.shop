@@ -14,6 +14,7 @@
     "comment_form_title": "Add a comment"
   },
   "cart": {
+    "add_to_cart": "Add to cart",
     "checkout": "Checkout",
     "title": "Cart",
     "update": "Update",
@@ -28,7 +29,8 @@
     }
   },
   "collections": {
-    "title": "Collections"
+    "title": "Collections",
+    "view_all": "View all"
   },
   "gift_card": {
     "add_to_apple_wallet": "Add to Apple Wallet",
