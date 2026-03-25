@@ -13,7 +13,16 @@
   "sections": {
     "announcement-bar": {
       "type": "announcement-bar",
-      "settings": {}
+      "settings": {},
+      "blocks": {
+        "announcement-1": {
+          "type": "announcement",
+          "settings": {
+            "text": "NEW DROP: WESTERN COLLECTION — SHOP NOW"
+          }
+        }
+      },
+      "block_order": ["announcement-1"]
     },
     "header": {
       "type": "header",

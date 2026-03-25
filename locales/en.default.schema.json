@@ -1,6 +1,7 @@
 {
   "general": {
     "404": "Not found",
+    "announcement": "Announcement",
     "announcement_bar": "Announcement bar",
     "article": "Article",
     "block": "Block",
@@ -70,6 +71,7 @@
     "height": "Height",
     "input_corner_radius": "Input corner radius",
     "inputs": "Inputs",
+    "interval": "Rotate interval",
     "layout_direction": "Layout direction",
     "logo": "Logo",
     "menu": "Menu",

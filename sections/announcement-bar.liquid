@@ -1,26 +1,50 @@
-{% if section.settings.text != blank %}
-  <div
+{% if section.blocks.size > 0 %}
+  <announcement-bar
     class="announcement-bar full-width"
     style="background-color: {{ section.settings.background_color }}; color: {{ section.settings.text_color }};"
+    data-interval="{{ section.settings.interval }}"
   >
-    {% if section.settings.url != blank %}
-      <a href="{{ section.settings.url }}" class="announcement-bar__link">
-        {{ section.settings.text }}
-      </a>
-    {% else %}
-      <p class="announcement-bar__text">
-        {{ section.settings.text }}
-      </p>
-    {% endif %}
-  </div>
+    {% for block in section.blocks %}
+      <div class="announcement-bar__slide {% if forloop.first %}announcement-bar__slide--active{% endif %}" {{ block.shopify_attributes }}>
+        {% if block.settings.url != blank %}
+          <a href="{{ block.settings.url }}" class="announcement-bar__link">
+            {{ block.settings.text }}
+          </a>
+        {% else %}
+          <p class="announcement-bar__text">
+            {{ block.settings.text }}
+          </p>
+        {% endif %}
+      </div>
+    {% endfor %}
+  </announcement-bar>
 {% endif %}
 
 {% stylesheet %}
   .announcement-bar {
+    position: relative;
     display: flex;
     align-items: center;
     justify-content: center;
     padding: 12px var(--page-margin);
+    min-height: 40px;
+  }
+
+  .announcement-bar__slide {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 12px var(--page-margin);
+    opacity: 0;
+    transition: opacity 0.4s ease;
+    pointer-events: none;
+  }
+
+  .announcement-bar__slide--active {
+    opacity: 1;
+    pointer-events: auto;
   }
 
   .announcement-bar__link,
@@ -40,21 +64,37 @@
   }
 {% endstylesheet %}
 
+{% javascript %}
+  class AnnouncementBar extends HTMLElement {
+    connectedCallback() {
+      this.slides = this.querySelectorAll('.announcement-bar__slide');
+      if (this.slides.length <= 1) return;
+
+      this.current = 0;
+      const interval = parseInt(this.dataset.interval) || 3000;
+      this.timer = setInterval(() => this.next(), interval);
+    }
+
+    disconnectedCallback() {
+      if (this.timer) clearInterval(this.timer);
+    }
+
+    next() {
+      this.slides[this.current].classList.remove('announcement-bar__slide--active');
+      this.current = (this.current + 1) % this.slides.length;
+      this.slides[this.current].classList.add('announcement-bar__slide--active');
+    }
+  }
+
+  if (!customElements.get('announcement-bar')) {
+    customElements.define('announcement-bar', AnnouncementBar);
+  }
+{% endjavascript %}
+
 {% schema %}
 {
   "name": "t:general.announcement_bar",
   "settings": [
-    {
-      "type": "text",
-      "id": "text",
-      "label": "t:labels.text",
-      "default": "NEW DROP: WESTERN COLLECTION — SHOP NOW"
-    },
-    {
-      "type": "url",
-      "id": "url",
-      "label": "t:labels.url"
-    },
     {
       "type": "color",
       "id": "background_color",
@@ -66,6 +106,35 @@
       "id": "text_color",
       "label": "t:labels.foreground",
       "default": "#FFFFFF"
+    },
+    {
+      "type": "range",
+      "id": "interval",
+      "label": "t:labels.interval",
+      "min": 1000,
+      "max": 10000,
+      "step": 500,
+      "unit": "ms",
+      "default": 3000
+    }
+  ],
+  "blocks": [
+    {
+      "type": "announcement",
+      "name": "t:general.announcement",
+      "settings": [
+        {
+          "type": "text",
+          "id": "text",
+          "label": "t:labels.text",
+          "default": "NEW DROP: WESTERN COLLECTION — SHOP NOW"
+        },
+        {
+          "type": "url",
+          "id": "url",
+          "label": "t:labels.url"
+        }
+      ]
     }
   ]
 }
