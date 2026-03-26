@@ -52,6 +52,7 @@
     };
     if (!(slug in schools)) return;
     var s = schools[slug];
+    document.title = s.name + ' \u2013 Coming Soon \u2013 {{ shop.name | escape }}';
     document.querySelector('.not-found-default').hidden = true;
     var el = document.querySelector('.coming-soon');
     if (s.color) el.style.setProperty('--school-primary', s.color);
