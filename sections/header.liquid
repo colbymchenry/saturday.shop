@@ -10,6 +10,94 @@
   </div>
 
   <nav class="header__nav">
+    <div class="schools-dropdown">
+      <button type="button" class="header__nav-link schools-dropdown__trigger" aria-expanded="false" aria-haspopup="true">
+        Schools
+      </button>
+      <div class="schools-dropdown__panel">
+        <div class="schools-dropdown__columns">
+          {%- assign schools = shop.metaobjects.school.values | sort: 'name' -%}
+
+          <div class="schools-dropdown__column">
+            <h3 class="schools-dropdown__heading">A – D</h3>
+            {%- for school in schools -%}
+              {%- assign first_char = school.name | slice: 0 | downcase -%}
+              {%- if first_char >= 'a' and first_char <= 'd' -%}
+                <a href="{{ routes.collections_url }}/{{ school.slug }}" class="schools-dropdown__school">
+                  {%- if school.logo -%}
+                    {{ school.logo | image_url: width: 20 | image_tag: class: 'schools-dropdown__logo', loading: 'lazy' }}
+                  {%- endif -%}
+                  {{ school.name }}
+                </a>
+              {%- endif -%}
+            {%- endfor -%}
+          </div>
+
+          <div class="schools-dropdown__column">
+            <h3 class="schools-dropdown__heading">E – K</h3>
+            {%- for school in schools -%}
+              {%- assign first_char = school.name | slice: 0 | downcase -%}
+              {%- if first_char >= 'e' and first_char <= 'k' -%}
+                <a href="{{ routes.collections_url }}/{{ school.slug }}" class="schools-dropdown__school">
+                  {%- if school.logo -%}
+                    {{ school.logo | image_url: width: 20 | image_tag: class: 'schools-dropdown__logo', loading: 'lazy' }}
+                  {%- endif -%}
+                  {{ school.name }}
+                </a>
+              {%- endif -%}
+            {%- endfor -%}
+          </div>
+
+          <div class="schools-dropdown__column">
+            <h3 class="schools-dropdown__heading">L – O</h3>
+            {%- for school in schools -%}
+              {%- assign first_char = school.name | slice: 0 | downcase -%}
+              {%- if first_char >= 'l' and first_char <= 'o' -%}
+                <a href="{{ routes.collections_url }}/{{ school.slug }}" class="schools-dropdown__school">
+                  {%- if school.logo -%}
+                    {{ school.logo | image_url: width: 20 | image_tag: class: 'schools-dropdown__logo', loading: 'lazy' }}
+                  {%- endif -%}
+                  {{ school.name }}
+                </a>
+              {%- endif -%}
+            {%- endfor -%}
+          </div>
+
+          <div class="schools-dropdown__column">
+            <h3 class="schools-dropdown__heading">P – U</h3>
+            {%- for school in schools -%}
+              {%- assign first_char = school.name | slice: 0 | downcase -%}
+              {%- if first_char >= 'p' and first_char <= 'u' -%}
+                <a href="{{ routes.collections_url }}/{{ school.slug }}" class="schools-dropdown__school">
+                  {%- if school.logo -%}
+                    {{ school.logo | image_url: width: 20 | image_tag: class: 'schools-dropdown__logo', loading: 'lazy' }}
+                  {%- endif -%}
+                  {{ school.name }}
+                </a>
+              {%- endif -%}
+            {%- endfor -%}
+          </div>
+
+          <div class="schools-dropdown__column">
+            <h3 class="schools-dropdown__heading">V – Z</h3>
+            {%- for school in schools -%}
+              {%- assign first_char = school.name | slice: 0 | downcase -%}
+              {%- if first_char >= 'v' and first_char <= 'z' -%}
+                <a href="{{ routes.collections_url }}/{{ school.slug }}" class="schools-dropdown__school">
+                  {%- if school.logo -%}
+                    {{ school.logo | image_url: width: 20 | image_tag: class: 'schools-dropdown__logo', loading: 'lazy' }}
+                  {%- endif -%}
+                  {{ school.name }}
+                </a>
+              {%- endif -%}
+            {%- endfor -%}
+          </div>
+        </div>
+        <div class="schools-dropdown__footer">
+          <a href="/pages/contact" class="schools-dropdown__contact">Can't find your school? Let us know &rarr;</a>
+        </div>
+      </div>
+    </div>
     {% for link in section.settings.menu.links %}
       <a href="{{ link.url }}" class="header__nav-link">{{ link.title }}</a>
     {% endfor %}
@@ -66,6 +154,7 @@
 
 {% stylesheet %}
   header {
+    position: relative;
     height: 5rem;
     display: flex;
     align-items: center;
@@ -120,6 +209,104 @@
 
   .header__nav-link--promo {
     color: var(--color-accent-gold);
+  }
+
+  /* Schools dropdown */
+  .schools-dropdown {
+    position: static;
+    align-self: stretch;
+    display: flex;
+    align-items: center;
+  }
+
+  .schools-dropdown__trigger {
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+  }
+
+  .schools-dropdown__panel {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: var(--color-background);
+    border: 1px solid var(--color-border);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s ease 0.1s, visibility 0.2s ease 0.1s;
+    z-index: 50;
+  }
+
+  .schools-dropdown--open .schools-dropdown__panel {
+    opacity: 1;
+    visibility: visible;
+    transition-delay: 0s;
+  }
+
+  .schools-dropdown__columns {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 2rem;
+    padding: 2rem 1.5rem;
+  }
+
+  .schools-dropdown__column {
+    text-align: left;
+  }
+
+  .schools-dropdown__heading {
+    font-family: var(--font-heading--family);
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--color-foreground);
+    opacity: 0.5;
+    margin: 0 0 1rem;
+  }
+
+  .schools-dropdown__school {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 0.5rem;
+    text-decoration: none;
+    color: var(--color-foreground);
+    font-family: var(--font-body--family);
+    font-size: 0.9rem;
+    padding: 0.3rem 0;
+    transition: opacity 0.15s ease;
+  }
+
+  .schools-dropdown__school:hover {
+    opacity: 0.6;
+  }
+
+  .schools-dropdown__logo {
+    width: 20px;
+    height: 20px;
+    object-fit: contain;
+    flex-shrink: 0;
+  }
+
+  .schools-dropdown__footer {
+    border-top: 1px solid var(--color-border);
+    padding: 1rem 1.5rem;
+  }
+
+  .schools-dropdown__contact {
+    font-family: var(--font-body--family);
+    font-size: 0.85rem;
+    color: var(--color-foreground);
+    text-decoration: none;
+    opacity: 0.5;
+    transition: opacity 0.15s ease;
+  }
+
+  .schools-dropdown__contact:hover {
+    opacity: 1;
   }
 
   .header__icons {
@@ -563,6 +750,47 @@
   if (!customElements.get('search-popover')) {
     customElements.define('search-popover', SearchPopover);
   }
+
+  // Schools dropdown: hover + click + keyboard support
+  (function() {
+    const dropdown = document.querySelector('.schools-dropdown');
+    const trigger = dropdown?.querySelector('.schools-dropdown__trigger');
+    if (!dropdown || !trigger) return;
+
+    function open() {
+      dropdown.classList.add('schools-dropdown--open');
+      trigger.setAttribute('aria-expanded', 'true');
+    }
+
+    function close() {
+      dropdown.classList.remove('schools-dropdown--open');
+      trigger.setAttribute('aria-expanded', 'false');
+    }
+
+    dropdown.addEventListener('mouseenter', open);
+    dropdown.addEventListener('mouseleave', close);
+
+    trigger.addEventListener('click', () => {
+      if (dropdown.classList.contains('schools-dropdown--open')) {
+        close();
+      } else {
+        open();
+      }
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && dropdown.classList.contains('schools-dropdown--open')) {
+        close();
+        trigger.focus();
+      }
+    });
+
+    document.addEventListener('click', (e) => {
+      if (!dropdown.contains(e.target)) {
+        close();
+      }
+    });
+  })();
 </script>
 
 {% schema %}
