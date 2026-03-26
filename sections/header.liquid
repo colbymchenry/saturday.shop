@@ -23,7 +23,8 @@
             {%- for school in schools -%}
               {%- assign first_char = school.name | slice: 0 | downcase -%}
               {%- if first_char >= 'a' and first_char <= 'd' -%}
-                <a href="{{ routes.collections_url }}/{{ school.slug }}" class="schools-dropdown__school">
+                {%- assign school_collection = collections[school.slug] -%}
+                <a href="{{ routes.collections_url }}/{{ school.slug }}" class="schools-dropdown__school{% if school_collection == blank or school_collection.all_products_count == 0 %} schools-dropdown__school--coming-soon{% endif %}">
                   {%- if school.logo -%}
                     {{ school.logo | image_url: width: 20 | image_tag: class: 'schools-dropdown__logo', loading: 'lazy' }}
                   {%- endif -%}
@@ -38,7 +39,8 @@
             {%- for school in schools -%}
               {%- assign first_char = school.name | slice: 0 | downcase -%}
               {%- if first_char >= 'e' and first_char <= 'k' -%}
-                <a href="{{ routes.collections_url }}/{{ school.slug }}" class="schools-dropdown__school">
+                {%- assign school_collection = collections[school.slug] -%}
+                <a href="{{ routes.collections_url }}/{{ school.slug }}" class="schools-dropdown__school{% if school_collection == blank or school_collection.all_products_count == 0 %} schools-dropdown__school--coming-soon{% endif %}">
                   {%- if school.logo -%}
                     {{ school.logo | image_url: width: 20 | image_tag: class: 'schools-dropdown__logo', loading: 'lazy' }}
                   {%- endif -%}
@@ -53,7 +55,8 @@
             {%- for school in schools -%}
               {%- assign first_char = school.name | slice: 0 | downcase -%}
               {%- if first_char >= 'l' and first_char <= 'o' -%}
-                <a href="{{ routes.collections_url }}/{{ school.slug }}" class="schools-dropdown__school">
+                {%- assign school_collection = collections[school.slug] -%}
+                <a href="{{ routes.collections_url }}/{{ school.slug }}" class="schools-dropdown__school{% if school_collection == blank or school_collection.all_products_count == 0 %} schools-dropdown__school--coming-soon{% endif %}">
                   {%- if school.logo -%}
                     {{ school.logo | image_url: width: 20 | image_tag: class: 'schools-dropdown__logo', loading: 'lazy' }}
                   {%- endif -%}
@@ -68,7 +71,8 @@
             {%- for school in schools -%}
               {%- assign first_char = school.name | slice: 0 | downcase -%}
               {%- if first_char >= 'p' and first_char <= 'u' -%}
-                <a href="{{ routes.collections_url }}/{{ school.slug }}" class="schools-dropdown__school">
+                {%- assign school_collection = collections[school.slug] -%}
+                <a href="{{ routes.collections_url }}/{{ school.slug }}" class="schools-dropdown__school{% if school_collection == blank or school_collection.all_products_count == 0 %} schools-dropdown__school--coming-soon{% endif %}">
                   {%- if school.logo -%}
                     {{ school.logo | image_url: width: 20 | image_tag: class: 'schools-dropdown__logo', loading: 'lazy' }}
                   {%- endif -%}
@@ -83,7 +87,8 @@
             {%- for school in schools -%}
               {%- assign first_char = school.name | slice: 0 | downcase -%}
               {%- if first_char >= 'v' and first_char <= 'z' -%}
-                <a href="{{ routes.collections_url }}/{{ school.slug }}" class="schools-dropdown__school">
+                {%- assign school_collection = collections[school.slug] -%}
+                <a href="{{ routes.collections_url }}/{{ school.slug }}" class="schools-dropdown__school{% if school_collection == blank or school_collection.all_products_count == 0 %} schools-dropdown__school--coming-soon{% endif %}">
                   {%- if school.logo -%}
                     {{ school.logo | image_url: width: 20 | image_tag: class: 'schools-dropdown__logo', loading: 'lazy' }}
                   {%- endif -%}
@@ -282,6 +287,14 @@
 
   .schools-dropdown__school:hover {
     opacity: 0.6;
+  }
+
+  .schools-dropdown__school--coming-soon {
+    opacity: 0.5;
+  }
+
+  .schools-dropdown__school--coming-soon:hover {
+    opacity: 0.4;
   }
 
   .schools-dropdown__logo {

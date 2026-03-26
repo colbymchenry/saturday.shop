@@ -5,37 +5,240 @@
   https://shopify.dev/docs/storefronts/themes/architecture/templates/collection
 {% endcomment %}
 
-<h1>{{ collection.title }}</h1>
-
-<div class="collection-products">
-  {% paginate collection.products by 20 %}
-    {% for product in collection.products %}
-      <div class="collection-product">
-        {% if product.featured_image %}
-          {% render 'image',
-            class: 'collection-product__image',
-            image: product.featured_image,
-            url: product.url,
-            width: 400,
-            height: 400,
-            crop: 'center'
-          %}
-        {% endif %}
-        <div class="collection-product__content">
-          <p>{{ product.title | escape | link_to: product.url }}</p>
-          <p>{{ product.price | money }}</p>
+{% if collection.all_products_count == 0 %}
+  {%- assign school = shop.metaobjects.school.values | where: 'slug', collection.handle | first -%}
+  <div class="coming-soon full-width" {% if school %}style="--school-primary: {{ school.primary_color }};"{% endif %}>
+    <div class="coming-soon__stripes"></div>
+    <div class="coming-soon__content">
+      {%- if school.logo -%}
+        <div class="coming-soon__logo-ring">
+          {{ school.logo | image_url: width: 300 | image_tag: class: 'coming-soon__logo' }}
         </div>
+      {%- endif -%}
+      <div class="coming-soon__rule">
+        <span class="coming-soon__rule-line"></span>
+        <span class="coming-soon__rule-diamond"></span>
+        <span class="coming-soon__rule-line"></span>
       </div>
-    {% endfor %}
+      <h2 class="coming-soon__title">Coming Soon</h2>
+      {%- if school -%}
+        <p class="coming-soon__school-name">{{ school.name }} Collection</p>
+        <p class="coming-soon__text">We're crafting something special for {{ school.name }} nation. Stay tuned.</p>
+      {%- else -%}
+        <p class="coming-soon__text">We're working on something special. Check back soon.</p>
+      {%- endif -%}
+      <a href="/pages/contact" class="coming-soon__cta">Get Notified</a>
+    </div>
+    <div class="coming-soon__watermark" aria-hidden="true">Saturday</div>
+  </div>
+{% else %}
+  <h1>{{ collection.title }}</h1>
+  <div class="collection-products">
+    {% paginate collection.products by 20 %}
+      {% for product in collection.products %}
+        <div class="collection-product">
+          {% if product.featured_image %}
+            {% render 'image',
+              class: 'collection-product__image',
+              image: product.featured_image,
+              url: product.url,
+              width: 400,
+              height: 400,
+              crop: 'center'
+            %}
+          {% endif %}
+          <div class="collection-product__content">
+            <p>{{ product.title | escape | link_to: product.url }}</p>
+            <p>{{ product.price | money }}</p>
+          </div>
+        </div>
+      {% endfor %}
 
-    {{ paginate | default_pagination }}
-  {% endpaginate %}
-</div>
+      {{ paginate | default_pagination }}
+    {% endpaginate %}
+  </div>
+{% endif %}
 
 {% stylesheet %}
   .collection-products {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(500px, 1fr));
+  }
+
+  /* Coming Soon — sporty hype page */
+  /* Flex chain: body(flex-col) > main(flex:1) > .shopify-section > .coming-soon */
+  main:has(.coming-soon) {
+    display: flex;
+    flex-direction: column;
+  }
+
+  main:has(.coming-soon) > .shopify-section {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .coming-soon {
+    position: relative;
+    overflow: hidden;
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 5rem 2rem;
+    border-top: 4px solid var(--school-primary, var(--color-foreground));
+    border-bottom: 4px solid var(--school-primary, var(--color-foreground));
+    background: var(--color-background);
+  }
+
+  .coming-soon__stripes {
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(
+      -45deg,
+      transparent,
+      transparent 28px,
+      var(--school-primary, var(--color-foreground)) 28px,
+      var(--school-primary, var(--color-foreground)) 30px
+    );
+    opacity: 0.05;
+    pointer-events: none;
+  }
+
+  .coming-soon__content {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 1.25rem;
+  }
+
+  .coming-soon__logo-ring {
+    width: 140px;
+    height: 140px;
+    border-radius: 50%;
+    border: 3px solid var(--school-primary, var(--color-foreground));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 22px;
+    background: var(--color-background);
+    box-shadow: 0 0 0 8px color-mix(in srgb, var(--school-primary, var(--color-foreground)) 8%, transparent);
+    animation: coming-soon-pop 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  }
+
+  .coming-soon__logo {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+
+  .coming-soon__rule {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    width: 160px;
+    animation: coming-soon-rise 0.5s ease-out 0.1s both;
+  }
+
+  .coming-soon__rule-line {
+    flex: 1;
+    height: 2px;
+    background: var(--school-primary, var(--color-foreground));
+    opacity: 0.25;
+  }
+
+  .coming-soon__rule-diamond {
+    width: 7px;
+    height: 7px;
+    background: var(--school-primary, var(--color-foreground));
+    transform: rotate(45deg);
+    opacity: 0.3;
+    flex-shrink: 0;
+  }
+
+  .coming-soon__title {
+    font-family: var(--font-heading--family);
+    font-size: clamp(2.5rem, 6vw, 4rem);
+    font-weight: 800;
+    font-style: italic;
+    text-transform: uppercase;
+    letter-spacing: -0.02em;
+    line-height: 1;
+    margin: 0;
+    animation: coming-soon-rise 0.5s ease-out 0.2s both;
+  }
+
+  .coming-soon__school-name {
+    font-family: var(--font-heading--family);
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    color: var(--school-primary, var(--color-foreground));
+    margin: 0;
+    animation: coming-soon-rise 0.5s ease-out 0.3s both;
+  }
+
+  .coming-soon__text {
+    font-family: var(--font-body--family);
+    font-size: 1rem;
+    color: var(--color-foreground);
+    opacity: 0.55;
+    margin: 0;
+    max-width: 380px;
+    line-height: 1.6;
+    animation: coming-soon-rise 0.5s ease-out 0.35s both;
+  }
+
+  .coming-soon__cta {
+    display: inline-block;
+    background: var(--school-primary, var(--color-foreground));
+    color: white;
+    font-family: var(--font-heading--family);
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    text-decoration: none;
+    padding: 0.85rem 2.5rem;
+    margin-top: 0.5rem;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+    animation: coming-soon-rise 0.5s ease-out 0.45s both;
+  }
+
+  .coming-soon__cta:hover {
+    opacity: 0.85;
+    transform: translateY(-1px);
+  }
+
+  .coming-soon__watermark {
+    position: absolute;
+    bottom: -0.8rem;
+    right: -0.5rem;
+    font-family: var(--font-heading--family);
+    font-size: clamp(6rem, 18vw, 14rem);
+    font-weight: 800;
+    font-style: italic;
+    text-transform: uppercase;
+    color: var(--school-primary, var(--color-foreground));
+    opacity: 0.035;
+    line-height: 1;
+    white-space: nowrap;
+    pointer-events: none;
+    user-select: none;
+  }
+
+  @keyframes coming-soon-pop {
+    0% { opacity: 0; transform: scale(0.7); }
+    100% { opacity: 1; transform: scale(1); }
+  }
+
+  @keyframes coming-soon-rise {
+    0% { opacity: 0; transform: translateY(20px); }
+    100% { opacity: 1; transform: translateY(0); }
   }
 {% endstylesheet %}
 
