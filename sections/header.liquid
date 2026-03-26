@@ -21,9 +21,33 @@
   </nav>
 
   <div class="header__icons">
-    <a href="{{ routes.search_url }}" class="header__icon" aria-label="Search">
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-    </a>
+    <search-popover>
+      <button type="button" class="header__icon" aria-label="Search" data-search-toggle>
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+      </button>
+
+      <div class="search-popover" hidden>
+        <div class="search-popover__overlay"></div>
+        <div class="search-popover__panel">
+          <form action="{{ routes.search_url }}" method="get" class="search-popover__form">
+            <svg class="search-popover__input-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+            <input
+              type="search"
+              name="q"
+              placeholder="{{ 'search.placeholder' | t }}"
+              class="search-popover__input"
+              autocomplete="off"
+              data-search-input
+            >
+            <button type="button" class="search-popover__close" data-search-close aria-label="Close search">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+            </button>
+          </form>
+          <div class="search-popover__results" data-search-results></div>
+          <a href="{{ routes.search_url }}" class="search-popover__view-all" data-search-view-all hidden>View all results</a>
+        </div>
+      </div>
+    </search-popover>
 
     {% if shop.customer_accounts_enabled %}
       <shopify-account menu="{{ section.settings.customer_account_menu }}">
@@ -115,6 +139,13 @@
     justify-content: center;
   }
 
+  button.header__icon {
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+  }
+
   .header__icon:hover {
     opacity: 0.7;
   }
@@ -140,12 +171,399 @@
     height: 1.4rem;
   }
 
+  /* Search popover */
+  search-popover {
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+
+  .search-popover__overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(4px);
+    z-index: 199;
+  }
+
+  .search-popover__panel {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 200;
+    background: var(--color-background);
+    border-bottom: 1px solid var(--color-border);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.12);
+    transform: translateY(-100%);
+    visibility: hidden;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+                visibility 0.3s;
+  }
+
+  .search-popover:not([hidden]) .search-popover__panel {
+    transform: translateY(0);
+    visibility: visible;
+  }
+
+  .search-popover__form {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px var(--page-margin);
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .search-popover__input-icon {
+    flex-shrink: 0;
+    opacity: 0.4;
+    width: 18px;
+    height: 18px;
+  }
+
+  .search-popover__input {
+    flex: 1;
+    border: none;
+    background: transparent;
+    font-family: var(--font-body--family);
+    font-size: 1rem;
+    color: var(--color-foreground);
+    outline: none;
+  }
+
+  .search-popover__input::placeholder {
+    color: var(--color-foreground);
+    opacity: 0.4;
+  }
+
+  .search-popover__close {
+    flex-shrink: 0;
+    background: none;
+    border: none;
+    padding: 4px;
+    cursor: pointer;
+    color: var(--color-foreground);
+    opacity: 0.4;
+    transition: opacity 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .search-popover__close:hover {
+    opacity: 1;
+  }
+
+  .search-popover__close svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  /* Results container */
+  .search-popover__results {
+    max-height: 420px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+  }
+
+  .search-popover__results:empty {
+    display: none;
+  }
+
+  /* Individual result item */
+  .search-result-item {
+    display: flex;
+    gap: 14px;
+    padding: 12px var(--page-margin);
+    text-decoration: none;
+    color: inherit;
+    transition: background-color 0.15s ease;
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .search-result-item:last-child {
+    border-bottom: none;
+  }
+
+  .search-result-item:hover {
+    background-color: rgba(0, 0, 0, 0.03);
+  }
+
+  .search-result-item__image {
+    width: 56px;
+    height: 56px;
+    object-fit: cover;
+    flex-shrink: 0;
+    background: #f5f5f5;
+  }
+
+  .search-result-item__content {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  .search-result-item__title {
+    font-family: var(--font-heading--family);
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    line-height: 1.3;
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .search-result-item__price {
+    font-family: var(--font-body--family);
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin-top: 2px;
+  }
+
+  .search-result-item__compare-price {
+    font-size: 0.8rem;
+    color: var(--color-accent-gold);
+    text-decoration: line-through;
+    margin-left: 6px;
+  }
+
+  /* View all link */
+  .search-popover__view-all[hidden] {
+    display: none;
+  }
+
+  .search-popover__view-all {
+    display: block;
+    text-align: center;
+    padding: 14px var(--page-margin);
+    font-family: var(--font-heading--family);
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    text-decoration: none;
+    color: var(--color-foreground);
+    border-top: 1px solid var(--color-border);
+    transition: background-color 0.15s ease;
+  }
+
+  .search-popover__view-all:hover {
+    background-color: rgba(0, 0, 0, 0.03);
+  }
+
+  /* Loading skeletons */
+  .search-skeleton {
+    display: flex;
+    gap: 14px;
+    padding: 12px var(--page-margin);
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .search-skeleton__image {
+    width: 56px;
+    height: 56px;
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: skeleton-pulse 1.5s infinite;
+    flex-shrink: 0;
+  }
+
+  .search-skeleton__content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 8px;
+  }
+
+  .search-skeleton__title {
+    height: 12px;
+    width: 70%;
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: skeleton-pulse 1.5s infinite;
+  }
+
+  .search-skeleton__price {
+    height: 10px;
+    width: 40%;
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: skeleton-pulse 1.5s infinite;
+  }
+
+  @keyframes skeleton-pulse {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+  }
+
+  .search-popover__no-results {
+    padding: 32px var(--page-margin);
+    text-align: center;
+    font-family: var(--font-body--family);
+    font-size: 0.9rem;
+    color: var(--color-foreground);
+    opacity: 0.5;
+  }
+
   @media (max-width: 768px) {
     .header__nav {
       display: none;
     }
   }
 {% endstylesheet %}
+
+<script>
+  class SearchPopover extends HTMLElement {
+    connectedCallback() {
+      this._popover = this.querySelector('.search-popover');
+      this.input = this.querySelector('[data-search-input]');
+      this.results = this.querySelector('[data-search-results]');
+      this.toggle = this.querySelector('[data-search-toggle]');
+      this.closeBtn = this.querySelector('[data-search-close]');
+      this.overlay = this.querySelector('.search-popover__overlay');
+      this.form = this.querySelector('.search-popover__form');
+      this.viewAll = this.querySelector('[data-search-view-all]');
+      this.currentQuery = '';
+
+      this.toggle.addEventListener('click', () => this.open());
+      this.closeBtn.addEventListener('click', () => this.close());
+      this.overlay.addEventListener('click', () => this.close());
+
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && !this._popover.hidden) this.close();
+      });
+
+      this.input.addEventListener('input', this.debounce(() => {
+        this.search(this.input.value.trim());
+      }, 300));
+
+      this.form.addEventListener('submit', (e) => {
+        const q = this.input.value.trim();
+        if (!q) {
+          e.preventDefault();
+          return;
+        }
+        // Form submits naturally to /search?q=...
+      });
+    }
+
+    open() {
+      this._popover.hidden = false;
+      // Force reflow for animation
+      this._popover.offsetHeight;
+      requestAnimationFrame(() => {
+        this.input.focus();
+      });
+    }
+
+    close() {
+      this._popover.hidden = true;
+      this.input.value = '';
+      this.results.innerHTML = '';
+      this.viewAll.hidden = true;
+      this.currentQuery = '';
+    }
+
+    debounce(fn, ms) {
+      let timer;
+      return (...args) => {
+        clearTimeout(timer);
+        timer = setTimeout(() => fn.apply(this, args), ms);
+      };
+    }
+
+    showSkeletons() {
+      this.results.innerHTML = Array.from({ length: 4 }, () => `
+        <div class="search-skeleton">
+          <div class="search-skeleton__image"></div>
+          <div class="search-skeleton__content">
+            <div class="search-skeleton__title"></div>
+            <div class="search-skeleton__price"></div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    async search(query) {
+      if (!query) {
+        this.results.innerHTML = '';
+        this.viewAll.hidden = true;
+        this.currentQuery = '';
+        return;
+      }
+
+      this.currentQuery = query;
+      this.viewAll.hidden = true;
+      this.showSkeletons();
+
+      try {
+        const res = await fetch(
+          `/search/suggest.json?q=${encodeURIComponent(query)}&resources[type]=product&resources[limit]=6`
+        );
+        if (this.currentQuery !== query) return;
+        if (!res.ok) throw new Error();
+
+        const data = await res.json();
+        const products = data.resources?.results?.products || [];
+
+        if (products.length === 0) {
+          this.results.innerHTML = '<div class="search-popover__no-results">No results found</div>';
+          this.viewAll.hidden = true;
+          return;
+        }
+
+        const items = products.map(p => {
+          const img = p.image
+            ? `<img src="${p.image}" alt="${this.esc(p.title)}" class="search-result-item__image" width="56" height="56" loading="lazy">`
+            : '<div class="search-result-item__image"></div>';
+
+          const price = this.money(p.price);
+          const compare = p.compare_at_price_max && parseFloat(p.compare_at_price_max) > parseFloat(p.price)
+            ? `<span class="search-result-item__compare-price">${this.money(p.compare_at_price_max)}</span>`
+            : '';
+
+          return `<a href="${p.url}" class="search-result-item">
+            ${img}
+            <div class="search-result-item__content">
+              <h3 class="search-result-item__title">${this.esc(p.title)}</h3>
+              <div class="search-result-item__price">${price}${compare}</div>
+            </div>
+          </a>`;
+        }).join('');
+
+        this.results.innerHTML = items;
+        this.viewAll.href = `/search?q=${encodeURIComponent(query)}`;
+        this.viewAll.hidden = false;
+
+      } catch (err) {
+        if (this.currentQuery === query) {
+          this.results.innerHTML = '<div class="search-popover__no-results">Something went wrong</div>';
+        }
+      }
+    }
+
+    esc(str) {
+      const el = document.createElement('span');
+      el.textContent = str;
+      return el.innerHTML;
+    }
+
+    money(price) {
+      const amount = parseFloat(price);
+      return `$${amount.toFixed(2)}`;
+    }
+  }
+
+  if (!customElements.get('search-popover')) {
+    customElements.define('search-popover', SearchPopover);
+  }
+</script>
 
 {% schema %}
 {
