@@ -91,6 +91,11 @@ h6 {
   font-weight: var(--font-heading--weight);
 }
 
+/** Main content grows to push footer down */
+main {
+  flex: 1;
+}
+
 /** Sticky header group */
 .shopify-section-group-header {
   position: sticky;

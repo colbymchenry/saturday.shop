@@ -30,3 +30,17 @@ test.describe('Smoke tests', () => {
     expect(response?.ok() || [404, 502].includes(response?.status() ?? 0)).toBeTruthy();
   });
 });
+
+test.describe('No horizontal overflow', () => {
+  const pages = ['/', '/search?q=a', '/cart', '/collections/all'];
+
+  for (const path of pages) {
+    test(`no horizontal scrollbar on ${path}`, async ({ page }) => {
+      await page.goto(path);
+      const hasOverflow = await page.evaluate(() => {
+        return document.documentElement.scrollWidth > document.documentElement.clientWidth;
+      });
+      expect(hasOverflow).toBe(false);
+    });
+  }
+});

@@ -1,5 +1,9 @@
 # CLAUDE.md
 
+## Local Dev Server
+
+The local dev server is running at **http://127.0.0.1:9292**. Use `curl` via Bash to fetch pages from it — **WebFetch cannot reach localhost** (it routes through an external service). Use this URL for e2e tests (`BASE_URL=http://127.0.0.1:9292`).
+
 ## CRITICAL: Testing Is Part of Done
 
 **Before completing ANY task**, you MUST:
@@ -135,6 +139,7 @@ GitHub Actions runs `shopify/theme-check-action@v2` on every push. Config extend
   - `sections/collection-cards.liquid` → `e2e/collection-cards.spec.ts`
   - `sections/newsletter-cta.liquid` → `e2e/newsletter-cta.spec.ts`
   - `sections/recently-viewed.liquid` → `e2e/recently-viewed.spec.ts`
+  - `sections/search.liquid` → `e2e/search.spec.ts`
   - Layout/header/footer/navigation changes → `e2e/smoke.spec.ts`
   - New sections → create a new `e2e/<section-name>.spec.ts`
 - **Verify script**: `scripts/verify.sh` runs via Stop hook — reports changed files and affected test files
