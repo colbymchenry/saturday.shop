@@ -1,3 +1,6 @@
+{{ 'product-card.css' | asset_url | stylesheet_tag }}
+<script src="{{ 'product-card.js' | asset_url }}" defer="defer"></script>
+
 <section class="featured-collection full-width" style="background-color: {{ section.settings.background_color }};">
   <div class="featured-collection__header">
     <h2 class="featured-collection__title">
@@ -94,93 +97,7 @@
         {% endfor %}
       {% endif %}
       {% for product in section.settings.collection.products limit: section.settings.limit %}
-        <product-card class="product-card">
-          <div class="product-card__info">
-            <h3 class="product-card__title">
-              <a href="{{ product.url }}">{{ product.title }}</a>
-            </h3>
-            <div class="product-card__price">
-              <span class="product-card__current-price">{{ product.price | money }}</span>
-              {% if product.compare_at_price > product.price %}
-                <span class="product-card__compare-price">{{ product.compare_at_price | money }}</span>
-              {% endif %}
-            </div>
-          </div>
-
-          <div class="product-card__media">
-            {% if product.tags contains 'new' %}
-              <span class="product-card__badge product-card__badge--new">NEW</span>
-            {% endif %}
-            {% if product.compare_at_price > product.price %}
-              <span class="product-card__badge product-card__badge--sale">SALE</span>
-            {% endif %}
-
-            <div class="product-card__images">
-              {% for image in product.images %}
-                <div class="product-card__image-slide {% if forloop.first %}product-card__image-slide--active{% endif %}">
-                  <a href="{{ product.url }}">
-                    {{ image | image_url: width: 600 | image_tag: loading: 'lazy' }}
-                  </a>
-                </div>
-              {% else %}
-                <div class="product-card__image-slide product-card__image-slide--active">
-                  <a href="{{ product.url }}">
-                    {{ 'product-1' | placeholder_svg_tag }}
-                  </a>
-                </div>
-              {% endfor %}
-            </div>
-
-            {% if product.images.size > 1 %}
-              <button class="product-card__img-arrow product-card__img-arrow--prev" data-img-dir="prev" aria-label="Previous image">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
-              </button>
-              <button class="product-card__img-arrow product-card__img-arrow--next" data-img-dir="next" aria-label="Next image">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
-              </button>
-            {% endif %}
-
-            {% if product.available %}
-              <div class="product-card__quick-add">
-                {%- form 'product', product -%}
-                  <input type="hidden" name="id" value="{{ product.selected_or_first_available_variant.id }}" data-variant-id>
-
-                  {% if product.variants.size > 1 %}
-                    <div class="product-card__options">
-                      {% for option in product.options_with_values %}
-                        <div class="product-card__dropdown" data-option-index="{{ forloop.index0 }}">
-                          <button type="button" class="product-card__dropdown-trigger" aria-label="{{ option.name }}">
-                            <span>{{ product.selected_or_first_available_variant.options[forloop.index0] }}</span>
-                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
-                          </button>
-                          <ul class="product-card__dropdown-menu">
-                            {% for value in option.values %}
-                              <li class="product-card__dropdown-item{% if product.selected_or_first_available_variant.options[forloop.parentloop.index0] == value %} product-card__dropdown-item--selected{% endif %}" data-value="{{ value | escape }}">
-                                {{ value }}
-                              </li>
-                            {% endfor %}
-                          </ul>
-                        </div>
-                      {% endfor %}
-                    </div>
-                  {% endif %}
-
-                  <button type="submit" class="product-card__add-to-cart">
-                    {{ 'cart.add_to_cart' | t }}
-                  </button>
-                {%- endform -%}
-              </div>
-            {% endif %}
-
-            <script type="application/json" data-variants>
-              [{% for variant in product.variants %}{
-                "id": {{ variant.id }},
-                "available": {{ variant.available }},
-                "options": {{ variant.options | json }}
-              }{% unless forloop.last %},{% endunless %}{% endfor %}]
-            </script>
-          </div>
-        </product-card>
+        {% render 'product-card', product: product %}
       {% endfor %}
     </div>
 
@@ -282,279 +199,21 @@
     right: 12px;
   }
 
-  /* Product card */
-  .product-card {
+  /* Product card overrides for carousel context */
+  .featured-collection__track .product-card {
     flex: 0 0 21.5%;
     min-width: 280px;
     scroll-snap-align: start;
     border: 1px solid var(--color-border);
     border-right: none;
-    display: flex;
-    flex-direction: column;
   }
 
-  .product-card:last-child {
+  .featured-collection__track .product-card:last-child {
     border-right: 1px solid var(--color-border);
   }
 
-  .product-card__info {
-    padding: 16px;
-    border-bottom: 1px solid var(--color-border);
-  }
-
-  .product-card__title {
-    font-family: var(--font-heading--family);
-    font-size: 0.8rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.02em;
-    line-height: 1.3;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
-  .product-card__title a {
-    text-decoration: none;
-    color: inherit;
-  }
-
-  .product-card__price {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-top: 4px;
-  }
-
-  .product-card__current-price {
-    font-family: var(--font-body--family);
-    font-size: 0.95rem;
-    font-weight: 600;
-  }
-
-  .product-card__compare-price {
-    font-family: var(--font-body--family);
-    font-size: 0.85rem;
-    color: var(--color-accent-gold);
-    text-decoration: line-through;
-  }
-
-  .product-card__media {
-    position: relative;
-    aspect-ratio: 1;
-    overflow: hidden;
-    background-color: #fff;
-  }
-
-  /* Image slides */
-  .product-card__images {
-    width: 100%;
-    height: 100%;
-    position: relative;
-  }
-
-  .product-card__image-slide {
-    position: absolute;
-    inset: 0;
-    opacity: 0;
-    transition: opacity 0.3s ease;
-  }
-
-  .product-card__image-slide--active {
-    opacity: 1;
-  }
-
-  .product-card__image-slide a {
-    display: block;
-    width: 100%;
-    height: 100%;
-  }
-
-  .product-card__media img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
-
-  /* Image arrows */
-  .product-card__img-arrow {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    z-index: 2;
-    background: var(--color-background);
-    border: 1px solid var(--color-border);
-    width: 28px;
-    height: 28px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    opacity: 0;
-    transition: opacity 0.2s ease;
-  }
-
-  .product-card:hover .product-card__img-arrow {
-    opacity: 1;
-  }
-
-  .product-card__img-arrow--prev {
-    left: 8px;
-  }
-
-  .product-card__img-arrow--next {
-    right: 8px;
-  }
-
-  /* Badges */
-  .product-card__badge {
-    position: absolute;
-    top: 12px;
-    z-index: 2;
-    font-family: var(--font-heading--family);
-    font-size: 0.65rem;
-    font-weight: 700;
-    letter-spacing: 0.05em;
-    padding: 4px 10px;
-  }
-
-  .product-card__badge--new {
-    left: 12px;
-    background-color: var(--color-foreground);
-    color: var(--color-background);
-  }
-
-  .product-card__badge--sale {
-    left: 12px;
-    background-color: var(--color-accent-gold);
-    color: var(--color-background);
-  }
-
-  .product-card__badge--new + .product-card__badge--sale {
-    left: 60px;
-  }
-
-  /* Quick-add hover overlay */
-  .product-card__quick-add {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    z-index: 2;
-    display: flex;
-    flex-direction: column;
-    padding: 0;
-    opacity: 0;
-    transform: translateY(8px);
-    transition: opacity 0.2s ease, transform 0.2s ease;
-  }
-
-  .product-card:hover .product-card__quick-add {
-    opacity: 1;
-    transform: translateY(0);
-  }
-
-  .product-card__options {
-    display: flex;
-    gap: 0;
-  }
-
-  /* Custom dropdown */
-  .product-card__dropdown {
-    flex: 1;
-    position: relative;
-  }
-
-  .product-card__dropdown-trigger {
-    width: 100%;
-    padding: 10px 12px;
-    font-family: var(--font-heading--family);
-    font-size: 0.8rem;
-    font-weight: 600;
-    border: 1px solid rgba(0, 0, 0, 0.1);
-    background-color: var(--color-background);
-    color: var(--color-foreground);
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    text-align: left;
-    transition: border-color 0.15s ease;
-  }
-
-  .product-card__dropdown-trigger:hover {
-    border-color: rgba(0, 0, 0, 0.25);
-  }
-
-  .product-card__dropdown-trigger svg {
-    transition: transform 0.2s ease;
-    flex-shrink: 0;
-  }
-
-  .product-card__dropdown--open .product-card__dropdown-trigger svg {
-    transform: rotate(180deg);
-  }
-
-  .product-card__dropdown-menu {
-    display: none;
-    position: absolute;
-    bottom: 100%;
-    left: -1px;
-    right: -1px;
-    background-color: var(--color-background);
-    border: 1px solid rgba(0, 0, 0, 0.1);
-    border-bottom: none;
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    max-height: 200px;
-    overflow-y: auto;
-    z-index: 10;
-  }
-
-  .product-card__dropdown--open .product-card__dropdown-menu {
-    display: block;
-  }
-
-  .product-card__dropdown-item {
-    padding: 10px 12px;
-    font-family: var(--font-heading--family);
-    font-size: 0.8rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background-color 0.15s ease;
-  }
-
-  .product-card__dropdown-item:hover {
-    background-color: rgba(0, 0, 0, 0.06);
-  }
-
-  .product-card__dropdown-item--selected {
-    font-weight: 700;
-    background-color: rgba(0, 0, 0, 0.04);
-  }
-
-  .product-card__add-to-cart {
-    width: 100%;
-    padding: 10px;
-    font-family: var(--font-heading--family);
-    font-size: 0.8rem;
-    font-weight: 600;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    border: none;
-    background-color: var(--color-foreground);
-    color: var(--color-background);
-    cursor: pointer;
-    transition: opacity 0.2s ease;
-  }
-
-  .product-card__add-to-cart:hover {
-    opacity: 0.85;
-  }
-
   @media (max-width: 1024px) {
-    .product-card {
+    .featured-collection__track .product-card {
       flex: 0 0 33.333%;
     }
 
@@ -564,7 +223,7 @@
   }
 
   @media (max-width: 600px) {
-    .product-card {
+    .featured-collection__track .product-card {
       flex: 0 0 75%;
     }
   }
@@ -590,106 +249,8 @@
     }
   }
 
-  class ProductCard extends HTMLElement {
-    connectedCallback() {
-      this.variants = JSON.parse(this.querySelector('[data-variants]')?.textContent || '[]');
-      this.variantInput = this.querySelector('[data-variant-id]');
-
-      this.querySelectorAll('.product-card__dropdown').forEach(dropdown => {
-        const trigger = dropdown.querySelector('.product-card__dropdown-trigger');
-        trigger.addEventListener('click', (e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          this.toggleDropdown(dropdown);
-        });
-
-        dropdown.querySelectorAll('.product-card__dropdown-item').forEach(item => {
-          item.addEventListener('click', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            this.selectItem(dropdown, item);
-          });
-        });
-      });
-
-      this._onDocClick = (e) => {
-        if (!this.contains(e.target)) this.closeAllDropdowns();
-      };
-      document.addEventListener('click', this._onDocClick);
-
-      this.slides = this.querySelectorAll('.product-card__image-slide');
-      this.currentSlide = 0;
-      this.querySelectorAll('.product-card__img-arrow').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          this.changeImage(btn.dataset.imgDir);
-        });
-      });
-    }
-
-    disconnectedCallback() {
-      document.removeEventListener('click', this._onDocClick);
-    }
-
-    toggleDropdown(dropdown) {
-      const isOpen = dropdown.classList.contains('product-card__dropdown--open');
-      this.closeAllDropdowns();
-      if (!isOpen) dropdown.classList.add('product-card__dropdown--open');
-    }
-
-    closeAllDropdowns() {
-      this.querySelectorAll('.product-card__dropdown--open').forEach(d => {
-        d.classList.remove('product-card__dropdown--open');
-      });
-    }
-
-    selectItem(dropdown, item) {
-      dropdown.querySelectorAll('.product-card__dropdown-item--selected').forEach(el => {
-        el.classList.remove('product-card__dropdown-item--selected');
-      });
-      item.classList.add('product-card__dropdown-item--selected');
-      dropdown.querySelector('.product-card__dropdown-trigger span').textContent = item.dataset.value;
-      dropdown.classList.remove('product-card__dropdown--open');
-      this.updateVariant();
-    }
-
-    updateVariant() {
-      const dropdowns = this.querySelectorAll('.product-card__dropdown');
-      const selected = Array.from(dropdowns).map(d => {
-        const item = d.querySelector('.product-card__dropdown-item--selected');
-        return item ? item.dataset.value : '';
-      });
-      const match = this.variants.find(v =>
-        v.options.every((opt, i) => opt === selected[i])
-      );
-      if (match && this.variantInput) {
-        this.variantInput.value = match.id;
-        const btn = this.querySelector('.product-card__add-to-cart');
-        if (btn) {
-          btn.disabled = !match.available;
-          btn.textContent = match.available ? 'Add to cart' : 'Sold out';
-        }
-      }
-    }
-
-    changeImage(dir) {
-      if (!this.slides.length) return;
-      this.slides[this.currentSlide].classList.remove('product-card__image-slide--active');
-      if (dir === 'next') {
-        this.currentSlide = (this.currentSlide + 1) % this.slides.length;
-      } else {
-        this.currentSlide = (this.currentSlide - 1 + this.slides.length) % this.slides.length;
-      }
-      this.slides[this.currentSlide].classList.add('product-card__image-slide--active');
-    }
-  }
-
   if (!customElements.get('product-carousel')) {
     customElements.define('product-carousel', ProductCarousel);
-  }
-  if (!customElements.get('product-card')) {
-    customElements.define('product-card', ProductCard);
   }
 {% endjavascript %}
 

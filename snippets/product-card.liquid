@@ -1,0 +1,97 @@
+{% doc %}
+  Renders a product card with image carousel, badges, variant selection, and
+  quick-add-to-cart.
+
+  @param {product} product - The product to render
+
+  @example
+  {% render 'product-card', product: product %}
+{% enddoc %}
+
+<product-card class="product-card">
+  <div class="product-card__info">
+    <h3 class="product-card__title">
+      <a href="{{ product.url }}">{{ product.title }}</a>
+    </h3>
+    <div class="product-card__price">
+      <span class="product-card__current-price">{{ product.price | money }}</span>
+      {% if product.compare_at_price > product.price %}
+        <span class="product-card__compare-price">{{ product.compare_at_price | money }}</span>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="product-card__media">
+    {% if product.tags contains 'new' %}
+      <span class="product-card__badge product-card__badge--new">NEW</span>
+    {% endif %}
+    {% if product.compare_at_price > product.price %}
+      <span class="product-card__badge product-card__badge--sale">SALE</span>
+    {% endif %}
+
+    <div class="product-card__images">
+      {% for image in product.images %}
+        <div class="product-card__image-slide {% if forloop.first %}product-card__image-slide--active{% endif %}">
+          <a href="{{ product.url }}">
+            {{ image | image_url: width: 600 | image_tag: loading: 'lazy' }}
+          </a>
+        </div>
+      {% else %}
+        <div class="product-card__image-slide product-card__image-slide--active">
+          <a href="{{ product.url }}">
+            {{ 'product-1' | placeholder_svg_tag }}
+          </a>
+        </div>
+      {% endfor %}
+    </div>
+
+    {% if product.images.size > 1 %}
+      <button class="product-card__img-arrow product-card__img-arrow--prev" data-img-dir="prev" aria-label="Previous image">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+      </button>
+      <button class="product-card__img-arrow product-card__img-arrow--next" data-img-dir="next" aria-label="Next image">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+      </button>
+    {% endif %}
+
+    {% if product.available %}
+      <div class="product-card__quick-add">
+        {%- form 'product', product -%}
+          <input type="hidden" name="id" value="{{ product.selected_or_first_available_variant.id }}" data-variant-id>
+
+          {% if product.variants.size > 1 %}
+            <div class="product-card__options">
+              {% for option in product.options_with_values %}
+                <div class="product-card__dropdown" data-option-index="{{ forloop.index0 }}">
+                  <button type="button" class="product-card__dropdown-trigger" aria-label="{{ option.name }}">
+                    <span>{{ product.selected_or_first_available_variant.options[forloop.index0] }}</span>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+                  </button>
+                  <ul class="product-card__dropdown-menu">
+                    {% for value in option.values %}
+                      <li class="product-card__dropdown-item{% if product.selected_or_first_available_variant.options[forloop.parentloop.index0] == value %} product-card__dropdown-item--selected{% endif %}" data-value="{{ value | escape }}">
+                        {{ value }}
+                      </li>
+                    {% endfor %}
+                  </ul>
+                </div>
+              {% endfor %}
+            </div>
+          {% endif %}
+
+          <button type="submit" class="product-card__add-to-cart">
+            {{ 'cart.add_to_cart' | t }}
+          </button>
+        {%- endform -%}
+      </div>
+    {% endif %}
+
+    <script type="application/json" data-variants>
+      [{% for variant in product.variants %}{
+        "id": {{ variant.id }},
+        "available": {{ variant.available }},
+        "options": {{ variant.options | json }}
+      }{% unless forloop.last %},{% endunless %}{% endfor %}]
+    </script>
+  </div>
+</product-card>

@@ -139,6 +139,7 @@ GitHub Actions runs `shopify/theme-check-action@v2` on every push. Config extend
   - `sections/collection-cards.liquid` → `e2e/collection-cards.spec.ts`
   - `sections/newsletter-cta.liquid` → `e2e/newsletter-cta.spec.ts`
   - `sections/recently-viewed.liquid` → `e2e/recently-viewed.spec.ts`
+  - `sections/collection.liquid` → `e2e/collection.spec.ts`
   - `sections/search.liquid` → `e2e/search.spec.ts`
   - Layout/header/footer/navigation changes → `e2e/smoke.spec.ts`
   - New sections → create a new `e2e/<section-name>.spec.ts`
