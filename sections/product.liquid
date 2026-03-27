@@ -1,50 +1,610 @@
 {% comment %}
-  This section is used in the product template to render product page with
-  media, content, and add-to-cart form.
-
-  https://shopify.dev/docs/storefronts/themes/architecture/templates/product
+  Product page — two-column layout with image gallery, variant pill selectors,
+  school-colored ADD TO CART, and accordion info sections.
 {% endcomment %}
 
-<div class="product-images">
-  {% for image in product.images %}
-    {% render 'image', class: 'product-image', image: image %}
-  {% endfor %}
-</div>
+{%- comment -%} Resolve school by matching product collections to school slugs {%- endcomment -%}
+{%- assign school = nil -%}
+{%- for col in product.collections -%}
+  {%- assign found_school = shop.metaobjects.school.values | where: 'slug', col.handle | first -%}
+  {%- if found_school -%}
+    {%- assign school = found_school -%}
+    {%- break -%}
+  {%- endif -%}
+{%- endfor -%}
 
-<div class="product-info">
-  <h1>{{ product.title }}</h1>
-  <p>{{ product.price | money }}</p>
-  <p>{{ product.description }}</p>
-</div>
+{%- assign current_variant = product.selected_or_first_available_variant -%}
 
-<div class="product-form">
-  {% form 'product', product %}
-    {% assign current_variant = product.selected_or_first_available_variant %}
-
-    <select name="id">
-      {% for variant in product.variants %}
-        <option
-          value="{{ variant.id }}"
-          {% if variant == current_variant %}
-            selected="selected"
-          {% endif %}
+<product-page
+  class="product"
+  {% if school %}style="--school-primary: {{ school.primary_color }};"{% endif %}
+>
+  {%- comment -%} ── Left: Image gallery ── {%- endcomment -%}
+  <div class="product__gallery">
+    <div class="product__main-image">
+      {%- for image in product.images -%}
+        <img
+          src="{{ image | image_url: width: 900 }}"
+          alt="{{ image.alt | escape }}"
+          width="{{ image.width }}"
+          height="{{ image.height }}"
+          class="product__image{% if forloop.first %} product__image--active{% endif %}"
+          data-image-index="{{ forloop.index0 }}"
+          {% unless forloop.first %}loading="lazy"{% endunless %}
         >
-          {{ variant.title }} - {{ variant.price | money }}
-        </option>
-      {% endfor %}
-    </select>
+      {%- endfor -%}
+    </div>
 
-    <input type="text" name="quantity" min="1" value="1">
+    {%- if product.images.size > 1 -%}
+      <div class="product__thumbnails">
+        {%- for image in product.images -%}
+          <button
+            type="button"
+            class="product__thumbnail{% if forloop.first %} product__thumbnail--active{% endif %}"
+            data-thumbnail-index="{{ forloop.index0 }}"
+            aria-label="View image {{ forloop.index }}"
+          >
+            <img
+              src="{{ image | image_url: width: 160 }}"
+              alt="{{ image.alt | escape }}"
+              width="80"
+              height="80"
+              loading="lazy"
+            >
+          </button>
+        {%- endfor -%}
+      </div>
+    {%- endif -%}
+  </div>
 
-    <input type="submit" value="Add to cart">
-    {{ form | payment_button }}
-  {% endform %}
-</div>
+  {%- comment -%} ── Right: Product info ── {%- endcomment -%}
+  <div class="product__info">
+    <h1 class="product__title">{{ product.title }}</h1>
+
+    <div class="product__price">
+      <span class="product__price-current" data-current-price>{{ current_variant.price | money }}</span>
+      <span class="product__price-compare{% unless current_variant.compare_at_price > current_variant.price %} hidden{% endunless %}" data-compare-price>
+        {{- current_variant.compare_at_price | money -}}
+      </span>
+      <span class="product__price-badge{% unless current_variant.compare_at_price > current_variant.price %} hidden{% endunless %}" data-sale-badge>SALE</span>
+    </div>
+
+    <div class="product__reviews">
+      <div class="product__stars">
+        {%- for i in (1..5) -%}
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+        {%- endfor -%}
+      </div>
+      <span class="product__reviews-text">No reviews yet</span>
+    </div>
+
+    {% form 'product', product %}
+      <input type="hidden" name="id" value="{{ current_variant.id }}" data-variant-id>
+
+      {%- for option in product.options_with_values -%}
+        <div class="product__option">
+          <span class="product__option-label">{{ option.name }}</span>
+          <div class="product__option-values">
+            {%- for value in option.values -%}
+              <button
+                type="button"
+                class="product__pill{% if option.selected_value == value %} product__pill--selected{% endif %}"
+                data-option-index="{{ forloop.parentloop.index0 }}"
+                data-value="{{ value | escape }}"
+              >
+                {{ value }}
+              </button>
+            {%- endfor -%}
+          </div>
+        </div>
+      {%- endfor -%}
+
+      <button
+        type="submit"
+        class="product__add-to-cart"
+        {% unless current_variant.available %}disabled{% endunless %}
+        data-add-to-cart
+      >
+        {%- if current_variant.available -%}
+          {{ 'cart.add_to_cart' | t | upcase }}
+        {%- else -%}
+          SOLD OUT
+        {%- endif -%}
+      </button>
+    {% endform %}
+
+    <div class="product__accordions">
+      <details class="product__accordion" open>
+        <summary class="product__accordion-trigger">
+          <span>DESCRIPTION</span>
+          <svg class="product__accordion-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+        </summary>
+        <div class="product__accordion-content">
+          {{ product.description }}
+        </div>
+      </details>
+
+      {%- for block in section.blocks -%}
+        <details class="product__accordion" {{ block.shopify_attributes }}>
+          <summary class="product__accordion-trigger">
+            <span>{{ block.settings.heading | upcase }}</span>
+            <svg class="product__accordion-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+          </summary>
+          <div class="product__accordion-content">
+            {{ block.settings.content }}
+          </div>
+        </details>
+      {%- endfor -%}
+    </div>
+
+    <a href="/pages/contact" class="product__school-link">Can't find your school? Let us know &rarr;</a>
+  </div>
+
+  <script type="application/json" data-product-variants>
+    [
+      {%- for variant in product.variants -%}
+        {
+          "id": {{ variant.id }},
+          "available": {{ variant.available }},
+          "price": "{{ variant.price | money }}",
+          "compareAtPrice": {% if variant.compare_at_price %}"{{ variant.compare_at_price | money }}"{% else %}null{% endif %},
+          "onSale": {% if variant.compare_at_price > variant.price %}true{% else %}false{% endif %},
+          "options": [
+            {%- for option in variant.options -%}
+              "{{ option | escape }}"{% unless forloop.last %},{% endunless %}
+            {%- endfor -%}
+          ],
+          "image": {% if variant.image %}"{{ variant.image | image_url: width: 900 }}"{% else %}null{% endif %}
+        }{% unless forloop.last %},{% endunless %}
+      {%- endfor -%}
+    ]
+  </script>
+</product-page>
+
+{% stylesheet %}
+  /* ── Layout ── */
+  .product {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 3rem;
+    padding: 2rem 0;
+  }
+
+  /* ── Gallery ── */
+  .product__gallery {
+    min-width: 0;
+  }
+
+  .product__main-image {
+    background: var(--color-cream, #f5f5f0);
+    overflow: hidden;
+  }
+
+  .product__image {
+    width: 100%;
+    height: auto;
+    display: none;
+  }
+
+  .product__image--active {
+    display: block;
+  }
+
+  .product__thumbnails {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .product__thumbnails::-webkit-scrollbar {
+    display: none;
+  }
+
+  .product__thumbnail {
+    flex-shrink: 0;
+    width: 80px;
+    height: 80px;
+    padding: 0;
+    border: 2px solid transparent;
+    background: var(--color-cream, #f5f5f0);
+    cursor: pointer;
+    overflow: hidden;
+    transition: border-color 0.2s ease;
+  }
+
+  .product__thumbnail--active {
+    border-color: var(--color-foreground);
+  }
+
+  .product__thumbnail img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  /* ── Product info ── */
+  .product__info {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+
+  .product__title {
+    font-family: var(--font-heading--family);
+    font-size: clamp(1.5rem, 2.5vw, 2rem);
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: -0.01em;
+    line-height: 1.15;
+    margin: 0 0 1rem;
+  }
+
+  /* ── Price ── */
+  .product__price {
+    display: flex;
+    align-items: baseline;
+    gap: 0.6rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .product__price-current {
+    font-family: var(--font-body--family);
+    font-size: 1.25rem;
+    font-weight: 700;
+  }
+
+  .product__price-compare {
+    font-family: var(--font-body--family);
+    font-size: 1rem;
+    color: var(--color-foreground);
+    opacity: 0.5;
+    text-decoration: line-through;
+  }
+
+  .product__price-badge {
+    font-family: var(--font-heading--family);
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    color: var(--school-primary, var(--color-foreground));
+  }
+
+  .product__price .hidden {
+    display: none;
+  }
+
+  /* ── Reviews placeholder ── */
+  .product__reviews {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .product__stars {
+    display: flex;
+    gap: 2px;
+    color: var(--color-foreground);
+    opacity: 0.3;
+  }
+
+  .product__reviews-text {
+    font-family: var(--font-body--family);
+    font-size: 0.8rem;
+    color: var(--color-foreground);
+    opacity: 0.5;
+  }
+
+  /* ── Variant options ── */
+  .product__option {
+    margin-bottom: 1.25rem;
+  }
+
+  .product__option-label {
+    display: block;
+    font-family: var(--font-heading--family);
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: 0.6rem;
+  }
+
+  .product__option-values {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .product__pill {
+    font-family: var(--font-body--family);
+    font-size: 0.85rem;
+    font-weight: 500;
+    padding: 0.5rem 1.25rem;
+    border: 1.5px solid var(--color-foreground);
+    background: transparent;
+    color: var(--color-foreground);
+    cursor: pointer;
+    transition: background-color 0.15s ease, color 0.15s ease;
+    white-space: nowrap;
+  }
+
+  .product__pill:hover {
+    background: rgba(0, 0, 0, 0.05);
+  }
+
+  .product__pill--selected {
+    background: var(--color-foreground);
+    color: var(--color-background);
+  }
+
+  .product__pill--selected:hover {
+    background: var(--color-foreground);
+    color: var(--color-background);
+  }
+
+  /* ── Add to cart ── */
+  .product__add-to-cart {
+    width: 100%;
+    padding: 1.1rem 2rem;
+    margin-top: 0.5rem;
+    margin-bottom: 2rem;
+    font-family: var(--font-heading--family);
+    font-size: 0.85rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    border: none;
+    background: var(--school-primary, var(--color-foreground));
+    color: #fff;
+    cursor: pointer;
+    transition: opacity 0.2s ease;
+  }
+
+  .product__add-to-cart:hover {
+    opacity: 0.9;
+  }
+
+  .product__add-to-cart:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+
+  /* ── Accordions ── */
+  .product__accordions {
+    border-top: 1px solid var(--color-border);
+  }
+
+  .product__accordion {
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .product__accordion-trigger {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding: 1.1rem 0;
+    font-family: var(--font-heading--family);
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    cursor: pointer;
+    list-style: none;
+    color: var(--color-foreground);
+  }
+
+  .product__accordion-trigger::-webkit-details-marker {
+    display: none;
+  }
+
+  .product__accordion-trigger::marker {
+    display: none;
+    content: '';
+  }
+
+  .product__accordion-icon {
+    transition: transform 0.2s ease;
+    flex-shrink: 0;
+  }
+
+  .product__accordion[open] .product__accordion-icon {
+    transform: rotate(180deg);
+  }
+
+  .product__accordion-content {
+    font-family: var(--font-body--family);
+    font-size: 0.9rem;
+    line-height: 1.7;
+    color: var(--color-foreground);
+    opacity: 0.7;
+    padding-bottom: 1.25rem;
+  }
+
+  .product__accordion-content p {
+    margin: 0;
+  }
+
+  /* ── School link ── */
+  .product__school-link {
+    display: inline-block;
+    margin-top: 1.5rem;
+    font-family: var(--font-body--family);
+    font-size: 0.85rem;
+    color: var(--color-foreground);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    opacity: 0.5;
+    transition: opacity 0.15s ease;
+  }
+
+  .product__school-link:hover {
+    opacity: 1;
+  }
+
+  /* ── Responsive ── */
+  @media (max-width: 768px) {
+    .product {
+      grid-template-columns: 1fr;
+      gap: 2rem;
+    }
+  }
+{% endstylesheet %}
+
+<script>
+  class ProductPage extends HTMLElement {
+    connectedCallback() {
+      this.variants = JSON.parse(this.querySelector('[data-product-variants]').textContent);
+      this.images = this.querySelectorAll('.product__image');
+      this.thumbnails = this.querySelectorAll('.product__thumbnail');
+      this.pills = this.querySelectorAll('.product__pill');
+      this.variantInput = this.querySelector('[data-variant-id]');
+      this.priceEl = this.querySelector('[data-current-price]');
+      this.compareEl = this.querySelector('[data-compare-price]');
+      this.badgeEl = this.querySelector('[data-sale-badge]');
+      this.cartBtn = this.querySelector('[data-add-to-cart]');
+
+      // Track selected options
+      this.selectedOptions = [];
+      this.pills.forEach(pill => {
+        if (pill.classList.contains('product__pill--selected')) {
+          this.selectedOptions[parseInt(pill.dataset.optionIndex)] = pill.dataset.value;
+        }
+      });
+
+      // Thumbnail clicks
+      this.thumbnails.forEach(thumb => {
+        thumb.addEventListener('click', () => this.showImage(parseInt(thumb.dataset.thumbnailIndex)));
+      });
+
+      // Pill clicks
+      this.pills.forEach(pill => {
+        pill.addEventListener('click', () => {
+          const idx = parseInt(pill.dataset.optionIndex);
+          const value = pill.dataset.value;
+          this.selectOption(idx, value);
+        });
+      });
+
+      // Sync gallery to the initially selected variant's image
+      this.syncInitialImage();
+    }
+
+    syncInitialImage() {
+      const variant = this.variants.find(v =>
+        v.options.every((opt, i) => opt === this.selectedOptions[i])
+      );
+      if (variant && variant.image) {
+        const variantPath = this.imagePath(variant.image);
+        const match = Array.from(this.images).findIndex(
+          img => this.imagePath(img.src) === variantPath
+        );
+        if (match >= 0) this.showImage(match);
+      }
+    }
+
+    showImage(index) {
+      this.images.forEach(img => img.classList.remove('product__image--active'));
+      this.thumbnails.forEach(t => t.classList.remove('product__thumbnail--active'));
+
+      const img = this.querySelector(`[data-image-index="${index}"]`);
+      const thumb = this.querySelector(`[data-thumbnail-index="${index}"]`);
+      if (img) img.classList.add('product__image--active');
+      if (thumb) thumb.classList.add('product__thumbnail--active');
+    }
+
+    selectOption(optionIndex, value) {
+      // Update pills UI
+      this.pills.forEach(pill => {
+        if (parseInt(pill.dataset.optionIndex) === optionIndex) {
+          pill.classList.toggle('product__pill--selected', pill.dataset.value === value);
+        }
+      });
+
+      this.selectedOptions[optionIndex] = value;
+      this.updateVariant();
+    }
+
+    updateVariant() {
+      const variant = this.variants.find(v =>
+        v.options.every((opt, i) => opt === this.selectedOptions[i])
+      );
+
+      if (!variant) return;
+
+      this.variantInput.value = variant.id;
+      this.priceEl.textContent = variant.price;
+
+      if (variant.onSale) {
+        this.compareEl.textContent = variant.compareAtPrice;
+        this.compareEl.classList.remove('hidden');
+        this.badgeEl.classList.remove('hidden');
+      } else {
+        this.compareEl.classList.add('hidden');
+        this.badgeEl.classList.add('hidden');
+      }
+
+      if (variant.available) {
+        this.cartBtn.disabled = false;
+        this.cartBtn.textContent = 'ADD TO CART';
+      } else {
+        this.cartBtn.disabled = true;
+        this.cartBtn.textContent = 'SOLD OUT';
+      }
+
+      // Switch to variant image if it has one
+      if (variant.image) {
+        const variantPath = this.imagePath(variant.image);
+        const match = Array.from(this.images).findIndex(
+          img => this.imagePath(img.src) === variantPath
+        );
+        if (match >= 0) this.showImage(match);
+      }
+
+      // Update URL without reload
+      const url = new URL(window.location);
+      url.searchParams.set('variant', variant.id);
+      history.replaceState(null, '', url);
+    }
+
+    imagePath(url) {
+      try { return new URL(url, location.origin).pathname; }
+      catch { return url.split('?')[0]; }
+    }
+  }
+
+  if (!customElements.get('product-page')) {
+    customElements.define('product-page', ProductPage);
+  }
+</script>
 
 {% schema %}
 {
   "name": "t:general.product",
   "settings": [],
+  "blocks": [
+    {
+      "type": "accordion",
+      "name": "Accordion",
+      "settings": [
+        {
+          "type": "text",
+          "id": "heading",
+          "label": "Heading",
+          "default": "Details"
+        },
+        {
+          "type": "richtext",
+          "id": "content",
+          "label": "Content"
+        }
+      ]
+    }
+  ],
   "disabled_on": {
     "groups": ["header", "footer"]
   }
