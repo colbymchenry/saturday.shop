@@ -31,7 +31,7 @@
 
     <div class="product-card__images">
       {% for image in product.images %}
-        <div class="product-card__image-slide {% if forloop.first %}product-card__image-slide--active{% endif %}">
+        <div class="product-card__image-slide {% if forloop.first %}product-card__image-slide--active{% endif %}" data-image-id="{{ image.id }}">
           <a href="{{ product.url }}">
             {{ image | image_url: width: 600 | image_tag: loading: 'lazy' }}
           </a>
@@ -90,7 +90,8 @@
       [{% for variant in product.variants %}{
         "id": {{ variant.id }},
         "available": {{ variant.available }},
-        "options": {{ variant.options | json }}
+        "options": {{ variant.options | json }},
+        "image_id": {{ variant.featured_image.id | default: 'null' }}
       }{% unless forloop.last %},{% endunless %}{% endfor %}]
     </script>
   </div>

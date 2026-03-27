@@ -78,7 +78,20 @@ class ProductCard extends HTMLElement {
         btn.disabled = !match.available;
         btn.textContent = match.available ? 'Add to cart' : 'Sold out';
       }
+      if (match.image_id) {
+        this.showImageById(match.image_id);
+      }
     }
+  }
+
+  showImageById(imageId) {
+    const target = Array.from(this.slides).findIndex(
+      s => s.dataset.imageId === String(imageId)
+    );
+    if (target === -1 || target === this.currentSlide) return;
+    this.slides[this.currentSlide].classList.remove('product-card__image-slide--active');
+    this.currentSlide = target;
+    this.slides[this.currentSlide].classList.add('product-card__image-slide--active');
   }
 
   changeImage(dir) {

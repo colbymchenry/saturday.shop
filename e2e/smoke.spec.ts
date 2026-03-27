@@ -143,6 +143,40 @@ test.describe('Smoke tests', () => {
   });
 });
 
+test.describe('Sticky header', () => {
+  test('header sections have position sticky', async ({ page }) => {
+    await page.goto('/');
+
+    // Both header-group sections should have position: sticky computed
+    const positions = await page.evaluate(() => {
+      const sections = document.querySelectorAll('.shopify-section-group-header-group');
+      return Array.from(sections).map(el => getComputedStyle(el).position);
+    });
+
+    expect(positions.length).toBeGreaterThanOrEqual(1);
+    for (const pos of positions) {
+      expect(pos).toBe('sticky');
+    }
+  });
+
+  test('header stays visible after scrolling down', async ({ page }) => {
+    await page.goto('/');
+
+    const headerSection = page.locator('.shopify-section-group-header-group').filter({ has: page.locator('header') });
+    await expect(headerSection).toBeVisible();
+
+    // Scroll down well past the header
+    await page.evaluate(() => window.scrollBy(0, 600));
+    await page.waitForTimeout(200);
+
+    // Header should still be at the top of the viewport (sticky)
+    const box = await headerSection.boundingBox();
+    expect(box).toBeTruthy();
+    expect(box!.y).toBeGreaterThanOrEqual(0);
+    expect(box!.y).toBeLessThanOrEqual(100);
+  });
+});
+
 test.describe('No horizontal overflow', () => {
   const pages = ['/', '/search?q=a', '/cart', '/collections/all'];
 

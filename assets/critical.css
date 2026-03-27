@@ -96,8 +96,8 @@ main {
   flex: 1;
 }
 
-/** Sticky header group */
-.shopify-section-group-header {
+/** Sticky header group — needs .shopify-section to win over position: relative below */
+.shopify-section.shopify-section-group-header-group {
   position: sticky;
   top: 0;
   z-index: 100;
