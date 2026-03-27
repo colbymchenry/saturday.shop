@@ -78,10 +78,29 @@ class ProductCard extends HTMLElement {
         btn.disabled = !match.available;
         btn.textContent = match.available ? 'Add to cart' : 'Sold out';
       }
+      if (match.price != null) {
+        const priceEl = this.querySelector('.product-card__current-price');
+        if (priceEl) priceEl.textContent = this.formatMoney(match.price);
+        const compareEl = this.querySelector('.product-card__compare-price');
+        if (compareEl) {
+          compareEl.style.display = match.compare_at_price > match.price ? '' : 'none';
+          if (match.compare_at_price > match.price) {
+            compareEl.textContent = this.formatMoney(match.compare_at_price);
+          }
+        }
+      }
       if (match.image_id) {
         this.showImageById(match.image_id);
       }
+      this.dispatchEvent(new CustomEvent('variant:change', {
+        detail: { variantId: match.id, price: match.price },
+        bubbles: true
+      }));
     }
+  }
+
+  formatMoney(cents) {
+    return '$' + (cents / 100).toFixed(2);
   }
 
   showImageById(imageId) {

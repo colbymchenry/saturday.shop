@@ -387,7 +387,7 @@ test.describe('Product page — Variant Selectors', () => {
     await waitForProductPage(page);
 
     const initialId = await page
-      .locator('[data-variant-id]')
+      .locator('product-page [data-variant-id]')
       .getAttribute('value');
 
     // Click a different pill
@@ -403,7 +403,7 @@ test.describe('Product page — Variant Selectors', () => {
     );
 
     const newId = await page
-      .locator('[data-variant-id]')
+      .locator('product-page [data-variant-id]')
       .getAttribute('value');
 
     // The variant ID should have changed (or stayed same if same variant by coincidence)
@@ -479,8 +479,8 @@ test.describe('Product page — Add to Cart', () => {
   test('button is inside a product form', async ({ page }) => {
     await page.goto(AUBURN_PRODUCT);
 
-    // The form should have the Shopify product form action
-    const form = page.locator('form[action*="/cart/add"]');
+    // The form should have the Shopify product form action (scoped to main product section)
+    const form = page.locator('product-page form[action*="/cart/add"]');
     await expect(form).toBeVisible();
 
     // Button should be inside the form
@@ -687,7 +687,7 @@ test.describe('Product page — Form', () => {
   test('form has hidden variant ID input', async ({ page }) => {
     await page.goto(AUBURN_PRODUCT);
 
-    const input = page.locator('[data-variant-id]');
+    const input = page.locator('product-page [data-variant-id]');
     await expect(input).toHaveAttribute('name', 'id');
 
     const value = await input.getAttribute('value');
@@ -916,7 +916,7 @@ test.describe('Product page — Variant URL Deep-Link', () => {
     await page.goto(`${AUBURN_PRODUCT}?variant=${variantId}`);
 
     const formValue = await page
-      .locator('[data-variant-id]')
+      .locator('product-page [data-variant-id]')
       .getAttribute('value');
     expect(formValue).toBe(variantId);
   });

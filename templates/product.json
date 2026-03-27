@@ -40,9 +40,64 @@
         "shipping",
         "materials"
       ]
+    },
+    "features": {
+      "type": "product-features",
+      "settings": {
+        "heading_line_1": "Built Different.",
+        "heading_line_2": "Worn Proud.",
+        "description": "Every Saturday Co tee is crafted with heavyweight 6.5-oz cotton jersey. Pre-washed for a broken-in feel. Designed to hold up season after season."
+      },
+      "blocks": {
+        "prewashed": {
+          "type": "feature",
+          "settings": {
+            "icon": "droplet",
+            "title": "Pre-Washed",
+            "text": "Broken-in from day one"
+          }
+        },
+        "heavyweight": {
+          "type": "feature",
+          "settings": {
+            "icon": "weight",
+            "title": "6.5 oz Heavyweight",
+            "text": "Thick, sturdy cotton jersey"
+          }
+        },
+        "licensed": {
+          "type": "feature",
+          "settings": {
+            "icon": "star",
+            "title": "Officially Licensed",
+            "text": "Authentic university graphics"
+          }
+        }
+      },
+      "block_order": [
+        "prewashed",
+        "heavyweight",
+        "licensed"
+      ]
+    },
+    "fbt": {
+      "type": "frequently-bought-together",
+      "settings": {
+        "heading": "Frequently Bought Together"
+      }
+    },
+    "recently-viewed": {
+      "type": "recently-viewed",
+      "settings": {
+        "heading": "Recently Viewed",
+        "background_color": "#F5F2EB"
+      }
     }
   },
   "order": [
-    "main"
+    "main",
+    "features",
+    "fbt",
+    "recently-viewed"
   ]
 }

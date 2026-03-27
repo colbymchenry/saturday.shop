@@ -1,38 +1,36 @@
-<section class="recently-viewed full-width" style="background-color: {{ section.settings.background_color }};">
+{{ 'product-card.css' | asset_url | stylesheet_tag }}
+<script src="{{ 'product-card.js' | asset_url }}" defer="defer"></script>
+
+<section class="recently-viewed full-width" style="background-color: {{ section.settings.background_color }};" hidden>
   <h2 class="recently-viewed__title">{{ section.settings.heading }}</h2>
 
-  <product-carousel class="recently-viewed__carousel">
-    <button class="featured-collection__arrow featured-collection__arrow--prev" data-dir="prev" aria-label="Previous">
+  <div class="recently-viewed__carousel">
+    <button class="recently-viewed__arrow recently-viewed__arrow--prev" data-dir="prev" aria-label="Previous">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
     </button>
 
-    <div class="featured-collection__track" data-recently-viewed-track></div>
+    <div class="recently-viewed__track" data-recently-viewed-track></div>
 
-    <button class="featured-collection__arrow featured-collection__arrow--next" data-dir="next" aria-label="Next">
+    <button class="recently-viewed__arrow recently-viewed__arrow--next" data-dir="next" aria-label="Next">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
     </button>
-  </product-carousel>
+  </div>
 </section>
 
-{% comment %} Track current product if on a product page {% endcomment %}
 {% if product %}
   <script data-recently-viewed-tracking type="application/json">
-    {
-      "handle": {{ product.handle | json }},
-      "title": {{ product.title | json }},
-      "url": {{ product.url | json }},
-      "price": {{ product.price | money | json }},
-      "compare_at_price": {% if product.compare_at_price > product.price %}{{ product.compare_at_price | money | json }}{% else %}null{% endif %},
-      "image": {{ product.featured_image | image_url: width: 600 | json }},
-      "tags": {{ product.tags | json }},
-      "on_sale": {% if product.compare_at_price > product.price %}true{% else %}false{% endif %}
-    }
+    {{ product.handle | json }}
   </script>
 {% endif %}
 
 {% stylesheet %}
   .recently-viewed {
-    padding: 48px var(--page-margin);
+    padding: 48px 0;
+    overflow: hidden;
+  }
+
+  .recently-viewed[hidden] {
+    display: none;
   }
 
   .recently-viewed__title {
@@ -42,81 +40,161 @@
     text-transform: uppercase;
     letter-spacing: 0.02em;
     margin-bottom: 24px;
+    padding-left: var(--page-margin);
+    padding-right: var(--page-margin);
   }
 
   .recently-viewed__carousel {
     display: flex;
     align-items: center;
     position: relative;
+    width: 100%;
   }
 
-  .recently-viewed[hidden] {
+  .recently-viewed__track {
+    display: flex;
+    gap: 0;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+    width: 100%;
+    padding-left: var(--page-margin);
+  }
+
+  .recently-viewed__track::-webkit-scrollbar {
     display: none;
+  }
+
+  .recently-viewed__arrow {
+    position: absolute;
+    z-index: 3;
+    background: var(--color-background);
+    border: 1.5px solid var(--color-border);
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: var(--color-foreground);
+    transition: opacity 0.2s ease;
+  }
+
+  .recently-viewed__arrow:hover {
+    opacity: 0.7;
+  }
+
+  .recently-viewed__arrow--prev {
+    left: 4px;
+  }
+
+  .recently-viewed__arrow--next {
+    right: 12px;
+  }
+
+  .recently-viewed__track .product-card {
+    flex: 0 0 21.5%;
+    min-width: 280px;
+    scroll-snap-align: start;
+    border: 1px solid var(--color-border);
+    border-right: none;
+  }
+
+  .recently-viewed__track .product-card:last-child {
+    border-right: 1px solid var(--color-border);
+  }
+
+  @media (max-width: 1024px) {
+    .recently-viewed__track .product-card {
+      flex: 0 0 33.333%;
+    }
+
+    .recently-viewed__arrow {
+      display: none;
+    }
+  }
+
+  @media (max-width: 600px) {
+    .recently-viewed__track .product-card {
+      flex: 0 0 75%;
+    }
   }
 {% endstylesheet %}
 
-{% javascript %}
-  const STORAGE_KEY = 'saturday-recently-viewed';
-  const MAX_ITEMS = 10;
+<script>
+  (function() {
+    const STORAGE_KEY = 'saturday-recently-viewed';
+    const MAX_ITEMS = 10;
 
-  function getRecentlyViewed() {
-    try {
-      return JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
-    } catch { return []; }
-  }
-
-  function saveRecentlyViewed(items) {
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
-    } catch {}
-  }
-
-  // Track product view
-  const trackingEl = document.querySelector('[data-recently-viewed-tracking]');
-  if (trackingEl) {
-    const product = JSON.parse(trackingEl.textContent);
-    const items = getRecentlyViewed().filter(p => p.handle !== product.handle);
-    items.unshift(product);
-    saveRecentlyViewed(items.slice(0, MAX_ITEMS));
-  }
-
-  // Render recently viewed
-  const track = document.querySelector('[data-recently-viewed-track]');
-  if (track) {
-    const items = getRecentlyViewed();
-    const currentHandle = trackingEl ? JSON.parse(trackingEl.textContent).handle : null;
-    const filtered = items.filter(p => p.handle !== currentHandle);
-
-    if (filtered.length === 0) {
-      track.closest('.recently-viewed').hidden = true;
-    } else {
-      track.innerHTML = filtered.map(product => `
-        <div class="product-card">
-          <div class="product-card__info">
-            <h3 class="product-card__title">
-              <a href="${product.url}">${product.title}</a>
-            </h3>
-            <div class="product-card__price">
-              <span class="product-card__current-price">${product.price}</span>
-              ${product.compare_at_price ? `<span class="product-card__compare-price">${product.compare_at_price}</span>` : ''}
-            </div>
-          </div>
-          <div class="product-card__media">
-            ${product.tags && product.tags.includes('new') ? '<span class="product-card__badge product-card__badge--new">NEW</span>' : ''}
-            ${product.on_sale ? '<span class="product-card__badge product-card__badge--sale">SALE</span>' : ''}
-            <div class="product-card__images">
-              <div class="product-card__image-slide product-card__image-slide--active">
-                <a href="${product.url}">
-                  <img src="${product.image}" alt="${product.title}" loading="lazy" width="600">
-                </a>
-              </div>
-            </div>
-          </div>
-        </div>
-      `).join('');
+    function getHandles() {
+      try {
+        const items = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+        return items.map(item => typeof item === 'string' ? item : item.handle).filter(Boolean);
+      } catch { return []; }
     }
-  }
-{% endjavascript %}
+
+    function saveHandles(handles) {
+      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(handles)); }
+      catch {}
+    }
+
+    // Track current product
+    const trackingEl = document.querySelector('[data-recently-viewed-tracking]');
+    if (trackingEl) {
+      const handle = JSON.parse(trackingEl.textContent);
+      const handles = getHandles().filter(h => h !== handle);
+      handles.unshift(handle);
+      saveHandles(handles.slice(0, MAX_ITEMS));
+    }
+
+    // Render recently viewed cards
+    const track = document.querySelector('[data-recently-viewed-track]');
+    if (!track) return;
+
+    const handles = getHandles();
+    const currentHandle = trackingEl ? JSON.parse(trackingEl.textContent) : null;
+    const filtered = handles.filter(h => h !== currentHandle);
+    if (filtered.length === 0) return;
+
+    const section = track.closest('.recently-viewed');
+
+    Promise.all(
+      filtered.map(handle =>
+        fetch('/products/' + handle + '?section_id=product-card-render')
+          .then(function(res) { return res.ok ? res.text() : null; })
+          .catch(function() { return null; })
+      )
+    ).then(function(results) {
+      var html = results
+        .filter(Boolean)
+        .map(function(text) {
+          var match = text.match(/<product-card[\s\S]*<\/product-card>/);
+          return match ? match[0] : '';
+        })
+        .filter(Boolean)
+        .join('');
+
+      if (!html) return;
+      track.innerHTML = html;
+      section.hidden = false;
+    });
+
+    // Carousel arrows
+    section.querySelectorAll('[data-dir]').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        var card = track.querySelector('.product-card');
+        if (!card) return;
+        track.scrollBy({
+          left: btn.dataset.dir === 'next' ? card.offsetWidth : -card.offsetWidth,
+          behavior: 'smooth'
+        });
+      });
+    });
+  })();
+</script>
 
 {% schema %}
 {

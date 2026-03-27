@@ -37,12 +37,43 @@ test.describe('Recently viewed', () => {
     // Go back to homepage
     await page.goto('/');
 
+    // Cards are now fetched async via Section Rendering API — wait for section
     const section = page.locator('.recently-viewed').first();
-    // Should now be visible with the viewed product
-    const isVisible = await section.isVisible();
+    const isVisible = await section.isVisible({ timeout: 10000 }).catch(() => false);
     if (isVisible) {
-      const cards = section.locator('.product-card');
+      const cards = section.locator('product-card');
       expect(await cards.count()).toBeGreaterThan(0);
+    }
+  });
+
+  test('recently viewed cards use the shared product-card snippet', async ({ page }) => {
+    // Visit two product pages to populate recently viewed
+    await page.goto('/collections/all');
+    const productLink = page.locator('a[href*="/products/"]').first();
+    if (await productLink.count() === 0) {
+      test.skip();
+      return;
+    }
+    await productLink.click();
+    await page.waitForLoadState('domcontentloaded');
+
+    // Visit a second product page — recently-viewed should show the first product
+    const secondLink = page.locator('a[href*="/products/"]').first();
+    if (await secondLink.count() === 0) {
+      test.skip();
+      return;
+    }
+    await secondLink.click();
+    await page.waitForLoadState('domcontentloaded');
+
+    // Wait for the recently-viewed section to load
+    const section = page.locator('.recently-viewed');
+    const isVisible = await section.isVisible({ timeout: 10000 }).catch(() => false);
+    if (isVisible) {
+      // Cards should be full product-card elements with media, info, quick-add
+      const card = section.locator('product-card').first();
+      await expect(card.locator('.product-card__info')).toBeAttached();
+      await expect(card.locator('.product-card__media')).toBeAttached();
     }
   });
 });

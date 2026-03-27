@@ -141,6 +141,9 @@ GitHub Actions runs `shopify/theme-check-action@v2` on every push. Config extend
   - `sections/recently-viewed.liquid` → `e2e/recently-viewed.spec.ts`
   - `sections/collection.liquid` → `e2e/collection.spec.ts`
   - `sections/search.liquid` → `e2e/search.spec.ts`
+  - `sections/product.liquid` → `e2e/product.spec.ts`
+  - `sections/product-features.liquid` → `e2e/product-features.spec.ts`
+  - `sections/frequently-bought-together.liquid` → `e2e/frequently-bought-together.spec.ts`
   - Layout/header/footer/navigation changes → `e2e/smoke.spec.ts`
   - New sections → create a new `e2e/<section-name>.spec.ts`
 - **Verify script**: `scripts/verify.sh` runs via Stop hook — reports changed files and affected test files

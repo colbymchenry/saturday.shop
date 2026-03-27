@@ -1,0 +1,219 @@
+{% comment %}
+  Product features banner — "Built Different. Worn Proud." with quality callouts.
+  Uses school primary color for the accent line.
+{% endcomment %}
+
+{%- assign school = nil -%}
+{%- for col in product.collections -%}
+  {%- assign found_school = shop.metaobjects.school.values | where: 'slug', col.handle | first -%}
+  {%- if found_school -%}
+    {%- assign school = found_school -%}
+    {%- break -%}
+  {%- endif -%}
+{%- endfor -%}
+
+<div class="product-features full-width" {% if school %}style="--school-primary: {{ school.primary_color }};"{% endif %}>
+  <div class="product-features__inner">
+    <div class="product-features__header">
+      <h2 class="product-features__heading">
+        {{ section.settings.heading_line_1 }}
+        <span class="product-features__heading-accent">{{ section.settings.heading_line_2 }}</span>
+      </h2>
+      <p class="product-features__description">{{ section.settings.description }}</p>
+    </div>
+
+    <div class="product-features__grid">
+      {%- for block in section.blocks -%}
+        <div class="product-features__item" {{ block.shopify_attributes }}>
+          <div class="product-features__icon">
+            {%- case block.settings.icon -%}
+              {%- when 'droplet' -%}
+                <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/></svg>
+              {%- when 'weight' -%}
+                <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 7V4a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v3"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+              {%- when 'star' -%}
+                <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+              {%- when 'shield' -%}
+                <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+              {%- when 'heart' -%}
+                <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+            {%- endcase -%}
+          </div>
+          <h3 class="product-features__item-title">{{ block.settings.title }}</h3>
+          <p class="product-features__item-text">{{ block.settings.text }}</p>
+        </div>
+      {%- endfor -%}
+    </div>
+  </div>
+</div>
+
+{% stylesheet %}
+  .product-features {
+    background: var(--color-cream, #f5f5f0);
+    border-top: 1px solid var(--color-border);
+    border-bottom: 1px solid var(--color-border);
+    padding: 5rem 0;
+  }
+
+  .product-features__inner {
+    max-width: var(--page-width);
+    margin: 0 auto;
+    padding: 0 var(--page-margin);
+  }
+
+  .product-features__header {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 3rem;
+    align-items: start;
+    margin-bottom: 4rem;
+  }
+
+  .product-features__heading {
+    font-family: var(--font-heading--family);
+    font-size: clamp(2.5rem, 5vw, 3.75rem);
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: -0.02em;
+    line-height: 1.05;
+    margin: 0;
+  }
+
+  .product-features__heading-accent {
+    display: block;
+    color: var(--school-primary, var(--color-foreground));
+  }
+
+  .product-features__description {
+    font-family: var(--font-body--family);
+    font-size: 0.95rem;
+    line-height: 1.7;
+    color: var(--color-foreground);
+    opacity: 0.7;
+    margin: 0;
+    max-width: 420px;
+    margin-left: auto;
+  }
+
+  .product-features__grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2rem;
+    text-align: center;
+  }
+
+  .product-features__item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .product-features__icon {
+    width: 80px;
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1.5px solid var(--color-border);
+    border-radius: 12px;
+    color: var(--color-foreground);
+  }
+
+  .product-features__item-title {
+    font-family: var(--font-heading--family);
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin: 0;
+  }
+
+  .product-features__item-text {
+    font-family: var(--font-body--family);
+    font-size: 0.85rem;
+    color: var(--color-foreground);
+    opacity: 0.5;
+    margin: 0;
+  }
+
+  @media (max-width: 768px) {
+    .product-features {
+      padding: 3rem 0;
+    }
+
+    .product-features__header {
+      grid-template-columns: 1fr;
+      gap: 1.5rem;
+      margin-bottom: 2.5rem;
+    }
+
+    .product-features__description {
+      margin-left: 0;
+    }
+
+    .product-features__grid {
+      grid-template-columns: 1fr;
+      gap: 2rem;
+    }
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Product Features",
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading_line_1",
+      "label": "Heading line 1",
+      "default": "Built Different."
+    },
+    {
+      "type": "text",
+      "id": "heading_line_2",
+      "label": "Heading line 2 (accent color)",
+      "default": "Worn Proud."
+    },
+    {
+      "type": "textarea",
+      "id": "description",
+      "label": "Description",
+      "default": "Every Saturday Co tee is crafted with heavyweight 6.5-oz cotton jersey. Pre-washed for a broken-in feel. Designed to hold up season after season."
+    }
+  ],
+  "blocks": [
+    {
+      "type": "feature",
+      "name": "Feature",
+      "settings": [
+        {
+          "type": "select",
+          "id": "icon",
+          "label": "Icon",
+          "options": [
+            { "value": "droplet", "label": "Droplet" },
+            { "value": "weight", "label": "Weight" },
+            { "value": "star", "label": "Star" },
+            { "value": "shield", "label": "Shield" },
+            { "value": "heart", "label": "Heart" }
+          ],
+          "default": "star"
+        },
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Title",
+          "default": "Feature"
+        },
+        {
+          "type": "text",
+          "id": "text",
+          "label": "Subtitle",
+          "default": "Description"
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}
