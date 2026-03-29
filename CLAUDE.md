@@ -1,3 +1,23 @@
+<!-- cmemory:tools-start -->
+## cmemory — Persistent Project Memory
+
+You have MCP tools that persist knowledge across sessions. Use them:
+
+**search_lessons** — Call this FIRST when starting any task, debugging any bug, or touching unfamiliar code. Query with natural language: "auth token refresh", "stripe webhook handling", "database migration order". Past sessions may have already solved what you're about to work on.
+
+**save_lesson** — Call after: fixing a non-obvious bug, discovering unexpected API behavior, finding a workaround, or learning why something is built a certain way. Good lessons: bug root causes, API gotchas, file-specific patterns. Bad lessons: basic setup steps, obvious errors. Write 1-3 sentences. Tag with file paths and concepts.
+
+**reject_lesson** — Call this when search_lessons returns something wrong or outdated based on what you currently see in the code. Keeping stale lessons hurts future sessions.
+
+**update_profile** — Call this when you learn something structural about the project: the stack, how auth works, how data is stored, deployment setup, target audience. Also call when these change: new integrations, auth migrations, database changes, deployment updates. The profile helps future sessions understand this project immediately.
+<!-- cmemory:tools-end -->
+
+<!-- cmemory:profile-start -->
+<!-- cmemory:profile-end -->
+
+<!-- cmemory:lessons-start -->
+<!-- cmemory:lessons-end -->
+
 # CLAUDE.md
 
 ## Local Dev Server

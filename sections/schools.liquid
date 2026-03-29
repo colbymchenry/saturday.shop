@@ -1,0 +1,604 @@
+{%- assign schools = shop.metaobjects.school.values | sort: 'name' -%}
+{%- assign conferences = shop.metaobjects.conference.values -%}
+
+<section class="schools-page full-width">
+  <div class="schools-page__inner">
+    <h1 class="schools-page__heading">{{ section.settings.heading }}</h1>
+
+    <div class="schools-page__search">
+      <input
+        type="text"
+        placeholder="{{ section.settings.search_placeholder }}"
+        class="schools-page__search-input"
+        data-schools-search
+        autocomplete="off"
+      >
+      <button type="button" class="schools-page__search-btn" aria-label="Search">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+      </button>
+    </div>
+
+    <div class="schools-page__tabs">
+      <button type="button" class="schools-page__tab" data-tab="conference" aria-pressed="false">BY CONFERENCE</button>
+      <button type="button" class="schools-page__tab schools-page__tab--active" data-tab="all" aria-pressed="true">ALL SCHOOLS</button>
+    </div>
+
+    {%- comment -%} Conference View {%- endcomment -%}
+    <div class="schools-page__view" data-view="conference" hidden>
+      <div class="schools-page__conferences">
+        {%- for conference in conferences -%}
+          {%- assign conf_live_count = 0 -%}
+          {%- for school in schools -%}
+            {%- if school.conference.value -%}
+              {%- assign school_conf_name = school.conference.value.name -%}
+              {%- assign conf_name = conference.name.value -%}
+              {%- if school_conf_name == conf_name -%}
+                {%- assign school_col = collections[school.slug] -%}
+                {%- if school_col != blank and school_col.all_products_count > 0 -%}
+                  {%- assign conf_live_count = conf_live_count | plus: 1 -%}
+                {%- endif -%}
+              {%- endif -%}
+            {%- endif -%}
+          {%- endfor -%}
+          <a href="{{ routes.collections_url }}/{{ conference.slug.value }}" class="schools-page__conference-card">
+            <div class="schools-page__conference-circle">
+              {%- if conference.logo.value -%}
+                {{ conference.logo.value | image_url: width: 128 | image_tag: loading: 'lazy' }}
+              {%- else -%}
+                <span>{{ conference.abbreviation.value }}</span>
+              {%- endif -%}
+            </div>
+            <h3 class="schools-page__conference-name">{{ conference.name.value }}</h3>
+            {%- if conf_live_count > 0 -%}
+              <span class="schools-page__conference-count">
+                {{ conf_live_count }} {% if conf_live_count == 1 %}SCHOOL{% else %}SCHOOLS{% endif %} LIVE
+              </span>
+            {%- endif -%}
+          </a>
+        {%- endfor -%}
+      </div>
+    </div>
+
+    {%- comment -%} All Schools View {%- endcomment -%}
+    <div class="schools-page__view" data-view="all">
+      <div class="schools-page__grid">
+        {%- for school in schools -%}
+          {%- assign school_collection = collections[school.slug] -%}
+          {%- assign is_live = false -%}
+          {%- if school_collection != blank and school_collection.all_products_count > 0 -%}
+            {%- assign is_live = true -%}
+          {%- endif -%}
+          <a href="{{ routes.collections_url }}/{{ school.slug }}" class="schools-page__school{% unless is_live %} schools-page__school--soon{% endunless %}" data-school-name="{{ school.name | downcase }}">
+            {%- if school.logo -%}
+              {{ school.logo | image_url: width: 24 | image_tag: class: 'schools-page__school-logo', loading: 'lazy' }}
+            {%- else -%}
+              <span class="schools-page__school-dot" style="background-color: {{ school.primary_color }};"></span>
+            {%- endif -%}
+            <span class="schools-page__school-name">{{ school.name }}</span>
+            {%- unless is_live -%}
+              <span class="schools-page__school-badge">SOON</span>
+            {%- endunless -%}
+          </a>
+        {%- endfor -%}
+      </div>
+      <p class="schools-page__no-results" hidden data-schools-no-results>
+        No schools found matching your search.
+      </p>
+    </div>
+
+    <div class="schools-page__footer">
+      <p>Can't find your school? <a href="/pages/contact">Let us know &rarr;</a></p>
+    </div>
+  </div>
+</section>
+
+{% style %}
+  #shopify-section-{{ section.id }} {
+    background-color: var(--color-cream);
+    flex: 1;
+  }
+
+  main:has(#shopify-section-{{ section.id }}) {
+    background-color: var(--color-cream);
+  }
+
+  #shopify-section-{{ section.id }} .schools-page__conference-card,
+  #shopify-section-{{ section.id }} .schools-page__school {
+    opacity: 0;
+  }
+{% endstyle %}
+
+{% stylesheet %}
+  .schools-page {
+    background-color: var(--color-cream);
+    padding: clamp(48px, 8vw, 96px) var(--page-margin);
+  }
+
+  .schools-page__inner {
+    max-width: var(--page-width);
+    margin: 0 auto;
+  }
+
+  .schools-page__heading {
+    font-family: var(--font-heading--family);
+    font-size: clamp(2rem, 5vw, 3.5rem);
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    text-align: center;
+    color: var(--color-foreground);
+    margin: 0 0 32px;
+    line-height: 1.1;
+  }
+
+  /* Search */
+  .schools-page__search {
+    display: flex;
+    max-width: 540px;
+    margin: 0 auto 28px;
+    border: 1.5px solid var(--color-border);
+    background: var(--color-background);
+    overflow: hidden;
+  }
+
+  .schools-page__search-input {
+    flex: 1;
+    border: none;
+    background: transparent;
+    padding: 14px 20px;
+    font-family: var(--font-body--family);
+    font-size: 0.95rem;
+    color: var(--color-foreground);
+    outline: none;
+    min-width: 0;
+  }
+
+  .schools-page__search-input::placeholder {
+    color: var(--color-foreground);
+    opacity: 0.4;
+  }
+
+  .schools-page__search-btn {
+    flex-shrink: 0;
+    width: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--color-foreground);
+    color: var(--color-background);
+    border: none;
+    cursor: pointer;
+    transition: opacity 0.2s ease;
+  }
+
+  .schools-page__search-btn:hover {
+    opacity: 0.85;
+  }
+
+  /* Tabs */
+  .schools-page__tabs {
+    display: flex;
+    max-width: 420px;
+    margin: 0 auto 40px;
+    border: 1.5px solid var(--color-foreground);
+  }
+
+  .schools-page__tab {
+    flex: 1;
+    padding: 12px 24px;
+    border: none;
+    background: transparent;
+    font-family: var(--font-heading--family);
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--color-foreground);
+    cursor: pointer;
+    transition: background-color 0.2s ease, color 0.2s ease;
+  }
+
+  .schools-page__tab--active {
+    background: var(--color-foreground);
+    color: var(--color-background);
+  }
+
+  /* Conference View */
+  .schools-page__conferences {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+  }
+
+  .schools-page__conference-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    padding: 32px 16px 28px;
+    background: var(--color-background);
+    border: 1px solid var(--color-border);
+    text-decoration: none;
+    color: var(--color-foreground);
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    opacity: 0;
+    transform: translateX(20px);
+  }
+
+  .schools-page__conference-card.is-revealed {
+    animation: schools-enter 0.7s cubic-bezier(0.25, 0.1, 0.25, 1) forwards;
+    animation-delay: var(--reveal-delay, 0ms);
+  }
+
+  .schools-page__conference-card:hover {
+    border-color: var(--color-foreground);
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+  }
+
+  .schools-page__conference-circle {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background-color: var(--color-foreground);
+    color: var(--color-background);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-heading--family);
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    overflow: hidden;
+  }
+
+  .schools-page__conference-circle img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .schools-page__conference-name {
+    font-family: var(--font-heading--family);
+    font-size: 0.85rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    text-align: center;
+    margin: 0;
+  }
+
+  .schools-page__conference-count {
+    font-family: var(--font-heading--family);
+    font-size: 0.65rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--color-accent-gold);
+  }
+
+  /* All Schools Grid */
+  .schools-page__grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0;
+  }
+
+  .schools-page__school {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 16px;
+    text-decoration: none;
+    color: var(--color-foreground);
+    font-family: var(--font-body--family);
+    font-size: 0.9rem;
+    font-weight: 600;
+    transition: opacity 0.15s ease;
+    opacity: 0;
+    transform: translateX(16px);
+  }
+
+  .schools-page__school.is-revealed {
+    animation: schools-enter 0.6s cubic-bezier(0.25, 0.1, 0.25, 1) forwards;
+    animation-delay: var(--reveal-delay, 0ms);
+  }
+
+  .schools-page__school:hover {
+    opacity: 0.7;
+  }
+
+  .schools-page__school--soon {
+    opacity: 0.5;
+    font-weight: 400;
+  }
+
+  .schools-page__school--soon:hover {
+    opacity: 0.4;
+  }
+
+  .schools-page__school-logo {
+    width: 20px;
+    height: 20px;
+    object-fit: contain;
+    flex-shrink: 0;
+  }
+
+  .schools-page__school-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .schools-page__school-name {
+    flex: 1;
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .schools-page__school-badge {
+    flex-shrink: 0;
+    font-family: var(--font-heading--family);
+    font-size: 0.6rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--color-muted);
+  }
+
+  .schools-page__school[hidden] {
+    display: none;
+  }
+
+  .schools-page__no-results {
+    text-align: center;
+    padding: 48px 0;
+    font-family: var(--font-body--family);
+    font-size: 0.95rem;
+    color: var(--color-foreground);
+    opacity: 0.5;
+    margin: 0;
+  }
+
+  .schools-page__no-results[hidden] {
+    display: none;
+  }
+
+  /* Footer */
+  .schools-page__footer {
+    text-align: center;
+    margin-top: 48px;
+    padding-top: 32px;
+    border-top: 1px solid var(--color-border);
+  }
+
+  .schools-page__footer p {
+    font-family: var(--font-body--family);
+    font-size: 0.9rem;
+    color: var(--color-foreground);
+    opacity: 0.6;
+    margin: 0;
+  }
+
+  .schools-page__footer a {
+    color: var(--color-foreground);
+    text-decoration: underline;
+    transition: opacity 0.15s ease;
+  }
+
+  .schools-page__footer a:hover {
+    opacity: 0.7;
+  }
+
+  @media (max-width: 768px) {
+    .schools-page__conferences {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    .schools-page__grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    .schools-page__conference-card {
+      padding: 24px 12px 20px;
+    }
+
+    .schools-page__tabs {
+      max-width: 100%;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .schools-page__grid {
+      grid-template-columns: 1fr;
+    }
+
+    .schools-page__conferences {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  /* Entrance animations */
+  @keyframes schools-enter {
+    from {
+      opacity: 0;
+      transform: translateX(16px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  /* Soon schools animate to their dimmed opacity */
+  .schools-page__school--soon.is-revealed {
+    animation-name: schools-enter-soon;
+  }
+
+  @keyframes schools-enter-soon {
+    from {
+      opacity: 0;
+      transform: translateX(16px);
+    }
+    to {
+      opacity: 0.5;
+      transform: translateX(0);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .schools-page__conference-card {
+      opacity: 1;
+      transform: none;
+    }
+
+    .schools-page__school {
+      opacity: 1;
+      transform: none;
+    }
+
+    .schools-page__school--soon {
+      opacity: 0.5;
+    }
+
+    .schools-page__conference-card.is-revealed,
+    .schools-page__school.is-revealed,
+    .schools-page__school--soon.is-revealed {
+      animation: none;
+    }
+  }
+{% endstylesheet %}
+
+<script>
+  (function() {
+    var section = document.querySelector('.schools-page');
+    if (!section) return;
+
+    var tabs = section.querySelectorAll('[data-tab]');
+    var views = section.querySelectorAll('[data-view]');
+    var searchInput = section.querySelector('[data-schools-search]');
+    var schoolItems = section.querySelectorAll('.schools-page__school');
+    var noResults = section.querySelector('[data-schools-no-results]');
+
+    // Entrance animations
+    var prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    function revealItems(container, selector, staggerMs) {
+      if (prefersReduced) return;
+      var items = container.querySelectorAll(selector);
+      items.forEach(function(el) { el.classList.remove('is-revealed'); });
+      // Force reflow so re-adding the class restarts animation
+      void container.offsetHeight;
+
+      var observer = new IntersectionObserver(function(entries, obs) {
+        entries.forEach(function(entry) {
+          if (!entry.isIntersecting) return;
+          var el = entry.target;
+          var idx = Array.prototype.indexOf.call(items, el);
+          el.style.setProperty('--reveal-delay', (idx * staggerMs) + 'ms');
+          el.classList.add('is-revealed');
+          obs.unobserve(el);
+        });
+      }, { threshold: 0.1 });
+
+      items.forEach(function(el) { observer.observe(el); });
+      return observer;
+    }
+
+    // Initial reveal for the default visible view (all schools)
+    var schoolsObserver = revealItems(section, '.schools-page__school', 50);
+
+    // Tab switching
+    tabs.forEach(function(tab) {
+      tab.addEventListener('click', function() {
+        var target = tab.getAttribute('data-tab');
+
+        tabs.forEach(function(t) {
+          t.classList.remove('schools-page__tab--active');
+          t.setAttribute('aria-pressed', 'false');
+        });
+        tab.classList.add('schools-page__tab--active');
+        tab.setAttribute('aria-pressed', 'true');
+
+        views.forEach(function(v) {
+          v.hidden = v.getAttribute('data-view') !== target;
+        });
+
+        // Clear search when switching tabs
+        if (searchInput.value) {
+          searchInput.value = '';
+          filterSchools('');
+        }
+
+        // Re-trigger animations for the newly visible view
+        if (target === 'conference') {
+          revealItems(section, '.schools-page__conference-card', 70);
+        } else {
+          revealItems(section, '.schools-page__school', 50);
+        }
+      });
+    });
+
+    // Search filtering
+    function filterSchools(query) {
+      var q = query.toLowerCase().trim();
+      var visibleCount = 0;
+
+      schoolItems.forEach(function(item) {
+        var name = item.getAttribute('data-school-name') || '';
+        var match = !q || name.indexOf(q) !== -1;
+        item.hidden = !match;
+        if (match) visibleCount++;
+      });
+
+      if (noResults) {
+        noResults.hidden = visibleCount > 0 || !q;
+      }
+    }
+
+    searchInput.addEventListener('input', function() {
+      // Switch to all schools view when searching
+      var allTab = section.querySelector('[data-tab="all"]');
+      var allView = section.querySelector('[data-view="all"]');
+      var confView = section.querySelector('[data-view="conference"]');
+
+      if (confView && !confView.hidden && searchInput.value) {
+        tabs.forEach(function(t) {
+          t.classList.remove('schools-page__tab--active');
+          t.setAttribute('aria-pressed', 'false');
+        });
+        allTab.classList.add('schools-page__tab--active');
+        allTab.setAttribute('aria-pressed', 'true');
+        confView.hidden = true;
+        allView.hidden = false;
+      }
+
+      filterSchools(searchInput.value);
+    });
+  })();
+</script>
+
+{% schema %}
+{
+  "name": "t:general.schools",
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "t:labels.heading",
+      "default": "Find Your School"
+    },
+    {
+      "type": "text",
+      "id": "search_placeholder",
+      "label": "t:labels.search_placeholder",
+      "default": "Search by school name or nickname..."
+    }
+  ],
+  "presets": [
+    {
+      "name": "t:general.schools"
+    }
+  ]
+}
+{% endschema %}
