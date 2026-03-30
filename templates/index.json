@@ -52,6 +52,7 @@
     "hero-banner": {
       "type": "hero-banner",
       "settings": {
+        "image": "shopify://shop_images/SatCo-Western-1.png",
         "subheading": "IT'S SATURDAY, Y'ALL.",
         "heading_bold": "WESTERN",
         "heading_script": "Collection",
