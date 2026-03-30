@@ -3,7 +3,20 @@
 
 <section class="schools-page full-width">
   <div class="schools-page__inner">
-    <h1 class="schools-page__heading">{{ section.settings.heading }}</h1>
+
+    {%- comment -%} Default header (shown on main views) {%- endcomment -%}
+    <div data-default-header>
+      <h1 class="schools-page__heading">{{ section.settings.heading }}</h1>
+    </div>
+
+    {%- comment -%} Conference detail header (shown when a conference is selected) {%- endcomment -%}
+    <div class="schools-page__conf-header" data-conf-header hidden>
+      <button type="button" class="schools-page__back" data-back-btn>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg>
+        All Conferences
+      </button>
+      <h2 class="schools-page__heading" data-conf-title></h2>
+    </div>
 
     <div class="schools-page__search">
       <input
@@ -18,7 +31,7 @@
       </button>
     </div>
 
-    <div class="schools-page__tabs">
+    <div class="schools-page__tabs" data-tabs>
       <button type="button" class="schools-page__tab" data-tab="conference" aria-pressed="false">BY CONFERENCE</button>
       <button type="button" class="schools-page__tab schools-page__tab--active" data-tab="all" aria-pressed="true">ALL SCHOOLS</button>
     </div>
@@ -40,7 +53,7 @@
               {%- endif -%}
             {%- endif -%}
           {%- endfor -%}
-          <a href="{{ routes.collections_url }}/{{ conference.slug.value }}" class="schools-page__conference-card">
+          <button type="button" class="schools-page__conference-card" data-conf-select="{{ conference.name.value }}">
             <div class="schools-page__conference-circle">
               {%- if conference.logo.value -%}
                 {{ conference.logo.value | image_url: width: 128 | image_tag: loading: 'lazy' }}
@@ -54,12 +67,12 @@
                 {{ conf_live_count }} {% if conf_live_count == 1 %}SCHOOL{% else %}SCHOOLS{% endif %} LIVE
               </span>
             {%- endif -%}
-          </a>
+          </button>
         {%- endfor -%}
       </div>
     </div>
 
-    {%- comment -%} All Schools View {%- endcomment -%}
+    {%- comment -%} All Schools / Conference Detail View {%- endcomment -%}
     <div class="schools-page__view" data-view="all">
       <div class="schools-page__grid">
         {%- for school in schools -%}
@@ -68,7 +81,10 @@
           {%- if school_collection != blank and school_collection.all_products_count > 0 -%}
             {%- assign is_live = true -%}
           {%- endif -%}
-          <a href="{{ routes.collections_url }}/{{ school.slug }}" class="schools-page__school{% unless is_live %} schools-page__school--soon{% endunless %}" data-school-name="{{ school.name | downcase }}">
+          <a href="{{ routes.collections_url }}/{{ school.slug }}"
+             class="schools-page__school{% unless is_live %} schools-page__school--soon{% endunless %}"
+             data-school-name="{{ school.name | downcase }}"
+             data-school-conference="{{ school.conference.value.name | default: '' }}">
             {%- if school.logo -%}
               {{ school.logo | image_url: width: 24 | image_tag: class: 'schools-page__school-logo', loading: 'lazy' }}
             {%- else -%}
@@ -130,6 +146,31 @@
     line-height: 1.1;
   }
 
+  /* Conference detail header */
+  .schools-page__conf-header[hidden] {
+    display: none;
+  }
+
+  .schools-page__back {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: none;
+    border: none;
+    padding: 0;
+    font-family: var(--font-body--family);
+    font-size: 0.85rem;
+    color: var(--color-foreground);
+    opacity: 0.6;
+    cursor: pointer;
+    transition: opacity 0.15s ease;
+    margin-bottom: 24px;
+  }
+
+  .schools-page__back:hover {
+    opacity: 1;
+  }
+
   /* Search */
   .schools-page__search {
     display: flex;
@@ -182,6 +223,10 @@
     border: 1.5px solid var(--color-foreground);
   }
 
+  .schools-page__tabs[hidden] {
+    display: none;
+  }
+
   .schools-page__tab {
     flex: 1;
     padding: 12px 24px;
@@ -219,6 +264,7 @@
     border: 1px solid var(--color-border);
     text-decoration: none;
     color: var(--color-foreground);
+    cursor: pointer;
     transition: border-color 0.2s ease, box-shadow 0.2s ease;
     opacity: 0;
     transform: translateX(20px);
@@ -430,7 +476,6 @@
     }
   }
 
-  /* Soon schools animate to their dimmed opacity */
   .schools-page__school--soon.is-revealed {
     animation-name: schools-enter-soon;
   }
@@ -475,19 +520,24 @@
     if (!section) return;
 
     var tabs = section.querySelectorAll('[data-tab]');
+    var tabsContainer = section.querySelector('[data-tabs]');
     var views = section.querySelectorAll('[data-view]');
     var searchInput = section.querySelector('[data-schools-search]');
     var schoolItems = section.querySelectorAll('.schools-page__school');
     var noResults = section.querySelector('[data-schools-no-results]');
+    var defaultHeader = section.querySelector('[data-default-header]');
+    var confHeader = section.querySelector('[data-conf-header]');
+    var confTitle = section.querySelector('[data-conf-title]');
+    var backBtn = section.querySelector('[data-back-btn]');
+    var activeConference = null;
 
     // Entrance animations
     var prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
     function revealItems(container, selector, staggerMs) {
       if (prefersReduced) return;
-      var items = container.querySelectorAll(selector);
+      var items = container.querySelectorAll(selector + ':not([hidden])');
       items.forEach(function(el) { el.classList.remove('is-revealed'); });
-      // Force reflow so re-adding the class restarts animation
       void container.offsetHeight;
 
       var observer = new IntersectionObserver(function(entries, obs) {
@@ -506,7 +556,78 @@
     }
 
     // Initial reveal for the default visible view (all schools)
-    var schoolsObserver = revealItems(section, '.schools-page__school', 50);
+    revealItems(section, '.schools-page__school', 50);
+
+    // Filter schools by conference and/or search query
+    function filterSchools() {
+      var q = (searchInput.value || '').toLowerCase().trim();
+      var visibleCount = 0;
+
+      schoolItems.forEach(function(item) {
+        var name = item.getAttribute('data-school-name') || '';
+        var conf = item.getAttribute('data-school-conference') || '';
+        var matchSearch = !q || name.indexOf(q) !== -1;
+        var matchConf = !activeConference || conf === activeConference;
+        var show = matchSearch && matchConf;
+        item.hidden = !show;
+        if (show) visibleCount++;
+      });
+
+      if (noResults) {
+        noResults.hidden = visibleCount > 0 || (!q && !activeConference);
+      }
+    }
+
+    // Enter conference detail view
+    function showConference(confName) {
+      activeConference = confName;
+      defaultHeader.hidden = true;
+      confHeader.hidden = false;
+      confTitle.textContent = confName;
+      tabsContainer.hidden = true;
+
+      // Show the all-schools grid, hide conference grid
+      views.forEach(function(v) {
+        v.hidden = v.getAttribute('data-view') !== 'all';
+      });
+
+      searchInput.value = '';
+      filterSchools();
+      revealItems(section, '.schools-page__school', 50);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // Exit conference detail view
+    function showAllConferences() {
+      activeConference = null;
+      defaultHeader.hidden = false;
+      confHeader.hidden = true;
+      tabsContainer.hidden = false;
+
+      // Restore the conference tab as active
+      tabs.forEach(function(t) {
+        var isConf = t.getAttribute('data-tab') === 'conference';
+        t.classList.toggle('schools-page__tab--active', isConf);
+        t.setAttribute('aria-pressed', isConf ? 'true' : 'false');
+      });
+      views.forEach(function(v) {
+        v.hidden = v.getAttribute('data-view') !== 'conference';
+      });
+
+      searchInput.value = '';
+      filterSchools();
+      revealItems(section, '.schools-page__conference-card', 70);
+    }
+
+    // Conference card clicks
+    section.querySelectorAll('[data-conf-select]').forEach(function(card) {
+      card.addEventListener('click', function() {
+        showConference(card.getAttribute('data-conf-select'));
+      });
+    });
+
+    // Back button
+    backBtn.addEventListener('click', showAllConferences);
 
     // Tab switching
     tabs.forEach(function(tab) {
@@ -524,13 +645,10 @@
           v.hidden = v.getAttribute('data-view') !== target;
         });
 
-        // Clear search when switching tabs
-        if (searchInput.value) {
-          searchInput.value = '';
-          filterSchools('');
-        }
+        searchInput.value = '';
+        activeConference = null;
+        filterSchools();
 
-        // Re-trigger animations for the newly visible view
         if (target === 'conference') {
           revealItems(section, '.schools-page__conference-card', 70);
         } else {
@@ -539,41 +657,23 @@
       });
     });
 
-    // Search filtering
-    function filterSchools(query) {
-      var q = query.toLowerCase().trim();
-      var visibleCount = 0;
-
-      schoolItems.forEach(function(item) {
-        var name = item.getAttribute('data-school-name') || '';
-        var match = !q || name.indexOf(q) !== -1;
-        item.hidden = !match;
-        if (match) visibleCount++;
-      });
-
-      if (noResults) {
-        noResults.hidden = visibleCount > 0 || !q;
-      }
-    }
-
+    // Search input
     searchInput.addEventListener('input', function() {
-      // Switch to all schools view when searching
-      var allTab = section.querySelector('[data-tab="all"]');
-      var allView = section.querySelector('[data-view="all"]');
+      // If on conference grid view and typing, switch to all schools
       var confView = section.querySelector('[data-view="conference"]');
-
       if (confView && !confView.hidden && searchInput.value) {
         tabs.forEach(function(t) {
           t.classList.remove('schools-page__tab--active');
           t.setAttribute('aria-pressed', 'false');
         });
+        var allTab = section.querySelector('[data-tab="all"]');
         allTab.classList.add('schools-page__tab--active');
         allTab.setAttribute('aria-pressed', 'true');
         confView.hidden = true;
-        allView.hidden = false;
+        section.querySelector('[data-view="all"]').hidden = false;
       }
 
-      filterSchools(searchInput.value);
+      filterSchools();
     });
   })();
 </script>
