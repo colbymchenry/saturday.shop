@@ -3,18 +3,51 @@
     <h2 class="conference-nav__heading">{{ section.settings.heading }}</h2>
   {% endif %}
 
-  <div class="conference-nav__list">
-    {% for conference in shop.metaobjects.conference.values %}
-      <a href="/pages/schools#conference={{ conference.name.value | url_encode }}" class="conference-nav__item">
-        <div class="conference-nav__circle">
-          {% if conference.logo.value %}
-            {{ conference.logo.value | image_url: width: 128 | image_tag: loading: 'lazy' }}
-          {% else %}
-            <span>{{ conference.abbreviation.value }}</span>
+  {% assign live_conferences = '' %}
+  {% for school in shop.metaobjects.school.values %}
+    {% assign school_conf = school.conference.value %}
+    {% if school_conf %}
+      {% assign school_col = collections[school.slug] %}
+      {% if school_col != blank and school_col.all_products_count > 0 %}
+        {% assign conf_handle = school_conf.system.handle %}
+        {% assign delimited_list = ',' | append: live_conferences | append: ',' %}
+        {% assign delimited_handle = ',' | append: conf_handle | append: ',' %}
+        {% unless delimited_list contains delimited_handle %}
+          {% if live_conferences != '' %}
+            {% assign live_conferences = live_conferences | append: ',' %}
           {% endif %}
-        </div>
-        <span class="conference-nav__name">{{ conference.name.value }}</span>
-      </a>
+          {% assign live_conferences = live_conferences | append: conf_handle %}
+        {% endunless %}
+      {% endif %}
+    {% endif %}
+  {% endfor %}
+
+  <div class="conference-nav__list">
+    {% assign conference_order = 'sec,acc,mountain-west,big-ten,big-12,american,socon,big-east,pac-12,mid-american,sun-belt,a-10,c-usa,missouri-valley' | split: ',' %}
+    {% for handle in conference_order %}
+      {% assign conference = shop.metaobjects.conference[handle] %}
+      {% if conference %}
+        {% assign delimited_list = ',' | append: live_conferences | append: ',' %}
+        {% assign delimited_handle = ',' | append: handle | append: ',' %}
+        {% assign has_schools = false %}
+        {% if delimited_list contains delimited_handle %}
+          {% assign has_schools = true %}
+        {% endif %}
+
+        <a href="/pages/schools#conference={{ conference.name.value | url_encode | replace: '+', '%20' }}" class="conference-nav__item{% unless has_schools %} conference-nav__item--coming-soon{% endunless %}">
+          <div class="conference-nav__circle">
+            {% if conference.logo.value %}
+              {{ conference.logo.value | image_url: width: 128 | image_tag: loading: 'lazy' }}
+            {% else %}
+              <span>{{ conference.abbreviation.value }}</span>
+            {% endif %}
+            {% unless has_schools %}
+              <span class="conference-nav__coming-soon">COMING<br>SOON</span>
+            {% endunless %}
+          </div>
+          <span class="conference-nav__name">{{ conference.name.value }}</span>
+        </a>
+      {% endif %}
     {% endfor %}
   </div>
 </section>
@@ -59,6 +92,7 @@
   }
 
   .conference-nav__circle {
+    position: relative;
     width: 64px;
     height: 64px;
     border-radius: 50%;
@@ -79,6 +113,32 @@
     width: 100%;
     height: 100%;
     object-fit: cover;
+  }
+
+  .conference-nav__item--coming-soon {
+    pointer-events: none;
+  }
+
+  .conference-nav__item--coming-soon .conference-nav__circle img,
+  .conference-nav__item--coming-soon .conference-nav__circle > span:not(.conference-nav__coming-soon) {
+    opacity: 0.15;
+  }
+
+  .conference-nav__coming-soon {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-heading--family);
+    font-size: 0.45rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    line-height: 1.3;
+    text-align: center;
+    color: var(--color-foreground);
   }
 
   .conference-nav__item:hover .conference-nav__circle {

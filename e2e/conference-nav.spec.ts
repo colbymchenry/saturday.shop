@@ -56,4 +56,37 @@ test.describe('Conference nav', () => {
     const overflowX = await list.evaluate(el => getComputedStyle(el).overflowX);
     expect(overflowX).toBe('auto');
   });
+
+  test('coming soon conferences have reduced opacity and label', async ({ page }) => {
+    const comingSoon = page.locator('.conference-nav__item--coming-soon');
+    if (await comingSoon.count() === 0) {
+      test.skip();
+      return;
+    }
+
+    const first = comingSoon.first();
+    const img = first.locator('.conference-nav__circle img');
+    if (await img.count() > 0) {
+      const imgOpacity = await img.evaluate(el => getComputedStyle(el).opacity);
+      expect(parseFloat(imgOpacity)).toBeLessThan(1);
+    }
+
+    const label = first.locator('.conference-nav__coming-soon');
+    await expect(label).toBeVisible();
+    await expect(label).toContainText('COMING');
+    await expect(label).toContainText('SOON');
+  });
+
+  test('active conferences do not have coming soon styling', async ({ page }) => {
+    const active = page.locator('.conference-nav__item:not(.conference-nav__item--coming-soon)');
+    if (await active.count() === 0) {
+      test.skip();
+      return;
+    }
+
+    const first = active.first();
+    const opacity = await first.evaluate(el => getComputedStyle(el).opacity);
+    expect(parseFloat(opacity)).toBe(1);
+    await expect(first.locator('.conference-nav__coming-soon')).toHaveCount(0);
+  });
 });
