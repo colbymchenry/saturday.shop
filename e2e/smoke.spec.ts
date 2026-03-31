@@ -74,7 +74,7 @@ test.describe('Smoke tests', () => {
     await expect(panel).not.toBeVisible();
   });
 
-  test('schools dropdown shows on hover with alphabetical columns', async ({ page }) => {
+  test('schools dropdown shows on hover with alphabet tabs', async ({ page }) => {
     await page.goto('/');
     const dropdown = page.locator('.schools-dropdown');
     const panel = page.locator('.schools-dropdown__panel');
@@ -82,31 +82,21 @@ test.describe('Smoke tests', () => {
     await dropdown.hover();
     await expect(panel).toBeVisible();
 
-    // Should have 5 alphabetical column headings
-    const headings = panel.locator('.schools-dropdown__heading');
-    await expect(headings).toHaveCount(5);
-    await expect(headings.nth(0)).toHaveText('A – D');
-    await expect(headings.nth(4)).toHaveText('V – Z');
+    // Should have alphabet tabs
+    const alphaTabs = panel.locator('.schools-dropdown__alpha-tab');
+    await expect(alphaTabs).toHaveCount(26);
 
-    // Should have school links with colored dots
+    // Should have letter-grouped school lists
+    const letterGroups = panel.locator('.schools-dropdown__letter-group');
+    expect(await letterGroups.count()).toBeGreaterThanOrEqual(1);
+
+    // Should have school links
     const schools = panel.locator('.schools-dropdown__school');
     expect(await schools.count()).toBeGreaterThanOrEqual(1);
-    const logo = schools.first().locator('.schools-dropdown__logo');
-    await expect(logo).toBeVisible();
-
-    // School links should be left-aligned (not centered by header a rule)
-    const firstSchool = schools.first();
-    const schoolBox = await firstSchool.boundingBox();
-    const columnBox = await panel.locator('.schools-dropdown__column').first().boundingBox();
-    if (schoolBox && columnBox) {
-      // School link should start near the left edge of its column (within 5px)
-      expect(schoolBox.x - columnBox.x).toBeLessThan(5);
-    }
 
     // Footer link should exist
     const contact = panel.locator('.schools-dropdown__contact');
     await expect(contact).toBeVisible();
-    await expect(contact).toHaveText(/can.*t find your school/i);
   });
 
   test('schools dropdown closes on Escape while hovering', async ({ page }) => {

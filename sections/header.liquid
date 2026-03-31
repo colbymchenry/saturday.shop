@@ -1,8 +1,8 @@
-<header>
+<header class="full-width">
   <div class="header__logo">
     {% if section.settings.logo %}
       <a href="{{ routes.root_url }}">
-        {{ section.settings.logo | image_url: height: 50 | image_tag: class: 'header__logo-image' }}
+        {{ section.settings.logo | image_url: height: 80 | image_tag: class: 'header__logo-image' }}
       </a>
     {% else %}
       <a href="{{ routes.root_url }}" class="header__title">{{ shop.name }}</a>
@@ -15,91 +15,49 @@
         Schools
       </button>
       <div class="schools-dropdown__panel">
-        <div class="schools-dropdown__columns">
-          {%- assign schools = shop.metaobjects.school.values | sort: 'name' -%}
+        {%- assign schools = shop.metaobjects.school.values | sort: 'name' -%}
+        {%- assign alphabet = 'A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z' | split: ',' -%}
 
-          <div class="schools-dropdown__column">
-            <h3 class="schools-dropdown__heading">A – D</h3>
+        <div class="schools-dropdown__alpha-tabs" data-alpha-tabs>
+          {%- for letter in alphabet -%}
+            {%- assign has_schools = false -%}
             {%- for school in schools -%}
-              {%- assign first_char = school.name | slice: 0 | downcase -%}
-              {%- if first_char >= 'a' and first_char <= 'd' -%}
-                {%- assign school_collection = collections[school.slug] -%}
-                <a href="{{ routes.collections_url }}/{{ school.slug }}" class="schools-dropdown__school{% if school_collection == blank or school_collection.all_products_count == 0 %} schools-dropdown__school--coming-soon{% endif %}">
-                  {%- if school.logo -%}
-                    {{ school.logo | image_url: width: 20 | image_tag: class: 'schools-dropdown__logo', loading: 'lazy' }}
-                  {%- endif -%}
-                  {{ school.name }}
-                </a>
+              {%- assign first = school.name | slice: 0 | upcase -%}
+              {%- if first == letter -%}
+                {%- assign has_schools = true -%}
+                {%- break -%}
               {%- endif -%}
             {%- endfor -%}
-          </div>
-
-          <div class="schools-dropdown__column">
-            <h3 class="schools-dropdown__heading">E – K</h3>
-            {%- for school in schools -%}
-              {%- assign first_char = school.name | slice: 0 | downcase -%}
-              {%- if first_char >= 'e' and first_char <= 'k' -%}
-                {%- assign school_collection = collections[school.slug] -%}
-                <a href="{{ routes.collections_url }}/{{ school.slug }}" class="schools-dropdown__school{% if school_collection == blank or school_collection.all_products_count == 0 %} schools-dropdown__school--coming-soon{% endif %}">
-                  {%- if school.logo -%}
-                    {{ school.logo | image_url: width: 20 | image_tag: class: 'schools-dropdown__logo', loading: 'lazy' }}
-                  {%- endif -%}
-                  {{ school.name }}
-                </a>
-              {%- endif -%}
-            {%- endfor -%}
-          </div>
-
-          <div class="schools-dropdown__column">
-            <h3 class="schools-dropdown__heading">L – O</h3>
-            {%- for school in schools -%}
-              {%- assign first_char = school.name | slice: 0 | downcase -%}
-              {%- if first_char >= 'l' and first_char <= 'o' -%}
-                {%- assign school_collection = collections[school.slug] -%}
-                <a href="{{ routes.collections_url }}/{{ school.slug }}" class="schools-dropdown__school{% if school_collection == blank or school_collection.all_products_count == 0 %} schools-dropdown__school--coming-soon{% endif %}">
-                  {%- if school.logo -%}
-                    {{ school.logo | image_url: width: 20 | image_tag: class: 'schools-dropdown__logo', loading: 'lazy' }}
-                  {%- endif -%}
-                  {{ school.name }}
-                </a>
-              {%- endif -%}
-            {%- endfor -%}
-          </div>
-
-          <div class="schools-dropdown__column">
-            <h3 class="schools-dropdown__heading">P – U</h3>
-            {%- for school in schools -%}
-              {%- assign first_char = school.name | slice: 0 | downcase -%}
-              {%- if first_char >= 'p' and first_char <= 'u' -%}
-                {%- assign school_collection = collections[school.slug] -%}
-                <a href="{{ routes.collections_url }}/{{ school.slug }}" class="schools-dropdown__school{% if school_collection == blank or school_collection.all_products_count == 0 %} schools-dropdown__school--coming-soon{% endif %}">
-                  {%- if school.logo -%}
-                    {{ school.logo | image_url: width: 20 | image_tag: class: 'schools-dropdown__logo', loading: 'lazy' }}
-                  {%- endif -%}
-                  {{ school.name }}
-                </a>
-              {%- endif -%}
-            {%- endfor -%}
-          </div>
-
-          <div class="schools-dropdown__column">
-            <h3 class="schools-dropdown__heading">V – Z</h3>
-            {%- for school in schools -%}
-              {%- assign first_char = school.name | slice: 0 | downcase -%}
-              {%- if first_char >= 'v' and first_char <= 'z' -%}
-                {%- assign school_collection = collections[school.slug] -%}
-                <a href="{{ routes.collections_url }}/{{ school.slug }}" class="schools-dropdown__school{% if school_collection == blank or school_collection.all_products_count == 0 %} schools-dropdown__school--coming-soon{% endif %}">
-                  {%- if school.logo -%}
-                    {{ school.logo | image_url: width: 20 | image_tag: class: 'schools-dropdown__logo', loading: 'lazy' }}
-                  {%- endif -%}
-                  {{ school.name }}
-                </a>
-              {%- endif -%}
-            {%- endfor -%}
-          </div>
+            <button type="button"
+              class="schools-dropdown__alpha-tab{% if forloop.first %} schools-dropdown__alpha-tab--active{% endif %}{% unless has_schools %} schools-dropdown__alpha-tab--empty{% endunless %}"
+              data-alpha="{{ letter | downcase }}">
+              {{ letter }}
+            </button>
+          {%- endfor -%}
         </div>
+
+        <div class="schools-dropdown__alpha-content" data-alpha-content>
+          {%- for letter in alphabet -%}
+            <div class="schools-dropdown__letter-group" data-letter="{{ letter | downcase }}">
+              <h3 class="schools-dropdown__letter-heading">{{ letter }}</h3>
+              {%- for school in schools -%}
+                {%- assign first = school.name | slice: 0 | upcase -%}
+                {%- if first == letter -%}
+                  {%- assign school_collection = collections[school.slug] -%}
+                  <a href="{{ routes.collections_url }}/{{ school.slug }}" class="schools-dropdown__school{% if school_collection == blank or school_collection.all_products_count == 0 %} schools-dropdown__school--coming-soon{% endif %}">
+                    {%- if school.logo -%}
+                      {{ school.logo | image_url: width: 24 | image_tag: class: 'schools-dropdown__logo', loading: 'lazy' }}
+                    {%- endif -%}
+                    {{ school.name }}
+                  </a>
+                {%- endif -%}
+              {%- endfor -%}
+            </div>
+          {%- endfor -%}
+        </div>
+
         <div class="schools-dropdown__footer">
-          <a href="/pages/contact" class="schools-dropdown__contact">Can't find your school? Let us know &rarr;</a>
+          <a href="/pages/schools" class="schools-dropdown__contact">View all schools &rarr;</a>
         </div>
       </div>
     </div>
@@ -165,6 +123,8 @@
     align-items: center;
     justify-content: space-between;
     gap: 1rem;
+    border-bottom: 1px solid var(--color-border);
+    padding: 0 var(--page-margin);
   }
 
   .header__logo {
@@ -179,7 +139,7 @@
   }
 
   .header__logo-image {
-    height: 50px;
+    height: 80px;
     width: auto;
   }
 
@@ -234,10 +194,11 @@
   .schools-dropdown__panel {
     position: absolute;
     top: 100%;
-    left: 0;
-    right: 0;
+    left: var(--page-margin);
+    right: var(--page-margin);
     background: var(--color-background);
     border: 1px solid var(--color-border);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
     opacity: 0;
     visibility: hidden;
     transition: opacity 0.2s ease 0.1s, visibility 0.2s ease 0.1s;
@@ -250,26 +211,77 @@
     transition-delay: 0s;
   }
 
-  .schools-dropdown__columns {
-    display: grid;
-    grid-template-columns: repeat(5, 1fr);
-    gap: 2rem;
-    padding: 2rem 1.5rem;
+  .schools-dropdown__alpha-tabs {
+    display: flex;
+    justify-content: center;
+    gap: 0;
+    padding: 12px 1.5rem;
+    border-bottom: 1px solid var(--color-border);
   }
 
-  .schools-dropdown__column {
-    text-align: left;
-  }
-
-  .schools-dropdown__heading {
+  .schools-dropdown__alpha-tab {
+    background: none;
+    border: none;
+    padding: 8px 10px;
     font-family: var(--font-heading--family);
-    font-size: 0.7rem;
-    font-weight: 600;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
+    font-size: 0.85rem;
+    font-weight: 500;
     color: var(--color-foreground);
-    opacity: 0.5;
-    margin: 0 0 1rem;
+    cursor: pointer;
+    transition: opacity 0.15s ease;
+    position: relative;
+  }
+
+  .schools-dropdown__alpha-tab:hover:not(:disabled) {
+    opacity: 0.7;
+  }
+
+  .schools-dropdown__alpha-tab--active::after {
+    content: '';
+    position: absolute;
+    bottom: 2px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: var(--color-foreground);
+  }
+
+  .schools-dropdown__alpha-tab--empty {
+    opacity: 0.25;
+    cursor: default;
+  }
+
+  .schools-dropdown__alpha-content {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    padding: 0;
+  }
+
+  .schools-dropdown__letter-group {
+    display: none;
+    text-align: left;
+    padding: 1.25rem 1.5rem;
+  }
+
+  .schools-dropdown__letter-group--visible {
+    display: block;
+  }
+
+  .schools-dropdown__letter-group--primary {
+    border-left: 1px solid var(--color-border);
+    border-right: 1px solid var(--color-border);
+    background: rgba(0, 0, 0, 0.015);
+  }
+
+  .schools-dropdown__letter-heading {
+    font-family: var(--font-heading--family);
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--color-foreground);
+    margin: 0 0 10px;
+    padding-bottom: 0;
   }
 
   .schools-dropdown__school {
@@ -298,15 +310,16 @@
   }
 
   .schools-dropdown__logo {
-    width: 20px;
-    height: 20px;
+    width: 24px;
+    height: 24px;
     object-fit: contain;
     flex-shrink: 0;
   }
 
   .schools-dropdown__footer {
     border-top: 1px solid var(--color-border);
-    padding: 1rem 1.5rem;
+    padding: 12px 1.5rem;
+    text-align: center;
   }
 
   .schools-dropdown__contact {
@@ -803,6 +816,48 @@
         close();
       }
     });
+
+    // Alphabet tab navigation — show 4 letters at a time
+    const alphaTabs = dropdown.querySelectorAll('[data-alpha]');
+    const alphaContent = dropdown.querySelector('[data-alpha-content]');
+    const allGroups = alphaContent.querySelectorAll('.schools-dropdown__letter-group');
+    const letters = 'abcdefghijklmnopqrstuvwxyz'.split('');
+
+    function showLetters(startLetter) {
+      const idx = letters.indexOf(startLetter);
+      if (idx === -1) return;
+      // Clamp so we always show 4 (e.g. "y" → show w,x,y,z)
+      const start = Math.min(idx, letters.length - 4);
+      const visible = letters.slice(start, start + 4);
+
+      allGroups.forEach(g => {
+        g.classList.remove('schools-dropdown__letter-group--visible', 'schools-dropdown__letter-group--primary');
+      });
+      alphaTabs.forEach(t => t.classList.remove('schools-dropdown__alpha-tab--active'));
+
+      visible.forEach((l, i) => {
+        const group = alphaContent.querySelector('[data-letter="' + l + '"]');
+        if (group) {
+          group.classList.add('schools-dropdown__letter-group--visible');
+          if (l === startLetter) group.classList.add('schools-dropdown__letter-group--primary');
+        }
+      });
+
+      const tab = dropdown.querySelector('[data-alpha="' + startLetter + '"]');
+      if (tab) tab.classList.add('schools-dropdown__alpha-tab--active');
+    }
+
+    alphaTabs.forEach(tab => {
+      tab.addEventListener('mouseenter', () => {
+        showLetters(tab.getAttribute('data-alpha'));
+      });
+      tab.addEventListener('click', () => {
+        showLetters(tab.getAttribute('data-alpha'));
+      });
+    });
+
+    // Show first letter on load
+    showLetters('a');
   })();
 </script>
 
