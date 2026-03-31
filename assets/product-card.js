@@ -34,6 +34,65 @@ class ProductCard extends HTMLElement {
         this.changeImage(btn.dataset.imgDir);
       });
     });
+
+    const form = this.querySelector('form[action*="/cart/add"]');
+    const addBtn = form?.querySelector('.product-card__add-to-cart');
+    if (form && addBtn) {
+      // Change to type="button" so Slidecart doesn't intercept the form submit
+      addBtn.type = 'button';
+      addBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        this.ajaxAddToCart(form, addBtn);
+      });
+    }
+  }
+
+  ajaxAddToCart(form, btn) {
+    if (btn.disabled) return;
+
+    const origText = btn.textContent;
+    btn.disabled = true;
+    btn.textContent = 'Adding...';
+
+    fetch('/cart/add.js', {
+      method: 'POST',
+      body: new FormData(form),
+      headers: { 'X-Requested-With': 'XMLHttpRequest' }
+    })
+      .then(r => r.json())
+      .then(data => {
+        btn.textContent = 'Added!';
+
+        // Update header cart badge
+        fetch('/cart.js').then(r => r.json()).then(cart => {
+          let badge = document.querySelector('.header__cart-count');
+          if (!badge) {
+            const cartLink = document.querySelector('a.header__icon[aria-label="Cart"]');
+            if (cartLink) {
+              badge = document.createElement('span');
+              badge.className = 'header__cart-count';
+              cartLink.prepend(badge);
+            }
+          }
+          if (badge) badge.textContent = cart.item_count;
+        });
+
+        // Notify Slidecart — update first, then open after it refreshes
+        if (typeof window.SLIDECART_UPDATE === 'function') window.SLIDECART_UPDATE();
+        setTimeout(() => {
+          if (typeof window.SLIDECART_OPEN === 'function') window.SLIDECART_OPEN();
+        }, 300);
+
+        setTimeout(() => {
+          btn.textContent = origText;
+          btn.disabled = false;
+        }, 1500);
+      })
+      .catch(() => {
+        btn.textContent = origText;
+        btn.disabled = false;
+      });
   }
 
   disconnectedCallback() {
