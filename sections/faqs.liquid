@@ -4,11 +4,11 @@
 {% endcomment %}
 
 <div class="faqs">
-  <header class="faqs__header">
+  <div class="faqs__header">
     <p class="faqs__eyebrow">GOT QUESTIONS?</p>
     <h1 class="faqs__title">Frequently Asked<br>Questions</h1>
     <p class="faqs__subtitle">Everything you need to know about Saturday Co, our process, and your order.</p>
-  </header>
+  </div>
 
   <div class="faqs__list">
     {%- for block in section.blocks -%}
@@ -34,6 +34,7 @@
 {% stylesheet %}
   .faqs {
     padding: 80px 0 96px;
+    width: 100%;
     max-width: 820px;
     margin: 0 auto;
   }
