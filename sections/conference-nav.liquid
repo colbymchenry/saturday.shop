@@ -60,8 +60,10 @@
   {% assign active_sorted = active_entries | split: ',' | sort | reverse %}
   {% assign soon_sorted = soon_entries | split: ',' | sort | reverse %}
 
+  {% assign sorted_conferences = active_sorted | concat: soon_sorted %}
+
   <div class="conference-nav__list">
-    {% for entry in active_sorted %}
+    {% for entry in sorted_conferences %}
       {% assign handle = entry | split: '|' | last %}
       {% assign conference = shop.metaobjects.conference[handle] %}
       <a href="/pages/schools#conference={{ conference.name.value | url_encode | replace: '+', '%20' }}" class="conference-nav__item">
@@ -71,22 +73,6 @@
           {% else %}
             <span>{{ conference.abbreviation.value }}</span>
           {% endif %}
-        </div>
-        <span class="conference-nav__name">{{ conference.name.value }}</span>
-      </a>
-    {% endfor %}
-
-    {% for entry in soon_sorted %}
-      {% assign handle = entry | split: '|' | last %}
-      {% assign conference = shop.metaobjects.conference[handle] %}
-      <a href="/pages/schools#conference={{ conference.name.value | url_encode | replace: '+', '%20' }}" class="conference-nav__item conference-nav__item--coming-soon">
-        <div class="conference-nav__circle">
-          {% if conference.logo.value %}
-            {{ conference.logo.value | image_url: width: 128 | image_tag: loading: 'lazy' }}
-          {% else %}
-            <span>{{ conference.abbreviation.value }}</span>
-          {% endif %}
-          <span class="conference-nav__coming-soon">COMING<br>SOON</span>
         </div>
         <span class="conference-nav__name">{{ conference.name.value }}</span>
       </a>
@@ -155,32 +141,6 @@
     width: 100%;
     height: 100%;
     object-fit: cover;
-  }
-
-  .conference-nav__item--coming-soon {
-    pointer-events: none;
-  }
-
-  .conference-nav__item--coming-soon .conference-nav__circle img,
-  .conference-nav__item--coming-soon .conference-nav__circle > span:not(.conference-nav__coming-soon) {
-    opacity: 0.15;
-  }
-
-  .conference-nav__coming-soon {
-    position: absolute;
-    inset: 0;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    font-family: var(--font-heading--family);
-    font-size: 0.45rem;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    line-height: 1.3;
-    text-align: center;
-    color: var(--color-foreground);
   }
 
   .conference-nav__item:hover .conference-nav__circle {

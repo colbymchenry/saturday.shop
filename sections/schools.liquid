@@ -1,6 +1,5 @@
 {%- paginate shop.metaobjects.school.values by 250 -%}
 {%- assign schools = shop.metaobjects.school.values | sort: 'name' -%}
-{%- assign conferences = shop.metaobjects.conference.values -%}
 
 <section class="schools-page full-width">
   <div class="schools-page__inner">
@@ -37,23 +36,68 @@
       <button type="button" class="schools-page__tab schools-page__tab--active" data-tab="all" aria-pressed="true">ALL SCHOOLS</button>
     </div>
 
-    {%- comment -%} Conference View {%- endcomment -%}
+    {%- comment -%} Conference View — sorted: live-school conferences first, then by total school count descending {%- endcomment -%}
+    {%- assign school_conf_data = '' -%}
+    {%- for school in schools -%}
+      {%- assign school_conf = school.conference.value -%}
+      {%- if school_conf -%}
+        {%- assign conf_handle = school_conf.system.handle -%}
+        {%- assign school_col = collections[school.slug] -%}
+        {%- assign is_live = '0' -%}
+        {%- if school_col != blank and school_col.all_products_count > 0 -%}
+          {%- assign is_live = '1' -%}
+        {%- endif -%}
+        {%- if school_conf_data != '' -%}{%- assign school_conf_data = school_conf_data | append: ',' -%}{%- endif -%}
+        {%- assign school_conf_data = school_conf_data | append: conf_handle | append: ':' | append: is_live -%}
+      {%- endif -%}
+    {%- endfor -%}
+    {%- assign school_entries = school_conf_data | split: ',' -%}
+
+    {%- assign conference_handles = 'sec,acc,mountain-west,big-ten,big-12,american,socon,big-east,pac-12,mid-american,sun-belt,a-10,c-usa,missouri-valley' | split: ',' -%}
+    {%- assign active_entries = '' -%}
+    {%- assign soon_entries = '' -%}
+
+    {%- for handle in conference_handles -%}
+      {%- assign conference = shop.metaobjects.conference[handle] -%}
+      {%- unless conference -%}{%- continue -%}{%- endunless -%}
+
+      {%- assign live_count = 0 -%}
+      {%- assign total_count = 0 -%}
+      {%- for entry in school_entries -%}
+        {%- assign parts = entry | split: ':' -%}
+        {%- if parts[0] == handle -%}
+          {%- assign total_count = total_count | plus: 1 -%}
+          {%- if parts[1] == '1' -%}
+            {%- assign live_count = live_count | plus: 1 -%}
+          {%- endif -%}
+        {%- endif -%}
+      {%- endfor -%}
+
+      {%- assign sort_count = live_count -%}
+      {%- if live_count == 0 -%}{%- assign sort_count = total_count -%}{%- endif -%}
+      {%- assign padded = '000' | append: sort_count | slice: -3, 3 -%}
+      {%- assign sorted_entry = padded | append: '|' | append: handle | append: '|' | append: live_count -%}
+
+      {%- if live_count > 0 -%}
+        {%- if active_entries != '' -%}{%- assign active_entries = active_entries | append: ',' -%}{%- endif -%}
+        {%- assign active_entries = active_entries | append: sorted_entry -%}
+      {%- else -%}
+        {%- if soon_entries != '' -%}{%- assign soon_entries = soon_entries | append: ',' -%}{%- endif -%}
+        {%- assign soon_entries = soon_entries | append: sorted_entry -%}
+      {%- endif -%}
+    {%- endfor -%}
+
+    {%- assign active_sorted = active_entries | split: ',' | sort | reverse -%}
+    {%- assign soon_sorted = soon_entries | split: ',' | sort | reverse -%}
+    {%- assign sorted_conferences = active_sorted | concat: soon_sorted -%}
+
     <div class="schools-page__view" data-view="conference" hidden>
       <div class="schools-page__conferences">
-        {%- for conference in conferences -%}
-          {%- assign conf_live_count = 0 -%}
-          {%- for school in schools -%}
-            {%- if school.conference.value -%}
-              {%- assign school_conf_name = school.conference.value.name -%}
-              {%- assign conf_name = conference.name.value -%}
-              {%- if school_conf_name == conf_name -%}
-                {%- assign school_col = collections[school.slug] -%}
-                {%- if school_col != blank and school_col.all_products_count > 0 -%}
-                  {%- assign conf_live_count = conf_live_count | plus: 1 -%}
-                {%- endif -%}
-              {%- endif -%}
-            {%- endif -%}
-          {%- endfor -%}
+        {%- for sorted_entry in sorted_conferences -%}
+          {%- assign entry_parts = sorted_entry | split: '|' -%}
+          {%- assign handle = entry_parts[1] -%}
+          {%- assign conf_live_count = entry_parts[2] | plus: 0 -%}
+          {%- assign conference = shop.metaobjects.conference[handle] -%}
           <button type="button" class="schools-page__conference-card" data-conf-select="{{ conference.name.value }}">
             <div class="schools-page__conference-circle">
               {%- if conference.logo.value -%}
