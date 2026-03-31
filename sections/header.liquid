@@ -1000,11 +1000,25 @@
       if (tab) tab.classList.add('schools-dropdown__alpha-tab--active');
     }
 
+    let alphaNavActive = false;
+    let alphaNavTimer = null;
+
+    // Activate letter nav after hovering inside dropdown for 1s
+    dropdown.addEventListener('mouseenter', () => {
+      alphaNavTimer = setTimeout(() => { alphaNavActive = true; }, 1000);
+    });
+    dropdown.addEventListener('mouseleave', () => {
+      clearTimeout(alphaNavTimer);
+      alphaNavActive = false;
+    });
+
     alphaTabs.forEach(tab => {
       tab.addEventListener('mouseenter', () => {
-        showLetters(tab.getAttribute('data-alpha'));
+        if (alphaNavActive) showLetters(tab.getAttribute('data-alpha'));
       });
       tab.addEventListener('click', () => {
+        alphaNavActive = true;
+        clearTimeout(alphaNavTimer);
         showLetters(tab.getAttribute('data-alpha'));
       });
     });
