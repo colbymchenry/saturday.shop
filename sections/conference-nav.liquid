@@ -3,51 +3,93 @@
     <h2 class="conference-nav__heading">{{ section.settings.heading }}</h2>
   {% endif %}
 
-  {% assign live_conferences = '' %}
+  {% comment %} Single pass: record each school's conference and live status {% endcomment %}
+  {% assign school_conf_data = '' %}
+  {% paginate shop.metaobjects.school.values by 250 %}
   {% for school in shop.metaobjects.school.values %}
     {% assign school_conf = school.conference.value %}
     {% if school_conf %}
+      {% assign conf_handle = school_conf.system.handle %}
       {% assign school_col = collections[school.slug] %}
+      {% assign is_live = '0' %}
       {% if school_col != blank and school_col.all_products_count > 0 %}
-        {% assign conf_handle = school_conf.system.handle %}
-        {% assign delimited_list = ',' | append: live_conferences | append: ',' %}
-        {% assign delimited_handle = ',' | append: conf_handle | append: ',' %}
-        {% unless delimited_list contains delimited_handle %}
-          {% if live_conferences != '' %}
-            {% assign live_conferences = live_conferences | append: ',' %}
-          {% endif %}
-          {% assign live_conferences = live_conferences | append: conf_handle %}
-        {% endunless %}
+        {% assign is_live = '1' %}
       {% endif %}
+      {% if school_conf_data != '' %}{% assign school_conf_data = school_conf_data | append: ',' %}{% endif %}
+      {% assign school_conf_data = school_conf_data | append: conf_handle | append: ':' | append: is_live %}
+    {% endif %}
+  {% endfor %}
+  {% endpaginate %}
+  {% assign school_entries = school_conf_data | split: ',' %}
+
+  {% comment %} Per conference: count live and total schools, build sortable entries {% endcomment %}
+  {% assign conference_handles = 'sec,acc,mountain-west,big-ten,big-12,american,socon,big-east,pac-12,mid-american,sun-belt,a-10,c-usa,missouri-valley' | split: ',' %}
+  {% assign active_entries = '' %}
+  {% assign soon_entries = '' %}
+
+  {% for handle in conference_handles %}
+    {% assign conference = shop.metaobjects.conference[handle] %}
+    {% unless conference %}{% continue %}{% endunless %}
+
+    {% assign live_count = 0 %}
+    {% assign total_count = 0 %}
+    {% for entry in school_entries %}
+      {% assign parts = entry | split: ':' %}
+      {% if parts[0] == handle %}
+        {% assign total_count = total_count | plus: 1 %}
+        {% if parts[1] == '1' %}
+          {% assign live_count = live_count | plus: 1 %}
+        {% endif %}
+      {% endif %}
+    {% endfor %}
+
+    {% assign sort_count = live_count %}
+    {% if live_count == 0 %}{% assign sort_count = total_count %}{% endif %}
+    {% assign padded = '000' | append: sort_count | slice: -3, 3 %}
+    {% assign sorted_entry = padded | append: '|' | append: handle %}
+
+    {% if live_count > 0 %}
+      {% if active_entries != '' %}{% assign active_entries = active_entries | append: ',' %}{% endif %}
+      {% assign active_entries = active_entries | append: sorted_entry %}
+    {% else %}
+      {% if soon_entries != '' %}{% assign soon_entries = soon_entries | append: ',' %}{% endif %}
+      {% assign soon_entries = soon_entries | append: sorted_entry %}
     {% endif %}
   {% endfor %}
 
-  <div class="conference-nav__list">
-    {% assign conference_order = 'sec,acc,mountain-west,big-ten,big-12,american,socon,big-east,pac-12,mid-american,sun-belt,a-10,c-usa,missouri-valley' | split: ',' %}
-    {% for handle in conference_order %}
-      {% assign conference = shop.metaobjects.conference[handle] %}
-      {% if conference %}
-        {% assign delimited_list = ',' | append: live_conferences | append: ',' %}
-        {% assign delimited_handle = ',' | append: handle | append: ',' %}
-        {% assign has_schools = false %}
-        {% if delimited_list contains delimited_handle %}
-          {% assign has_schools = true %}
-        {% endif %}
+  {% assign active_sorted = active_entries | split: ',' | sort | reverse %}
+  {% assign soon_sorted = soon_entries | split: ',' | sort | reverse %}
 
-        <a href="/pages/schools#conference={{ conference.name.value | url_encode | replace: '+', '%20' }}" class="conference-nav__item{% unless has_schools %} conference-nav__item--coming-soon{% endunless %}">
-          <div class="conference-nav__circle">
-            {% if conference.logo.value %}
-              {{ conference.logo.value | image_url: width: 128 | image_tag: loading: 'lazy' }}
-            {% else %}
-              <span>{{ conference.abbreviation.value }}</span>
-            {% endif %}
-            {% unless has_schools %}
-              <span class="conference-nav__coming-soon">COMING<br>SOON</span>
-            {% endunless %}
-          </div>
-          <span class="conference-nav__name">{{ conference.name.value }}</span>
-        </a>
-      {% endif %}
+  <div class="conference-nav__list">
+    {% for entry in active_sorted %}
+      {% assign handle = entry | split: '|' | last %}
+      {% assign conference = shop.metaobjects.conference[handle] %}
+      <a href="/pages/schools#conference={{ conference.name.value | url_encode | replace: '+', '%20' }}" class="conference-nav__item">
+        <div class="conference-nav__circle">
+          {% if conference.logo.value %}
+            {{ conference.logo.value | image_url: width: 128 | image_tag: loading: 'lazy' }}
+          {% else %}
+            <span>{{ conference.abbreviation.value }}</span>
+          {% endif %}
+        </div>
+        <span class="conference-nav__name">{{ conference.name.value }}</span>
+      </a>
+    {% endfor %}
+
+    {% for entry in soon_sorted %}
+      {% assign handle = entry | split: '|' | last %}
+      {% assign conference = shop.metaobjects.conference[handle] %}
+      <a href="/pages/schools#conference={{ conference.name.value | url_encode | replace: '+', '%20' }}" class="conference-nav__item conference-nav__item--coming-soon">
+        <div class="conference-nav__circle">
+          {% if conference.logo.value %}
+            {{ conference.logo.value | image_url: width: 128 | image_tag: loading: 'lazy' }}
+          {% else %}
+            <span>{{ conference.abbreviation.value }}</span>
+          {% endif %}
+          <span class="conference-nav__coming-soon">COMING<br>SOON</span>
+        </div>
+        <span class="conference-nav__name">{{ conference.name.value }}</span>
+      </a>
     {% endfor %}
   </div>
 </section>
