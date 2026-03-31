@@ -68,7 +68,23 @@
       </div>
     </div>
     {% for link in section.settings.menu.links %}
-      <a href="{{ link.url }}" class="header__nav-link">{{ link.title }}</a>
+      {% if link.links.size > 0 %}
+        <div class="nav-dropdown">
+          <button type="button" class="header__nav-link nav-dropdown__trigger" aria-expanded="false" aria-haspopup="true">
+            {{ link.title }}
+            <svg class="nav-dropdown__chevron" width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 4 5 6.5 7.5 4"/></svg>
+          </button>
+          <div class="nav-dropdown__panel">
+            <div class="nav-dropdown__inner">
+              {% for child in link.links %}
+                <a href="{{ child.url }}" class="nav-dropdown__link">{{ child.title }}</a>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+      {% else %}
+        <a href="{{ link.url }}" class="header__nav-link">{{ link.title }}</a>
+      {% endif %}
     {% endfor %}
     {% if section.settings.promo_text != blank %}
       <a href="{{ section.settings.promo_url }}" class="header__nav-link header__nav-link--promo">
@@ -132,7 +148,21 @@
   <div class="mobile-drawer__links">
     <a href="/pages/schools" class="mobile-drawer__link">Schools</a>
     {% for link in section.settings.menu.links %}
-      <a href="{{ link.url }}" class="mobile-drawer__link">{{ link.title }}</a>
+      {% if link.links.size > 0 %}
+        <div class="mobile-drawer__group">
+          <button type="button" class="mobile-drawer__link mobile-drawer__group-trigger" aria-expanded="false">
+            {{ link.title }}
+            <svg class="mobile-drawer__chevron" width="12" height="12" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 4 5 6.5 7.5 4"/></svg>
+          </button>
+          <div class="mobile-drawer__children" hidden>
+            {% for child in link.links %}
+              <a href="{{ child.url }}" class="mobile-drawer__child-link">{{ child.title }}</a>
+            {% endfor %}
+          </div>
+        </div>
+      {% else %}
+        <a href="{{ link.url }}" class="mobile-drawer__link">{{ link.title }}</a>
+      {% endif %}
     {% endfor %}
     {% if section.settings.promo_text != blank %}
       <a href="{{ section.settings.promo_url }}" class="mobile-drawer__link mobile-drawer__link--promo">
@@ -182,6 +212,7 @@
     display: flex;
     align-items: center;
     gap: 2rem;
+    align-self: stretch;
   }
 
   .header__nav-link {
@@ -201,6 +232,159 @@
 
   .header__nav-link--promo {
     color: var(--color-accent-gold);
+  }
+
+  /* Nav dropdowns */
+  .nav-dropdown {
+    position: static;
+    align-self: stretch;
+    display: flex;
+    align-items: center;
+  }
+
+  .nav-dropdown__trigger {
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    height: 100%;
+  }
+
+  .nav-dropdown__chevron {
+    transition: transform 0.25s ease;
+    opacity: 0.4;
+    width: 10px;
+    height: 10px;
+  }
+
+  .nav-dropdown--open .nav-dropdown__chevron {
+    transform: rotate(180deg);
+    opacity: 0.7;
+  }
+
+  .nav-dropdown__panel {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: var(--color-background);
+    border-top: 2px solid var(--color-accent-gold);
+    border-bottom: 1px solid var(--color-border);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.06);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-4px);
+    transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s ease;
+    z-index: 50;
+  }
+
+  .nav-dropdown--open .nav-dropdown__panel {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+  }
+
+  .nav-dropdown__inner {
+    display: flex;
+    gap: 0;
+    padding: 20px var(--page-margin);
+    max-width: var(--page-width);
+    margin: 0 auto;
+  }
+
+  .nav-dropdown__link {
+    font-family: var(--font-body--family);
+    font-size: 0.85rem;
+    color: var(--color-foreground);
+    text-decoration: none;
+    padding: 8px 24px;
+    position: relative;
+    transition: opacity 0.15s ease;
+    white-space: nowrap;
+  }
+
+  .nav-dropdown__link:first-child {
+    padding-left: 0;
+  }
+
+  .nav-dropdown__link:hover {
+    opacity: 0.6;
+  }
+
+  .nav-dropdown__link::after {
+    content: '';
+    position: absolute;
+    bottom: 4px;
+    left: 24px;
+    right: 24px;
+    height: 1px;
+    background: var(--color-foreground);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.25s ease;
+  }
+
+  .nav-dropdown__link:first-child::after {
+    left: 0;
+  }
+
+  .nav-dropdown__link:hover::after {
+    transform: scaleX(1);
+  }
+
+  /* Mobile drawer groups */
+  .mobile-drawer__group {
+    display: flex;
+    flex-direction: column;
+  }
+
+  button.mobile-drawer__group-trigger {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    background: none;
+    border: none;
+    cursor: pointer;
+    text-align: left;
+  }
+
+  .mobile-drawer__chevron {
+    transition: transform 0.25s ease;
+    opacity: 0.4;
+    flex-shrink: 0;
+  }
+
+  .mobile-drawer__group-trigger[aria-expanded="true"] .mobile-drawer__chevron {
+    transform: rotate(180deg);
+  }
+
+  .mobile-drawer__children {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .mobile-drawer__children[hidden] {
+    display: none;
+  }
+
+  .mobile-drawer__child-link {
+    display: block;
+    padding: 10px 24px 10px 36px;
+    font-family: var(--font-body--family);
+    font-size: 0.85rem;
+    text-decoration: none;
+    color: var(--color-foreground);
+    opacity: 0.7;
+    transition: opacity 0.15s ease;
+  }
+
+  .mobile-drawer__child-link:hover {
+    opacity: 1;
   }
 
   /* Schools dropdown */
@@ -1045,6 +1229,76 @@
 
     // Show first letter on load
     showLetters('a');
+  })();
+
+  // Nav dropdowns: hover + click + keyboard
+  (function() {
+    const dropdowns = document.querySelectorAll('.nav-dropdown');
+    if (!dropdowns.length) return;
+
+    function openDropdown(dd) {
+      // Close all others first
+      dropdowns.forEach(other => {
+        if (other !== dd) closeDropdown(other);
+      });
+      dd.classList.add('nav-dropdown--open');
+      dd.querySelector('.nav-dropdown__trigger')?.setAttribute('aria-expanded', 'true');
+    }
+
+    function closeDropdown(dd) {
+      dd.classList.remove('nav-dropdown--open');
+      dd.querySelector('.nav-dropdown__trigger')?.setAttribute('aria-expanded', 'false');
+    }
+
+    dropdowns.forEach(dd => {
+      const trigger = dd.querySelector('.nav-dropdown__trigger');
+
+      dd.addEventListener('mouseenter', () => openDropdown(dd));
+      dd.addEventListener('mouseleave', () => closeDropdown(dd));
+
+      trigger.addEventListener('click', () => {
+        if (dd.classList.contains('nav-dropdown--open')) {
+          closeDropdown(dd);
+        } else {
+          openDropdown(dd);
+        }
+      });
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        dropdowns.forEach(dd => {
+          if (dd.classList.contains('nav-dropdown--open')) {
+            closeDropdown(dd);
+            dd.querySelector('.nav-dropdown__trigger')?.focus();
+          }
+        });
+      }
+    });
+
+    document.addEventListener('click', (e) => {
+      dropdowns.forEach(dd => {
+        if (!dd.contains(e.target)) closeDropdown(dd);
+      });
+    });
+  })();
+
+  // Mobile drawer accordion
+  (function() {
+    const triggers = document.querySelectorAll('.mobile-drawer__group-trigger');
+    triggers.forEach(trigger => {
+      trigger.addEventListener('click', () => {
+        const expanded = trigger.getAttribute('aria-expanded') === 'true';
+        const children = trigger.nextElementSibling;
+        if (expanded) {
+          trigger.setAttribute('aria-expanded', 'false');
+          children.hidden = true;
+        } else {
+          trigger.setAttribute('aria-expanded', 'true');
+          children.hidden = false;
+        }
+      });
+    });
   })();
 
   // Mobile drawer
