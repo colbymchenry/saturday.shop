@@ -1,0 +1,95 @@
+{
+  "sections": {
+    "main": {
+      "type": "faqs",
+      "settings": {},
+      "blocks": {
+        "shipping_time": {
+          "type": "faq",
+          "settings": {
+            "question": "How long does shipping take?",
+            "answer": "Most orders ship within 2–3 business days. Standard delivery takes 5–7 business days after that. Expedited options are available at checkout if you need your gear sooner."
+          }
+        },
+        "returns": {
+          "type": "faq",
+          "settings": {
+            "question": "What's your return policy?",
+            "answer": "We accept returns within 30 days of delivery for unworn, unwashed items with original tags attached. Exchanges are always free — just reach out and we'll get you the right size or style."
+          }
+        },
+        "school_designs": {
+          "type": "faq",
+          "settings": {
+            "question": "How do you create designs for each school?",
+            "answer": "We research each university's history, traditions, landmarks, and inside jokes that only students and alumni would know. Every design is crafted from scratch — no templates, no generic logos slapped on blanks. It's apparel that actually means something to the people who wear it."
+          }
+        },
+        "school_not_listed": {
+          "type": "faq",
+          "settings": {
+            "question": "My school isn't listed yet. Can you add it?",
+            "answer": "We're always expanding. Head to our Schools page and use the 'Can't find your school?' link to let us know. We prioritize new schools based on demand, so the more requests we get, the faster we move."
+          }
+        },
+        "officially_licensed": {
+          "type": "faq",
+          "settings": {
+            "question": "Is your apparel officially licensed?",
+            "answer": "Yes — every product is officially licensed through each university's licensing program. You're getting authentic, approved collegiate apparel with every purchase."
+          }
+        },
+        "quality": {
+          "type": "faq",
+          "settings": {
+            "question": "What makes your apparel different from other college merch?",
+            "answer": "Most college apparel is the same generic template with a different logo swapped in. We take the opposite approach — every school gets unique designs rooted in its specific culture, traditions, and stories. Plus, we use heavyweight 6.5 oz cotton jersey, pre-washed for a broken-in feel from day one."
+          }
+        },
+        "sizing": {
+          "type": "faq",
+          "settings": {
+            "question": "How does sizing work?",
+            "answer": "Our apparel runs true to size with a relaxed, comfortable fit. Check the size guide on any product page for detailed measurements. If you're between sizes, we generally recommend going with your usual size — the pre-washed fabric means minimal shrinkage."
+          }
+        },
+        "bulk_orders": {
+          "type": "faq",
+          "settings": {
+            "question": "Do you offer bulk or group orders?",
+            "answer": "Absolutely. Whether it's for a fraternity, sorority, student org, or alumni event, we can work with you on group orders. Reach out through our contact page with details and we'll put something together."
+          }
+        },
+        "gift_cards": {
+          "type": "faq",
+          "settings": {
+            "question": "Do you sell gift cards?",
+            "answer": "Yes! Gift cards are available in any amount and never expire. They're perfect for when you want to give the gift of school pride but aren't sure which design they'll love most."
+          }
+        },
+        "international": {
+          "type": "faq",
+          "settings": {
+            "question": "Do you ship internationally?",
+            "answer": "Currently we ship within the United States. International shipping is on our roadmap — sign up for our newsletter to be the first to know when we expand."
+          }
+        }
+      },
+      "block_order": [
+        "shipping_time",
+        "returns",
+        "school_designs",
+        "school_not_listed",
+        "officially_licensed",
+        "quality",
+        "sizing",
+        "bulk_orders",
+        "gift_cards",
+        "international"
+      ]
+    }
+  },
+  "order": [
+    "main"
+  ]
+}
