@@ -38,12 +38,12 @@ test.describe('Marquee', () => {
   });
 
   test('marquee duplicates content for seamless loop', async ({ page }) => {
-    // Template renders 4 copies of .marquee__content
+    // JS dynamically clones copies to fill viewport — should have at least 2
     const contents = page.locator('.marquee__content');
-    expect(await contents.count()).toBe(4);
+    expect(await contents.count()).toBeGreaterThanOrEqual(2);
 
-    // Only the first should be accessible (others have aria-hidden)
+    // All clones should be aria-hidden (only the first is accessible)
     const hidden = page.locator('.marquee__content[aria-hidden="true"]');
-    expect(await hidden.count()).toBe(3);
+    expect(await hidden.count()).toBe(await contents.count() - 1);
   });
 });

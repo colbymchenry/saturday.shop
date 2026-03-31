@@ -1,20 +1,18 @@
-<div
+<marquee-scroll
   class="marquee full-width"
   style="background-color: {{ section.settings.background_color }}; --marquee-duration: {{ section.settings.speed }}s;"
 >
-  <div class="marquee__track">
-    {% for i in (1..4) %}
-      <div class="marquee__content" {% if i > 1 %}aria-hidden="true"{% endif %}>
-        {% for block in section.blocks %}
-          <span class="marquee__item" style="color: {{ section.settings.text_color }};" {{ block.shopify_attributes }}>
-            {{ block.settings.text }}
-          </span>
-          <span class="marquee__separator" style="color: {{ section.settings.text_color }};">✦</span>
-        {% endfor %}
-      </div>
-    {% endfor %}
+  <div class="marquee__track" data-marquee-track>
+    <div class="marquee__content" data-marquee-content>
+      {% for block in section.blocks %}
+        <span class="marquee__item" style="color: {{ section.settings.text_color }};" {{ block.shopify_attributes }}>
+          {{ block.settings.text }}
+        </span>
+        <span class="marquee__separator" style="color: {{ section.settings.text_color }};">✦</span>
+      {% endfor %}
+    </div>
   </div>
-</div>
+</marquee-scroll>
 
 {% stylesheet %}
   .marquee {
@@ -54,7 +52,7 @@
       transform: translateX(0);
     }
     to {
-      transform: translateX(-25%);
+      transform: translateX(var(--marquee-shift, -50%));
     }
   }
 
@@ -64,6 +62,53 @@
     }
   }
 {% endstylesheet %}
+
+<script>
+  class MarqueeScroll extends HTMLElement {
+    connectedCallback() {
+      const track = this.querySelector('[data-marquee-track]');
+      const content = this.querySelector('[data-marquee-content]');
+      if (!track || !content) return;
+
+      const fill = () => {
+        // Remove old clones
+        track.querySelectorAll('[data-marquee-clone]').forEach(c => c.remove());
+
+        const contentWidth = content.offsetWidth;
+        if (!contentWidth) return;
+
+        // Need enough copies so total width >= 2x viewport (seamless loop)
+        const needed = Math.ceil((window.innerWidth * 2) / contentWidth) + 1;
+
+        for (let i = 0; i < needed; i++) {
+          const clone = content.cloneNode(true);
+          clone.setAttribute('aria-hidden', 'true');
+          clone.setAttribute('data-marquee-clone', '');
+          track.appendChild(clone);
+        }
+
+        // Shift by exactly one content-copy width for a seamless loop
+        track.style.setProperty('--marquee-shift', `-${contentWidth}px`);
+      };
+
+      fill();
+
+      // Recalculate on resize (font loading can also change widths)
+      let resizeTimer;
+      window.addEventListener('resize', () => {
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(fill, 200);
+      });
+
+      // Refill after fonts load in case widths changed
+      document.fonts?.ready.then(fill);
+    }
+  }
+
+  if (!customElements.get('marquee-scroll')) {
+    customElements.define('marquee-scroll', MarqueeScroll);
+  }
+</script>
 
 {% schema %}
 {
