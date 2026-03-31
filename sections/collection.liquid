@@ -5,7 +5,10 @@
   https://shopify.dev/docs/storefronts/themes/architecture/templates/collection
 {% endcomment %}
 
-{%- assign school = shop.metaobjects.school.values | where: 'slug', collection.handle | first -%}
+{%- assign school = nil -%}
+{%- paginate shop.metaobjects.school.values by 250 -%}
+  {%- assign school = shop.metaobjects.school.values | where: 'slug', collection.handle | first -%}
+{%- endpaginate -%}
 
 {% if collection.all_products_count == 0 %}
   <div class="coming-soon full-width" {% if school %}style="--school-primary: {{ school.primary_color }};"{% endif %}>

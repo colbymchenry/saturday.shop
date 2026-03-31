@@ -40,7 +40,7 @@ test.describe('Conference nav', () => {
     await expect(first.locator('.conference-nav__name')).toBeVisible();
   });
 
-  test('conference items are links to collections', async ({ page }) => {
+  test('conference items link to schools page with conference hash', async ({ page }) => {
     const items = page.locator('.conference-nav__item');
     if (await items.count() === 0) {
       test.skip();
@@ -48,7 +48,7 @@ test.describe('Conference nav', () => {
     }
 
     const href = await items.first().getAttribute('href');
-    expect(href).toContain('/collections/');
+    expect(href).toContain('/pages/schools#conference=');
   });
 
   test('list is horizontally scrollable', async ({ page }) => {

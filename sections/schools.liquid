@@ -651,7 +651,21 @@
     });
 
     // Back button
-    backBtn.addEventListener('click', showAllConferences);
+    backBtn.addEventListener('click', function() {
+      showAllConferences();
+      history.replaceState(null, '', window.location.pathname);
+    });
+
+    // Deep-link: open conference from URL hash (e.g. #conference=Big%20Ten)
+    function checkHash() {
+      var hash = decodeURIComponent(window.location.hash.replace('#', ''));
+      if (hash.indexOf('conference=') === 0) {
+        var name = hash.split('=').slice(1).join('=');
+        if (name) showConference(name);
+      }
+    }
+    checkHash();
+    window.addEventListener('hashchange', checkHash);
 
     // Tab switching
     tabs.forEach(function(tab) {

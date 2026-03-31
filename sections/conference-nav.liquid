@@ -5,7 +5,7 @@
 
   <div class="conference-nav__list">
     {% for conference in shop.metaobjects.conference.values %}
-      <a href="{{ routes.collections_url }}/{{ conference.slug.value }}" class="conference-nav__item">
+      <a href="/pages/schools#conference={{ conference.name.value | url_encode }}" class="conference-nav__item">
         <div class="conference-nav__circle">
           {% if conference.logo.value %}
             {{ conference.logo.value | image_url: width: 128 | image_tag: loading: 'lazy' }}
