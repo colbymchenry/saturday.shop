@@ -59,6 +59,12 @@
     "about_chapter": "Chapter",
     "about_values": "About values",
     "about_value": "Value",
+    "careers_hero": "Careers hero",
+    "careers_perks": "Careers perks",
+    "careers_perk": "Perk",
+    "careers_openings": "Careers openings",
+    "careers_role": "Role",
+    "careers_cta": "Careers CTA",
     "text": "Text",
     "theme": "Theme",
     "typography": "Typography"
@@ -118,7 +124,11 @@
     "text": "Text",
     "ui_tones": "UI tones",
     "url": "URL",
-    "warm_cream": "Warm cream"
+    "warm_cream": "Warm cream",
+    "careers_department": "Department",
+    "careers_location": "Location",
+    "careers_type": "Employment type",
+    "careers_empty_text": "Empty state text"
   },
   "options": {
     "alignment": {

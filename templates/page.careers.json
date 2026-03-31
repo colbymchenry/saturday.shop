@@ -9,12 +9,88 @@
  */
 {
   "sections": {
-    "main": {
-      "type": "page",
+    "careers_hero": {
+      "type": "careers-hero",
+      "settings": {}
+    },
+    "careers_perks": {
+      "type": "careers-perks",
+      "settings": {},
+      "blocks": {
+        "perk_1": {
+          "type": "perk",
+          "settings": {
+            "heading": "Creative Freedom",
+            "body": "Every team member has a voice in the design process. We believe the best ideas come from real passion — not a top-down brief."
+          }
+        },
+        "perk_2": {
+          "type": "perk",
+          "settings": {
+            "heading": "Remote-First",
+            "body": "Work from wherever you do your best thinking. We're distributed across the country, connected by Slack and a shared obsession with college culture."
+          }
+        },
+        "perk_3": {
+          "type": "perk",
+          "settings": {
+            "heading": "Campus Research Trips",
+            "body": "Yes, visiting college campuses is part of the job. We send team members to experience the traditions and energy firsthand."
+          }
+        },
+        "perk_4": {
+          "type": "perk",
+          "settings": {
+            "heading": "Gear Allowance",
+            "body": "Generous product allowance so you can wear what we make. Plus early access to every new drop before it hits the site."
+          }
+        }
+      },
+      "block_order": ["perk_1", "perk_2", "perk_3", "perk_4"]
+    },
+    "careers_openings": {
+      "type": "careers-openings",
+      "settings": {},
+      "blocks": {
+        "role_1": {
+          "type": "role",
+          "settings": {
+            "title": "Graphic Designer",
+            "department": "DESIGN",
+            "location": "Remote",
+            "type": "Full-time"
+          }
+        },
+        "role_2": {
+          "type": "role",
+          "settings": {
+            "title": "Campus Ambassador",
+            "department": "MARKETING",
+            "location": "Various Campuses",
+            "type": "Part-time"
+          }
+        },
+        "role_3": {
+          "type": "role",
+          "settings": {
+            "title": "E-Commerce Manager",
+            "department": "OPERATIONS",
+            "location": "Remote",
+            "type": "Full-time"
+          }
+        }
+      },
+      "block_order": ["role_1", "role_2", "role_3"]
+    },
+    "careers_cta": {
+      "type": "careers-cta",
       "settings": {}
     }
   },
   "order": [
-    "main"
+    "careers_hero",
+    "careers_perks",
+    "careers_openings",
+    "careers_cta"
   ]
 }

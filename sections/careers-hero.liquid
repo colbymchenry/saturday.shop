@@ -1,0 +1,223 @@
+<section class="careers-hero full-width" style="background-color: {{ section.settings.background_color }};">
+  <div class="careers-hero__inner">
+    <div class="careers-hero__content">
+      {% if section.settings.eyebrow != blank %}
+        <p class="careers-hero__eyebrow">{{ section.settings.eyebrow }}</p>
+      {% endif %}
+
+      {% if section.settings.heading_bold != blank or section.settings.heading_script != blank %}
+        <h1 class="careers-hero__heading">
+          {%- if section.settings.heading_bold != blank -%}
+            <span class="careers-hero__heading-bold">{{ section.settings.heading_bold }}</span>
+          {%- endif %} {%- if section.settings.heading_script != blank -%}
+            <span class="careers-hero__heading-script">{{ section.settings.heading_script }}</span>
+          {%- endif -%}
+        </h1>
+      {% endif %}
+
+      {% if section.settings.body != blank %}
+        <p class="careers-hero__body">{{ section.settings.body }}</p>
+      {% endif %}
+
+      {% if section.settings.button_text != blank %}
+        <a href="{{ section.settings.button_url }}" class="careers-hero__button">
+          {{ section.settings.button_text }}
+        </a>
+      {% endif %}
+    </div>
+
+    <div class="careers-hero__media">
+      {% if section.settings.image %}
+        {{ section.settings.image | image_url: width: 1400 | image_tag: loading: 'eager' }}
+      {% else %}
+        {{ 'hero-apparel-1' | placeholder_svg_tag }}
+      {% endif %}
+    </div>
+  </div>
+</section>
+
+{% stylesheet %}
+  .careers-hero {
+    overflow: hidden;
+  }
+
+  .careers-hero__inner {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    min-height: 80vh;
+  }
+
+  .careers-hero__content {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 80px clamp(32px, 5vw, 64px);
+    margin-left: auto;
+    max-width: 580px;
+  }
+
+  .careers-hero__eyebrow {
+    font-family: var(--font-heading--family);
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--color-accent-gold);
+    margin-bottom: 28px;
+    position: relative;
+    padding-left: 48px;
+  }
+
+  .careers-hero__eyebrow::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    width: 32px;
+    height: 1px;
+    background-color: var(--color-accent-gold);
+  }
+
+  .careers-hero__heading {
+    font-size: clamp(2.5rem, 5.5vw, 4.2rem);
+    line-height: 1.05;
+    margin: 0;
+  }
+
+  .careers-hero__heading-bold {
+    font-family: var(--font-heading--family);
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.01em;
+    color: var(--color-foreground);
+  }
+
+  .careers-hero__heading-script {
+    display: block;
+    font-family: var(--font-heading--family);
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.01em;
+    color: var(--color-accent-rust);
+    font-size: 0.6em;
+    margin-top: 8px;
+  }
+
+  .careers-hero__body {
+    font-family: var(--font-body--family);
+    font-size: clamp(0.95rem, 1.3vw, 1.1rem);
+    line-height: 1.7;
+    color: var(--color-muted);
+    margin-top: 28px;
+    max-width: 480px;
+  }
+
+  .careers-hero__button {
+    display: inline-block;
+    margin-top: 36px;
+    padding: 16px 40px;
+    font-family: var(--font-heading--family);
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    text-decoration: none;
+    color: var(--color-background);
+    background-color: var(--color-foreground);
+    transition: opacity 0.2s ease;
+    align-self: flex-start;
+  }
+
+  .careers-hero__button:hover {
+    opacity: 0.85;
+  }
+
+  .careers-hero__media {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .careers-hero__media img,
+  .careers-hero__media svg {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  @media (max-width: 900px) {
+    .careers-hero__inner {
+      grid-template-columns: 1fr;
+      min-height: auto;
+    }
+
+    .careers-hero__media {
+      order: -1;
+      aspect-ratio: 4 / 3;
+    }
+
+    .careers-hero__content {
+      max-width: none;
+      margin-left: 0;
+      padding: 48px clamp(20px, 5vw, 48px);
+    }
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "t:general.careers_hero",
+  "settings": [
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "t:labels.background",
+      "default": "#F5F2EB"
+    },
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "t:labels.eyebrow",
+      "default": "CAREERS"
+    },
+    {
+      "type": "text",
+      "id": "heading_bold",
+      "label": "t:labels.heading_bold",
+      "default": "HELP US REDEFINE"
+    },
+    {
+      "type": "text",
+      "id": "heading_script",
+      "label": "t:labels.heading_script",
+      "default": "college apparel."
+    },
+    {
+      "type": "textarea",
+      "id": "body",
+      "label": "t:labels.description",
+      "default": "We're a small, passionate team on a mission to create apparel that celebrates what makes every school unique. If you love college culture and want to build something that actually matters to fans — we'd love to hear from you."
+    },
+    {
+      "type": "text",
+      "id": "button_text",
+      "label": "t:labels.button_text",
+      "default": "VIEW OPEN ROLES"
+    },
+    {
+      "type": "url",
+      "id": "button_url",
+      "label": "t:labels.button_url"
+    },
+    {
+      "type": "image_picker",
+      "id": "image",
+      "label": "t:labels.image"
+    }
+  ],
+  "presets": [
+    {
+      "name": "t:general.careers_hero"
+    }
+  ]
+}
+{% endschema %}
