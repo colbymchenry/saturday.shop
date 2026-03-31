@@ -5,13 +5,15 @@
 
 {%- comment -%} Resolve school by matching product collections to school slugs {%- endcomment -%}
 {%- assign school = nil -%}
-{%- for col in product.collections -%}
-  {%- assign found_school = shop.metaobjects.school.values | where: 'slug', col.handle | first -%}
-  {%- if found_school -%}
-    {%- assign school = found_school -%}
-    {%- break -%}
-  {%- endif -%}
-{%- endfor -%}
+{%- paginate shop.metaobjects.school.values by 250 -%}
+  {%- for col in product.collections -%}
+    {%- assign found_school = shop.metaobjects.school.values | where: 'slug', col.handle | first -%}
+    {%- if found_school -%}
+      {%- assign school = found_school -%}
+      {%- break -%}
+    {%- endif -%}
+  {%- endfor -%}
+{%- endpaginate -%}
 
 {%- assign current_variant = product.selected_or_first_available_variant -%}
 

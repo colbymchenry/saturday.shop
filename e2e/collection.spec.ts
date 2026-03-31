@@ -110,3 +110,36 @@ test.describe('Collection page', () => {
     await expect(quickAdd).toHaveCSS('opacity', '1');
   });
 });
+
+test.describe('Infinite scroll', () => {
+  test('grid has data-collection-grid attribute', async ({ page }) => {
+    await page.goto('/collections/alabama');
+    const grid = page.locator('[data-collection-grid]');
+    await expect(grid).toBeVisible();
+  });
+
+  test('sentinel element exists', async ({ page }) => {
+    await page.goto('/collections/alabama');
+    const sentinel = page.locator('[data-infinite-sentinel]');
+    await expect(sentinel).toBeAttached();
+  });
+
+  test('sentinel is hidden for single-page collections', async ({ page }) => {
+    await page.goto('/collections/best-sellers');
+    const sentinel = page.locator('[data-infinite-sentinel]');
+    await expect(sentinel).toBeAttached();
+    await expect(sentinel).toBeHidden();
+  });
+
+  test('traditional pagination is hidden when JS is active and multiple pages exist', async ({ page }) => {
+    await page.goto('/collections/alabama');
+    const sentinel = page.locator('[data-infinite-sentinel]');
+    const isMultiPage = !(await sentinel.getAttribute('hidden') !== null);
+    if (isMultiPage) {
+      const nav = page.locator('[data-pagination-nav]');
+      if (await nav.count() > 0) {
+        await expect(nav).toHaveAttribute('data-pagination-hidden', '');
+      }
+    }
+  });
+});

@@ -66,7 +66,21 @@
       </div>
     </div>
   {% else %}
-    <h1 class="collection__title">{{ collection.title }}</h1>
+    <div class="collection-header full-width">
+      <div class="collection-header__stripes"></div>
+      <div class="collection-header__watermark" aria-hidden="true">{{ collection.title }}</div>
+      <div class="collection-header__content">
+        <div class="collection-header__rule">
+          <span class="collection-header__rule-line"></span>
+          <span class="collection-header__rule-diamond"></span>
+          <span class="collection-header__rule-line"></span>
+        </div>
+        <h1 class="collection-header__title">{{ collection.title }}</h1>
+        {%- if collection.description != blank -%}
+          <p class="collection-header__desc">{{ collection.description }}</p>
+        {%- endif -%}
+      </div>
+    </div>
   {% endif %}
 
   {%- assign current_sort = collection.sort_by | default: collection.default_sort_by -%}
@@ -115,14 +129,25 @@
   </div>
 
   {% paginate collection.products by 20 %}
-    <div class="collection__grid">
+    <div class="collection__grid" data-collection-grid>
       {% for product in collection.products %}
         {% render 'product-card', product: product %}
       {% endfor %}
     </div>
 
+    <div class="collection__infinite-sentinel"
+         data-infinite-sentinel
+         {% if paginate.pages <= 1 %}hidden{% endif %}
+         data-next-url="{{ paginate.next.url }}"
+         data-current-page="{{ paginate.current_page }}"
+         data-total-pages="{{ paginate.pages }}">
+      <div class="collection__spinner" aria-label="Loading more products">
+        <span class="collection__spinner-dot"></span>
+      </div>
+    </div>
+
     {% if paginate.pages > 1 %}
-      <nav class="collection__pagination">
+      <nav class="collection__pagination" data-pagination-nav>
         {% if paginate.previous %}
           <a href="{{ paginate.previous.url }}" class="collection__pagination-link">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
@@ -277,12 +302,118 @@
     }
   }
 
-  /* ───── Fallback title (non-school collections) ───── */
-  .collection__title {
+  /* ───── Generic collection header (non-school) ───── */
+  .collection-header {
+    position: relative;
+    overflow: hidden;
+    padding: 3.5rem 0 2.5rem;
+    background: var(--color-foreground);
+    color: var(--color-background);
+    border-bottom: 4px solid var(--color-foreground);
+  }
+
+  .collection-header__stripes {
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(
+      -45deg,
+      transparent,
+      transparent 28px,
+      var(--color-background) 28px,
+      var(--color-background) 30px
+    );
+    opacity: 0.04;
+    pointer-events: none;
+  }
+
+  .collection-header__watermark {
+    position: absolute;
+    top: 50%;
+    right: var(--page-margin);
+    transform: translateY(calc(-50% + 0.04em));
     font-family: var(--font-heading--family);
-    font-size: clamp(1.4rem, 2.5vw, 1.8rem);
-    font-weight: 700;
-    margin-bottom: 24px;
+    font-size: clamp(5rem, 14vw, 12rem);
+    font-weight: 800;
+    font-style: italic;
+    text-transform: uppercase;
+    color: var(--color-background);
+    opacity: 0.045;
+    line-height: 1;
+    white-space: nowrap;
+    pointer-events: none;
+    user-select: none;
+  }
+
+  .collection-header__content {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 0 var(--page-margin);
+  }
+
+  .collection-header__rule {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    width: 80px;
+    margin-bottom: 0.25rem;
+    animation: collection-header-rise 0.45s ease-out both;
+  }
+
+  .collection-header__rule-line {
+    flex: 1;
+    height: 2px;
+    background: var(--color-background);
+    opacity: 0.3;
+  }
+
+  .collection-header__rule-diamond {
+    width: 6px;
+    height: 6px;
+    background: var(--color-background);
+    transform: rotate(45deg);
+    opacity: 0.35;
+    flex-shrink: 0;
+  }
+
+  .collection-header__title {
+    font-family: var(--font-heading--family);
+    font-size: clamp(2rem, 5vw, 3.25rem);
+    font-weight: 800;
+    font-style: italic;
+    text-transform: uppercase;
+    letter-spacing: -0.02em;
+    line-height: 1;
+    margin: 0;
+    animation: collection-header-rise 0.45s ease-out 0.05s both;
+  }
+
+  .collection-header__desc {
+    font-family: var(--font-body--family);
+    font-size: 0.95rem;
+    line-height: 1.5;
+    opacity: 0.6;
+    max-width: 500px;
+    margin: 0;
+    animation: collection-header-rise 0.45s ease-out 0.1s both;
+  }
+
+  @keyframes collection-header-rise {
+    0% { opacity: 0; transform: translateY(14px); }
+    100% { opacity: 1; transform: translateY(0); }
+  }
+
+  @media (max-width: 768px) {
+    .collection-header {
+      padding: 2.5rem 0 2rem;
+    }
+
+    .collection-header__watermark {
+      display: none;
+    }
   }
 
   /* ───── Toolbar: breadcrumbs, count, sort ───── */
@@ -420,6 +551,40 @@
 
   .collection__grid .product-card__info {
     border-bottom: none;
+  }
+
+  /* ───── Infinite scroll ───── */
+  .collection__infinite-sentinel {
+    display: flex;
+    justify-content: center;
+    padding: 32px 0;
+    min-height: 64px;
+  }
+
+  .collection__infinite-sentinel[hidden] {
+    display: none;
+  }
+
+  .collection__spinner {
+    display: flex;
+    align-items: center;
+  }
+
+  .collection__spinner-dot {
+    width: 8px;
+    height: 8px;
+    background: var(--color-foreground);
+    border-radius: 50%;
+    animation: collection-spinner-pulse 1s ease-in-out infinite;
+  }
+
+  @keyframes collection-spinner-pulse {
+    0%, 100% { opacity: 0.15; transform: scale(0.8); }
+    50% { opacity: 0.5; transform: scale(1); }
+  }
+
+  .collection__pagination[data-pagination-hidden] {
+    display: none;
   }
 
   .collection__pagination {
@@ -677,6 +842,84 @@
   if (!customElements.get('collection-sort')) {
     customElements.define('collection-sort', CollectionSort);
   }
+
+  /* ───── Infinite scroll ───── */
+  (function () {
+    var sentinel = document.querySelector('[data-infinite-sentinel]');
+    if (!sentinel) return;
+
+    var grid = document.querySelector('[data-collection-grid]');
+    var paginationNav = document.querySelector('[data-pagination-nav]');
+    if (!grid) return;
+
+    if (paginationNav) paginationNav.setAttribute('data-pagination-hidden', '');
+
+    var nextUrl = sentinel.getAttribute('data-next-url');
+    var currentPage = parseInt(sentinel.getAttribute('data-current-page'), 10);
+    var totalPages = parseInt(sentinel.getAttribute('data-total-pages'), 10);
+    var loading = false;
+
+    if (!nextUrl || currentPage >= totalPages) {
+      sentinel.hidden = true;
+      return;
+    }
+
+    var observer = new IntersectionObserver(function (entries) {
+      if (entries[0].isIntersecting && !loading && nextUrl) {
+        loadNextPage();
+      }
+    }, { rootMargin: '200px' });
+
+    observer.observe(sentinel);
+
+    function loadNextPage() {
+      loading = true;
+
+      fetch(nextUrl)
+        .then(function (res) {
+          if (!res.ok) throw new Error('Failed to fetch');
+          return res.text();
+        })
+        .then(function (html) {
+          var parser = new DOMParser();
+          var doc = parser.parseFromString(html, 'text/html');
+
+          var fetchedGrid = doc.querySelector('[data-collection-grid]');
+          if (fetchedGrid) {
+            while (fetchedGrid.firstChild) {
+              grid.appendChild(fetchedGrid.firstChild);
+            }
+          }
+
+          var fetchedSentinel = doc.querySelector('[data-infinite-sentinel]');
+          if (fetchedSentinel) {
+            nextUrl = fetchedSentinel.getAttribute('data-next-url');
+            currentPage = parseInt(fetchedSentinel.getAttribute('data-current-page'), 10);
+          } else {
+            nextUrl = null;
+          }
+
+          if (currentPage > 1) {
+            var url = new URL(window.location);
+            url.searchParams.set('page', currentPage);
+            history.replaceState(null, '', url);
+          }
+
+          if (!nextUrl || currentPage >= totalPages) {
+            sentinel.hidden = true;
+            observer.disconnect();
+          }
+
+          loading = false;
+        })
+        .catch(function () {
+          sentinel.hidden = true;
+          observer.disconnect();
+          if (paginationNav) paginationNav.removeAttribute('data-pagination-hidden');
+          loading = false;
+        });
+    }
+  })();
 {% endjavascript %}
 
 {% schema %}

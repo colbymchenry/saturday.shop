@@ -4,13 +4,15 @@
 {% endcomment %}
 
 {%- assign school = nil -%}
-{%- for col in product.collections -%}
-  {%- assign found_school = shop.metaobjects.school.values | where: 'slug', col.handle | first -%}
-  {%- if found_school -%}
-    {%- assign school = found_school -%}
-    {%- break -%}
-  {%- endif -%}
-{%- endfor -%}
+{%- paginate shop.metaobjects.school.values by 250 -%}
+  {%- for col in product.collections -%}
+    {%- assign found_school = shop.metaobjects.school.values | where: 'slug', col.handle | first -%}
+    {%- if found_school -%}
+      {%- assign school = found_school -%}
+      {%- break -%}
+    {%- endif -%}
+  {%- endfor -%}
+{%- endpaginate -%}
 
 <div class="product-features full-width" {% if school %}style="--school-primary: {{ school.primary_color }};"{% endif %}>
   <div class="product-features__inner">
