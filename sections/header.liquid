@@ -431,9 +431,17 @@
   .search-popover__overlay {
     position: fixed;
     inset: 0;
+    background: rgba(0, 0, 0, 0);
+    backdrop-filter: blur(0);
+    z-index: 199;
+    pointer-events: none;
+    transition: background 0.35s ease, backdrop-filter 0.35s ease;
+  }
+
+  .search-popover--open .search-popover__overlay {
     background: rgba(0, 0, 0, 0.4);
     backdrop-filter: blur(4px);
-    z-index: 199;
+    pointer-events: auto;
   }
 
   .search-popover__panel {
@@ -446,14 +454,19 @@
     border-bottom: 1px solid var(--color-border);
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.12);
     transform: translateY(-100%);
+    opacity: 0;
     visibility: hidden;
-    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-                visibility 0.3s;
+    pointer-events: none;
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+                opacity 0.3s ease,
+                visibility 0.4s;
   }
 
-  .search-popover:not([hidden]) .search-popover__panel {
+  .search-popover--open .search-popover__panel {
     transform: translateY(0);
+    opacity: 1;
     visibility: visible;
+    pointer-events: auto;
   }
 
   .search-popover__form {
@@ -782,7 +795,7 @@
       this.overlay.addEventListener('click', () => this.close());
 
       document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape' && !this._popover.hidden) this.close();
+        if (e.key === 'Escape' && this._popover.classList.contains('search-popover--open')) this.close();
       });
 
       this.input.addEventListener('input', this.debounce(() => {
@@ -800,16 +813,23 @@
     }
 
     open() {
+      // Remove hidden so elements are in the DOM, then force reflow
+      // so the browser computes the "closed" styles before we animate open
       this._popover.hidden = false;
-      // Force reflow for animation
       this._popover.offsetHeight;
-      requestAnimationFrame(() => {
-        this.input.focus();
-      });
+      this._popover.classList.add('search-popover--open');
+      // Delay focus slightly so visibility: visible has applied
+      setTimeout(() => this.input.focus(), 50);
     }
 
     close() {
-      this._popover.hidden = true;
+      this._popover.classList.remove('search-popover--open');
+      // Wait for the slide-out transition, then fully hide
+      const onEnd = () => {
+        this._popover.hidden = true;
+        this._popover.removeEventListener('transitionend', onEnd);
+      };
+      this._popover.addEventListener('transitionend', onEnd);
       this.input.value = '';
       this.results.innerHTML = '';
       this.viewAll.hidden = true;
