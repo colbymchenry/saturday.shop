@@ -38,5 +38,10 @@
     </main>
 
     {% sections 'footer-group' %}
+
+    {% if additional_checkout_buttons %}
+      <div id="slidecart-additional-checkout-buttons" style="display: none">{{ content_for_additional_checkout_buttons }}</div>
+    {% endif %}
+    <style>#slidecarthq .footer .additional-checkout-buttons #dynamic-checkout-cart > shopify-accelerated-checkout-cart shopify-paypal-button div div style { display: none !important;}</style>
   </body>
 </html>

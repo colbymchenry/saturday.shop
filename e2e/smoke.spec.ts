@@ -121,9 +121,14 @@ test.describe('Smoke tests', () => {
     await expect(page).toHaveTitle(/.+/);
   });
 
-  test('cart page loads', async ({ page }) => {
+  test('cart page loads with styled layout', async ({ page }) => {
     await page.goto('/cart');
     await expect(page).toHaveTitle(/.+/);
+
+    // Should show either the cart with items or the empty state
+    const hasItems = await page.locator('.cart__layout').isVisible().catch(() => false);
+    const isEmpty = await page.locator('.cart--empty').isVisible().catch(() => false);
+    expect(hasItems || isEmpty).toBeTruthy();
   });
 
   test('404 page renders', async ({ page }) => {
@@ -164,6 +169,86 @@ test.describe('Sticky header', () => {
     expect(box).toBeTruthy();
     expect(box!.y).toBeGreaterThanOrEqual(0);
     expect(box!.y).toBeLessThanOrEqual(100);
+  });
+});
+
+test.describe('Mobile navigation', () => {
+  test.use({ viewport: { width: 375, height: 812 } });
+
+  test('hamburger menu is visible on mobile', async ({ page }) => {
+    await page.goto('/');
+    const hamburger = page.locator('[data-menu-toggle]');
+    await expect(hamburger).toBeVisible();
+
+    // Desktop nav should be hidden
+    const nav = page.locator('.header__nav');
+    await expect(nav).not.toBeVisible();
+  });
+
+  test('mobile drawer opens and shows nav links', async ({ page }) => {
+    await page.goto('/');
+    const hamburger = page.locator('[data-menu-toggle]');
+    const drawer = page.locator('[data-mobile-drawer]');
+
+    // Drawer should start closed
+    await expect(drawer).not.toHaveClass(/mobile-drawer--open/);
+
+    // Click hamburger to open
+    await hamburger.click();
+    await expect(drawer).toHaveClass(/mobile-drawer--open/);
+
+    // Overlay should be visible
+    const overlay = page.locator('[data-menu-overlay]');
+    await expect(overlay).toHaveClass(/mobile-drawer__overlay--open/);
+
+    // Should have Schools link
+    const schoolsLink = drawer.locator('.mobile-drawer__link', { hasText: 'Schools' });
+    await expect(schoolsLink).toBeVisible();
+  });
+
+  test('mobile drawer closes on X button', async ({ page }) => {
+    await page.goto('/');
+    const drawer = page.locator('[data-mobile-drawer]');
+
+    await page.locator('[data-menu-toggle]').click();
+    await expect(drawer).toHaveClass(/mobile-drawer--open/);
+
+    await page.locator('[data-menu-close]').click();
+    await expect(drawer).not.toHaveClass(/mobile-drawer--open/);
+  });
+
+  test('mobile drawer closes on overlay click', async ({ page }) => {
+    await page.goto('/');
+    const drawer = page.locator('[data-mobile-drawer]');
+
+    await page.locator('[data-menu-toggle]').click();
+    await expect(drawer).toHaveClass(/mobile-drawer--open/);
+
+    await page.locator('[data-menu-overlay]').click({ force: true });
+    await expect(drawer).not.toHaveClass(/mobile-drawer--open/);
+  });
+
+  test('mobile drawer closes on Escape', async ({ page }) => {
+    await page.goto('/');
+    const drawer = page.locator('[data-mobile-drawer]');
+
+    await page.locator('[data-menu-toggle]').click();
+    await expect(drawer).toHaveClass(/mobile-drawer--open/);
+
+    await page.keyboard.press('Escape');
+    await expect(drawer).not.toHaveClass(/mobile-drawer--open/);
+  });
+});
+
+test.describe('Desktop hides hamburger', () => {
+  test('hamburger is hidden on desktop', async ({ page }) => {
+    await page.goto('/');
+    const hamburger = page.locator('[data-menu-toggle]');
+    await expect(hamburger).not.toBeVisible();
+
+    // Desktop nav should be visible
+    const nav = page.locator('.header__nav');
+    await expect(nav).toBeVisible();
   });
 });
 

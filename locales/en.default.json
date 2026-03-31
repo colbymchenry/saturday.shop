@@ -25,9 +25,16 @@
   "cart": {
     "add_to_cart": "Add to cart",
     "checkout": "Checkout",
-    "title": "Cart",
+    "title": "Your Cart",
     "update": "Update",
-    "remove": "Remove"
+    "remove": "Remove",
+    "subtotal": "Subtotal",
+    "shipping_note": "Shipping & taxes calculated at checkout",
+    "empty_title": "Your cart is empty",
+    "empty_message": "Looks like you haven't found your perfect piece yet.",
+    "continue_shopping": "Continue Shopping",
+    "order_summary": "Order Summary",
+    "quantity": "Qty"
   },
   "customers": {
     "login": {

@@ -1,3 +1,4 @@
+{%- paginate shop.metaobjects.school.values by 250 -%}
 {%- assign schools = shop.metaobjects.school.values | sort: 'name' -%}
 {%- assign conferences = shop.metaobjects.conference.values -%}
 
@@ -107,6 +108,7 @@
     </div>
   </div>
 </section>
+{%- endpaginate -%}
 
 {% style %}
   #shopify-section-{{ section.id }} {
