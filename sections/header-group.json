@@ -35,7 +35,7 @@
       "type": "header",
       "settings": {
         "logo": "shopify://shop_images/SatCo-Logo-Final_2400_x_1700_px_4.webp",
-        "menu": "",
+        "menu": "main-menu",
         "promo_text": "",
         "promo_url": "",
         "customer_account_menu": "customer-account-main-menu"
