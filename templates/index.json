@@ -86,7 +86,7 @@
       "type": "featured-collection",
       "settings": {
         "heading": "New Releases",
-        "collection": "",
+        "collection": "new-releases",
         "limit": 10,
         "background_color": "#f5f2eb"
       }
@@ -168,7 +168,7 @@
       "type": "featured-collection",
       "settings": {
         "heading": "Best Sellers",
-        "collection": "",
+        "collection": "best-sellers",
         "limit": 10,
         "background_color": "#f5f2eb"
       }
