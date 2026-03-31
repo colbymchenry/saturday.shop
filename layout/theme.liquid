@@ -24,6 +24,11 @@
     {% # Load and preload the critical CSS %}
     {{ 'critical.css' | asset_url | stylesheet_tag: preload: true }}
 
+    {% # Policy page styles (conditionally loaded) %}
+    {% if request.page_type == 'policy' %}
+      {{ 'policy.css' | asset_url | stylesheet_tag }}
+    {% endif %}
+
     {% # Social, title, etc. %}
     {% render 'meta-tags' %}
 

@@ -400,6 +400,14 @@
     opacity: 0.7;
   }
 
+  shopify-account {
+    display: flex;
+    align-items: center;
+    width: 24px;
+    justify-content: center;
+    overflow: hidden;
+  }
+
   .header__cart-count {
     position: absolute;
     top: -6px;
@@ -766,13 +774,25 @@
   }
 
   @media (max-width: 768px) {
-    .header__nav {
-      display: none;
+    header {
+      gap: 0.5rem;
     }
 
     .header__hamburger {
       display: flex;
       align-items: center;
+    }
+
+    .header__logo {
+      margin-right: auto;
+    }
+
+    .header__logo-image {
+      height: 64px;
+    }
+
+    .header__nav {
+      display: none;
     }
   }
 {% endstylesheet %}
