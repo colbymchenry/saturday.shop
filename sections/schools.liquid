@@ -300,8 +300,8 @@
     width: 56px;
     height: 56px;
     border-radius: 50%;
-    background-color: var(--color-foreground);
-    color: var(--color-background);
+    background-color: var(--color-cream);
+    color: var(--color-foreground);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -556,23 +556,14 @@
       items.forEach(function(el) { el.classList.remove('is-revealed'); });
       void container.offsetHeight;
 
-      var observer = new IntersectionObserver(function(entries, obs) {
-        entries.forEach(function(entry) {
-          if (!entry.isIntersecting) return;
-          var el = entry.target;
-          var idx = Array.prototype.indexOf.call(items, el);
-          el.style.setProperty('--reveal-delay', (idx * staggerMs) + 'ms');
-          el.classList.add('is-revealed');
-          obs.unobserve(el);
-        });
-      }, { threshold: 0.1 });
-
-      items.forEach(function(el) { observer.observe(el); });
-      return observer;
+      items.forEach(function(el, i) {
+        el.style.setProperty('--reveal-delay', (i * staggerMs) + 'ms');
+        el.classList.add('is-revealed');
+      });
     }
 
     // Initial reveal for the default visible view (all schools)
-    revealItems(section, '.schools-page__school', 50);
+    revealItems(section, '.schools-page__school', 20);
 
     // Filter schools by conference and/or search query
     function filterSchools() {
@@ -616,7 +607,7 @@
 
       searchInput.value = '';
       filterSchools();
-      revealItems(section, '.schools-page__school', 50);
+      revealItems(section, '.schools-page__school', 20);
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
@@ -690,7 +681,7 @@
         if (target === 'conference') {
           revealItems(section, '.schools-page__conference-card', 70);
         } else {
-          revealItems(section, '.schools-page__school', 50);
+          revealItems(section, '.schools-page__school', 20);
         }
       });
     });
