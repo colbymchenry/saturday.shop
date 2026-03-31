@@ -14,7 +14,11 @@
     "footer": {
       "type": "footer",
       "settings": {
-        "menu": "",
+        "menu": "footer",
+        "cta_heading": "SIGN UP AND SAVE",
+        "cta_body": "Subscribe to get special offers, free giveaways, and once-in-a-lifetime deals.",
+        "cta_button_text": "SIGN UP & SAVE",
+        "cta_button_url": "",
         "show_payment_icons": true
       }
     }
