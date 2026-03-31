@@ -1,20 +1,111 @@
-/*
- * ------------------------------------------------------------
- * IMPORTANT: The contents of this file are auto-generated.
- *
- * This file may be updated by the Shopify admin theme editor
- * or related systems. Please exercise caution as any changes
- * made to this file may be overwritten.
- * ------------------------------------------------------------
- */
 {
   "sections": {
-    "main": {
-      "type": "page",
-      "settings": {}
+    "hero": {
+      "type": "about-hero",
+      "settings": {
+        "background_color": "#F5F2EB",
+        "eyebrow": "OUR STORY",
+        "heading_bold": "YOUR SCHOOL DESERVES",
+        "heading_script": "more than a template.",
+        "body": "Saturday Co was born from a simple belief: college apparel should celebrate what makes each school truly unique — the traditions, landmarks, and inside jokes that only students and alumni would know."
+      }
+    },
+    "narrative": {
+      "type": "about-narrative",
+      "settings": {},
+      "blocks": {
+        "beginning": {
+          "type": "chapter",
+          "settings": {
+            "eyebrow": "THE BEGINNING",
+            "heading": "Born on game day, built for every day.",
+            "body": "It started with a frustration every fan knows — walking into a campus bookstore and finding the same generic logo tees that every other school has. We knew college apparel could be so much more. So we set out to create it."
+          }
+        },
+        "process": {
+          "type": "chapter",
+          "settings": {
+            "eyebrow": "THE PROCESS",
+            "heading": "We do the homework so you don't have to.",
+            "body": "For every school we launch, we dig deep into its history, traditions, and culture. We talk to students and alumni. We visit campuses. We learn the inside jokes, the landmarks, the fight songs — everything that makes a school feel like home."
+          }
+        },
+        "craft": {
+          "type": "chapter",
+          "settings": {
+            "eyebrow": "THE CRAFT",
+            "heading": "Premium quality, no shortcuts.",
+            "body": "Every piece is made with heavyweight 6.5 oz cotton jersey, pre-washed for a broken-in feel from day one. We obsess over fabric weight, ink quality, and construction because your school pride deserves better than a cheap screen print on a thin blank."
+          }
+        }
+      },
+      "block_order": [
+        "beginning",
+        "process",
+        "craft"
+      ]
+    },
+    "values": {
+      "type": "about-values",
+      "settings": {
+        "background_color": "#000000",
+        "text_color": "#FFFFFF",
+        "eyebrow": "WHAT WE BELIEVE",
+        "heading": "Built on four principles."
+      },
+      "blocks": {
+        "authenticity": {
+          "type": "value",
+          "settings": {
+            "heading": "School-Specific Authenticity",
+            "body": "Every design is rooted in real tradition — the landmarks, fight songs, and stories that make each school irreplaceable."
+          }
+        },
+        "insider": {
+          "type": "value",
+          "settings": {
+            "heading": "Insider Knowledge",
+            "body": "Created by people who do the homework. We research each campus deeply so every detail resonates with the people who lived it."
+          }
+        },
+        "fashion": {
+          "type": "value",
+          "settings": {
+            "heading": "Fashion Forward",
+            "body": "This isn't just gameday gear. We design apparel you'll reach for on any Saturday — and every day in between."
+          }
+        },
+        "anti_template": {
+          "type": "value",
+          "settings": {
+            "heading": "Anti-Template",
+            "body": "No generic logos on blanks. No cookie-cutter designs with a school name swapped in. Every product is crafted from scratch."
+          }
+        }
+      },
+      "block_order": [
+        "authenticity",
+        "insider",
+        "fashion",
+        "anti_template"
+      ]
+    },
+    "cta": {
+      "type": "brand-statement",
+      "settings": {
+        "background_color": "#F5F2EB",
+        "eyebrow": "180+ SCHOOLS AND COUNTING",
+        "heading": "<p>Find the apparel <em>your school actually deserves.</em></p>",
+        "body": "We're adding new schools every month. Explore our collection and see what makes Saturday Co different.",
+        "button_text": "FIND YOUR SCHOOL",
+        "button_url": "/pages/schools"
+      }
     }
   },
   "order": [
-    "main"
+    "hero",
+    "values",
+    "narrative",
+    "cta"
   ]
 }
