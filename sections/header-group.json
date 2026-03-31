@@ -13,24 +13,28 @@
   "sections": {
     "announcement-bar": {
       "type": "announcement-bar",
-      "settings": {
-        "background_color": "#000000",
-        "text_color": "#ffffff"
-      },
       "blocks": {
         "announcement-1": {
           "type": "announcement",
           "settings": {
-            "text": "NEW DROP: WESTERN COLLECTION — SHOP NOW"
+            "text": "NEW DROP: WESTERN COLLECTION — SHOP NOW",
+            "url": ""
           }
         }
       },
-      "block_order": ["announcement-1"]
+      "block_order": [
+        "announcement-1"
+      ],
+      "settings": {
+        "background_color": "#000000",
+        "text_color": "#ffffff",
+        "interval": 3
+      }
     },
     "header": {
       "type": "header",
       "settings": {
-        "logo": "shopify://shop_images/saturday-co-logo-v0-BdmWCSyU.png",
+        "logo": "shopify://shop_images/SatCo-Logo-Final_2400_x_1700_px_4.webp",
         "menu": "",
         "promo_text": "",
         "promo_url": "",
