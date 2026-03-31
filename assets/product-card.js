@@ -27,6 +27,13 @@ class ProductCard extends HTMLElement {
 
     this.slides = this.querySelectorAll('.product-card__image-slide');
     this.currentSlide = 0;
+
+    // Show the default variant's image so card image matches the selected dropdown
+    if (this.variantInput) {
+      const defaultVariant = this.variants.find(v => String(v.id) === this.variantInput.value);
+      if (defaultVariant?.image_id) this.showImageById(defaultVariant.image_id);
+    }
+
     this.querySelectorAll('.product-card__img-arrow').forEach(btn => {
       btn.addEventListener('click', (e) => {
         e.preventDefault();
