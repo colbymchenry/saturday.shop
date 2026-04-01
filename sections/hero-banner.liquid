@@ -32,9 +32,9 @@
         aria-label="Slide {{ forloop.index }} of {{ section.blocks.size }}"
         {{ block.shopify_attributes }}
         {%- if block.settings.font_bold.family != blank %}
-          style="--slide-font-bold: {{ block.settings.font_bold.family }}, {{ block.settings.font_bold.fallback_families }};{% if block.settings.font_script.family != blank %} --slide-font-script: {{ block.settings.font_script.family }}, {{ block.settings.font_script.fallback_families }};{% endif %}"
+          style="--slide-font-bold: {{ block.settings.font_bold.family | replace: '"', '' }}, {{ block.settings.font_bold.fallback_families }};{% if block.settings.font_script.family != blank %} --slide-font-script: {{ block.settings.font_script.family | replace: '"', '' }}, {{ block.settings.font_script.fallback_families }};{% endif %}"
         {%- elsif block.settings.font_script.family != blank %}
-          style="--slide-font-script: {{ block.settings.font_script.family }}, {{ block.settings.font_script.fallback_families }};"
+          style="--slide-font-script: {{ block.settings.font_script.family | replace: '"', '' }}, {{ block.settings.font_script.fallback_families }};"
         {%- endif %}
       >
         {%- if block.settings.image -%}
