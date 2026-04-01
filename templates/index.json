@@ -62,10 +62,8 @@
             "description": "Spirit of the west, soul of the college tradition.",
             "button_text": "SHOP THE DROP",
             "button_url": "",
-            "custom_font_bold_url": "",
-            "custom_font_bold_name": "",
-            "custom_font_script_url": "",
-            "custom_font_script_name": ""
+            "font_bold": "work_sans_n7",
+            "font_script": "work_sans_n4"
           }
         },
         "slide-retrowave": {
@@ -77,10 +75,8 @@
             "description": "Just like when your parents were in school.",
             "button_text": "SHOP THE DROP",
             "button_url": "",
-            "custom_font_bold_url": "",
-            "custom_font_bold_name": "",
-            "custom_font_script_url": "",
-            "custom_font_script_name": ""
+            "font_bold": "work_sans_n7",
+            "font_script": "work_sans_n4"
           }
         },
         "slide-gameday": {
@@ -92,10 +88,8 @@
             "description": "Premium gameday apparel for every Saturday.",
             "button_text": "SHOP THE DROP",
             "button_url": "",
-            "custom_font_bold_url": "",
-            "custom_font_bold_name": "",
-            "custom_font_script_url": "",
-            "custom_font_script_name": ""
+            "font_bold": "work_sans_n7",
+            "font_script": "work_sans_n4"
           }
         }
       },

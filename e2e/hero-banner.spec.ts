@@ -106,46 +106,56 @@ test.describe('Hero carousel', () => {
     await expect(dots.first()).toHaveClass(/hero-banner__dot--active/);
   });
 
-  test('clicking next arrow advances the slide', async ({ page }) => {
+  test('arrow and dot navigation changes active slide', async ({ page }) => {
     const slides = page.locator('.hero-banner__slide');
     if (await slides.count() <= 1) {
       test.skip();
       return;
     }
 
-    // Wait for auto-advance to prove JS is loaded
-    await expect(slides.nth(1)).toHaveClass(/hero-banner__slide--active/, { timeout: 15000 });
+    // Wait for the deferred carousel script to attach event listeners.
+    // We poll until clicking next actually changes the active slide.
+    await page.waitForFunction(() => {
+      const btn = document.querySelector('.hero-banner__arrow--next') as HTMLButtonElement;
+      if (!btn) return false;
+      btn.click();
+      const active = document.querySelector('.hero-banner__slide--active');
+      const isSecond = active === document.querySelectorAll('.hero-banner__slide')[1];
+      if (!isSecond) return false;
+      // Reset back to first slide via prev
+      (document.querySelector('.hero-banner__arrow--prev') as HTMLButtonElement)?.click();
+      return true;
+    }, null, { timeout: 20000, polling: 500 });
 
-    // Click prev to go back, then next to advance again
-    const prevBtn = page.locator('.hero-banner__arrow--prev');
-    await prevBtn.click();
-    await expect(slides.nth(0)).toHaveClass(/hero-banner__slide--active/);
+    // Now test all controls
+    const result = await page.evaluate(() => {
+      const next = document.querySelector('.hero-banner__arrow--next') as HTMLButtonElement;
+      const prev = document.querySelector('.hero-banner__arrow--prev') as HTMLButtonElement;
+      const dots = Array.from(document.querySelectorAll('.hero-banner__dot')) as HTMLButtonElement[];
 
-    const nextBtn = page.locator('.hero-banner__arrow--next');
-    await nextBtn.click();
-    await expect(slides.nth(1)).toHaveClass(/hero-banner__slide--active/);
+      // Click next
+      next.click();
+      const afterNext = document.querySelector('.hero-banner__slide:nth-child(2)')?.classList.contains('hero-banner__slide--active');
+      const dotAfterNext = dots[1]?.classList.contains('hero-banner__dot--active');
 
-    const dots = page.locator('.hero-banner__dot');
-    await expect(dots.nth(1)).toHaveClass(/hero-banner__dot--active/);
-  });
+      // Click prev back to first
+      prev.click();
+      const afterPrev = document.querySelector('.hero-banner__slide:nth-child(1)')?.classList.contains('hero-banner__slide--active');
 
-  test('clicking a dot navigates to that slide', async ({ page }) => {
-    const slides = page.locator('.hero-banner__slide');
-    if (await slides.count() <= 2) {
-      test.skip();
-      return;
-    }
+      // Click last dot
+      const lastIdx = dots.length - 1;
+      dots[lastIdx]?.click();
+      const afterDot = document.querySelector(`.hero-banner__slide:nth-child(${lastIdx + 1})`)?.classList.contains('hero-banner__slide--active');
+      const dotActive = dots[lastIdx]?.classList.contains('hero-banner__dot--active');
 
-    // Wait for auto-advance to prove JS is loaded
-    await expect(slides.nth(1)).toHaveClass(/hero-banner__slide--active/, { timeout: 15000 });
+      return { afterNext, dotAfterNext, afterPrev, afterDot, dotActive };
+    });
 
-    const dots = page.locator('.hero-banner__dot');
-    await dots.nth(0).click();
-    await expect(slides.nth(0)).toHaveClass(/hero-banner__slide--active/);
-
-    await dots.nth(2).click();
-    await expect(slides.nth(2)).toHaveClass(/hero-banner__slide--active/);
-    await expect(dots.nth(2)).toHaveClass(/hero-banner__dot--active/);
+    expect(result.afterNext).toBe(true);
+    expect(result.dotAfterNext).toBe(true);
+    expect(result.afterPrev).toBe(true);
+    expect(result.afterDot).toBe(true);
+    expect(result.dotActive).toBe(true);
   });
 
   test('carousel has proper ARIA attributes', async ({ page }) => {

@@ -1,3 +1,6 @@
+(function() {
+if (customElements.get('product-card')) return;
+
 class ProductCard extends HTMLElement {
   connectedCallback() {
     this.variants = JSON.parse(this.querySelector('[data-variants]')?.textContent || '[]');
@@ -191,6 +194,5 @@ class ProductCard extends HTMLElement {
   }
 }
 
-if (!customElements.get('product-card')) {
-  customElements.define('product-card', ProductCard);
-}
+customElements.define('product-card', ProductCard);
+})();
