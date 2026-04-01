@@ -29,17 +29,56 @@ Each section has a corresponding spec file:
 
 ## Process
 
-1. **Read existing tests** — Before writing, read 2-3 existing spec files to match the project's test style and patterns
-2. **Read the section** — Understand the Liquid, schema, and expected behavior
-3. **Write tests** — Cover:
-   - Section renders on the page
-   - All schema settings produce visible changes
-   - Block types render correctly
-   - Responsive behavior (mobile/desktop viewports)
-   - Interactive elements (JS-powered components)
-   - Edge cases (empty states, max blocks, long content)
-4. **Run tests** — Execute and fix any failures
-5. **Visual regression** — Add screenshot assertions for layout-critical sections
+### Step 1: Scope — Only test what changed
+
+Always start by determining which tests are affected. Do NOT run the full suite.
+
+```bash
+# 1. Get changed files
+git diff --name-only HEAD
+
+# 2. Find affected test files via codegraph (if .codegraph/ exists)
+git diff --name-only HEAD | codegraph affected --stdin --filter "e2e/*" --quiet
+
+# 3. If codegraph is unavailable, fall back to the file mapping above
+```
+
+This gives you the exact list of spec files to write/update/run.
+
+### Step 2: Read context
+
+- Read 2-3 existing spec files to match the project's test style and patterns
+- Read the changed section(s) to understand the Liquid, schema, and expected behavior
+
+### Step 3: Write tests
+
+For each affected spec file:
+- Section renders on the page
+- All schema settings produce visible changes
+- Block types render correctly
+- Responsive behavior (mobile/desktop viewports)
+- Interactive elements (JS-powered components)
+- Edge cases (empty states, max blocks, long content)
+
+### Step 4: Run only affected tests
+
+```bash
+# Run ONLY the affected test files, not the full suite
+npx playwright test e2e/hero-banner.spec.ts e2e/featured-collection.spec.ts
+```
+
+Fix any failures and re-run until green.
+
+### Step 5: Visual regression
+
+Take Playwright screenshots of affected sections at key viewports and inspect them:
+
+```bash
+npx playwright screenshot --viewport-size=375,812 http://127.0.0.1:9292 /tmp/mobile.png
+npx playwright screenshot --viewport-size=1440,900 http://127.0.0.1:9292 /tmp/desktop.png
+```
+
+Read the screenshots with the Read tool. Add `toHaveScreenshot()` assertions for layout-critical sections.
 
 ## Playwright Patterns
 

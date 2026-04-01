@@ -1,8 +1,7 @@
 #!/usr/bin/env bash
 #
-# Verify script — uses codegraph (if available) to find affected test files,
-# falls back to listing changed test files from the diff.
-# Runs as a Stop hook to ensure test coverage for all changes.
+# Stop hook — shows what changed, finds affected tests via codegraph,
+# and runs only those Playwright tests.
 #
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
@@ -17,6 +16,11 @@ if [ -z "$ALL_CHANGED" ]; then
   echo "verify: no changes detected, skipping"
   exit 0
 fi
+
+# ── Show the diff ──
+echo "═══ Git Diff ═══"
+git -C "$PROJECT_ROOT" diff --stat HEAD 2>/dev/null || true
+echo ""
 
 echo "Changed files:"
 echo "$ALL_CHANGED" | sed 's/^/  /'
@@ -35,22 +39,25 @@ is_test_file() {
 # ── Find affected test files ──
 AFFECTED_TESTS=""
 
-# Strategy 1: Use codegraph if available and project is initialized
-if command -v codegraph >/dev/null 2>&1 && [ -d "$PROJECT_ROOT/.codegraph" ]; then
-  # Get source-only changes (exclude test files) for codegraph analysis
-  SOURCE_FILES=$(echo "$ALL_CHANGED" | while IFS= read -r f; do
-    is_test_file "$f" || echo "$f"
-  done)
+# Get source-only changes (exclude test files) for dependency analysis
+SOURCE_FILES=$(echo "$ALL_CHANGED" | while IFS= read -r f; do
+  is_test_file "$f" || echo "$f"
+done)
 
+# Strategy 1: codegraph affected (preferred — traces import dependencies)
+if command -v codegraph >/dev/null 2>&1 && [ -d "$PROJECT_ROOT/.codegraph" ]; then
   if [ -n "$SOURCE_FILES" ]; then
-    CG_RESULTS=$(echo "$SOURCE_FILES" | codegraph affected --stdin --quiet --path "$PROJECT_ROOT" 2>/dev/null || true)
+    CG_RESULTS=$(echo "$SOURCE_FILES" | codegraph affected --stdin --filter "e2e/*" --quiet --path "$PROJECT_ROOT" 2>/dev/null || true)
     if [ -n "$CG_RESULTS" ]; then
       AFFECTED_TESTS="$CG_RESULTS"
+      echo "codegraph affected test files:"
+      echo "$CG_RESULTS" | sed 's/^/  /'
+      echo ""
     fi
   fi
 fi
 
-# Strategy 2: Include test files that are directly in the diff
+# Strategy 2: test files directly in the diff
 CHANGED_TESTS=$(echo "$ALL_CHANGED" | while IFS= read -r f; do
   is_test_file "$f" && echo "$f"
 done || true)
@@ -59,17 +66,14 @@ done || true)
 ALL_AFFECTED=$(printf '%s\n%s' "$AFFECTED_TESTS" "$CHANGED_TESTS" | sort -u | grep -v '^$' || true)
 
 if [ -z "$ALL_AFFECTED" ]; then
-  echo "✅ No test files found in changes or dependency graph."
-  echo ""
-  echo "⚠️  If you changed routes or components, ensure relevant e2e tests exist and pass."
+  echo "No affected test files found."
   echo ""
   echo "Checklist:"
   echo "  Run shopify theme check"
-  echo "  Run affected e2e tests"
   exit 0
 fi
 
-# ── Check which affected test files were modified vs not ──
+# ── Show affected tests and their status ──
 MODIFIED=""
 NOT_MODIFIED=""
 
@@ -78,7 +82,7 @@ while IFS= read -r test_file; do
   if echo "$ALL_CHANGED" | grep -qF "$test_file"; then
     MODIFIED="${MODIFIED}  ✅ ${test_file}"$'\n'
   else
-    NOT_MODIFIED="${NOT_MODIFIED}  ❌ ${test_file}"$'\n'
+    NOT_MODIFIED="${NOT_MODIFIED}  ⚠️  ${test_file}"$'\n'
   fi
 done <<< "$ALL_AFFECTED"
 
@@ -87,18 +91,26 @@ echo "Affected test files:"
 [ -n "$NOT_MODIFIED" ] && printf '%s' "$NOT_MODIFIED"
 echo ""
 
-if [ -n "$NOT_MODIFIED" ]; then
-  echo "🛑 BLOCKED: The above ❌ test files are affected by your changes but were NOT updated."
+# ── Run only affected Playwright tests ──
+SPEC_FILES=$(echo "$ALL_AFFECTED" | grep '\.spec\.' | tr '\n' ' ')
+
+if [ -n "$SPEC_FILES" ]; then
+  echo "═══ Running affected Playwright tests ═══"
+  cd "$PROJECT_ROOT"
+  npx playwright test $SPEC_FILES 2>&1
+  TEST_EXIT=$?
   echo ""
-  echo "You MUST either:"
-  echo "  1. Update those test files to cover your changes, OR"
-  echo "  2. Run them to confirm they still pass without changes"
-  echo ""
-  echo "Also run shopify theme check."
+
+  if [ $TEST_EXIT -ne 0 ]; then
+    echo "🛑 BLOCKED: Playwright tests failed for affected files."
+    echo "Fix the failing tests before completing your task."
+  else
+    echo "✅ All affected tests passed."
+  fi
 else
-  echo "✅ All affected test files were modified."
-  echo ""
-  echo "Remaining checklist:"
-  echo "  Run shopify theme check"
-  echo "  Run affected e2e tests"
+  echo "No Playwright spec files to run."
 fi
+
+echo ""
+echo "Remaining checklist:"
+echo "  Run shopify theme check"

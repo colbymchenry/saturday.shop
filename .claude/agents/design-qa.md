@@ -25,21 +25,42 @@ Audit CSS changes, verify responsive layouts, check visual consistency, and catc
 
 ## QA Process
 
-When reviewing UI changes:
+### Step 1: Scope — Only QA what changed
 
-1. **Read the diff** — Understand what CSS/Liquid changed
-2. **Read the full section** — Check responsive behavior, edge cases
-3. **Screenshot** — Use `curl` to fetch pages from the local dev server (`http://127.0.0.1:9292`) and use Playwright to capture screenshots at multiple viewports:
+```bash
+# Get changed visual files (.liquid, .css)
+git diff --name-only HEAD | grep -E '\.(liquid|css)$'
+
+# Find all affected files via codegraph (if .codegraph/ exists)
+git diff --name-only HEAD | codegraph affected --stdin --quiet
+```
+
+This tells you exactly which sections/pages to screenshot. Don't QA the entire site — focus on what's affected by the changes.
+
+### Step 2: Read the diff + full section
+
+Understand what CSS/Liquid changed. Read the full section file to check responsive behavior, edge cases.
+
+### Step 3: Screenshot affected pages
+
+Take Playwright screenshots at key breakpoints for each affected page/section:
 
 ```bash
 # Capture screenshots at key breakpoints using Playwright
-npx playwright screenshot --viewport-size=375,812 http://127.0.0.1:9292 mobile.png
-npx playwright screenshot --viewport-size=768,1024 http://127.0.0.1:9292 tablet.png
-npx playwright screenshot --viewport-size=1440,900 http://127.0.0.1:9292 desktop.png
+npx playwright screenshot --viewport-size=375,812 http://127.0.0.1:9292/PAGE mobile.png
+npx playwright screenshot --viewport-size=768,1024 http://127.0.0.1:9292/PAGE tablet.png
+npx playwright screenshot --viewport-size=1440,900 http://127.0.0.1:9292/PAGE desktop.png
 ```
 
-4. **Analyze** — Check for issues across viewports
-5. **Report** — Provide specific findings with fixes
+Read each screenshot with the Read tool to visually inspect.
+
+### Step 4: Analyze
+
+Check for issues across viewports against the checklist below.
+
+### Step 5: Report
+
+Provide specific findings with fixes.
 
 ## Checklist
 

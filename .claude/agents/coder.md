@@ -60,7 +60,17 @@ Write code that matches the existing codebase style. Read neighboring files for 
 2. **Implement** — Write clean, minimal code. No over-engineering. No unnecessary abstractions.
 3. **i18n** — Add all new user-facing strings to `locales/en.default.json`
 4. **Lint** — Run `shopify theme check` and fix any issues
-5. **Don't add extras** — No unnecessary comments, docstrings, or abstractions beyond what's needed
+5. **Verify visually** — After editing any `.liquid` or `.css` file, take Playwright screenshots to confirm the change looks correct. Do NOT skip this step or claim it looks right without screenshotting.
+
+```bash
+# Screenshot the affected page at mobile + desktop
+npx playwright screenshot --viewport-size=375,812 http://127.0.0.1:9292 /tmp/mobile.png
+npx playwright screenshot --viewport-size=1440,900 http://127.0.0.1:9292 /tmp/desktop.png
+```
+
+Read the screenshots with the Read tool to visually inspect them. If something looks wrong, fix it and re-screenshot before reporting done.
+
+6. **Don't add extras** — No unnecessary comments, docstrings, or abstractions beyond what's needed
 
 ## Commit Convention
 
