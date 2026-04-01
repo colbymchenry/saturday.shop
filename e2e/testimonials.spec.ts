@@ -3,6 +3,8 @@ import { test, expect } from '@playwright/test';
 test.describe('Testimonials', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/');
+    // Wait for the carousel JS to initialize (it adds --center class to center card)
+    await page.waitForSelector('.testimonial-card--center', { timeout: 15000 });
   });
 
   test('testimonials section is visible', async ({ page }) => {
@@ -60,20 +62,91 @@ test.describe('Testimonials', () => {
     await expect(dots.first()).toHaveClass(/testimonials__dot--active/);
   });
 
-  test('clicking a dot scrolls the carousel', async ({ page }) => {
+  test('center card is elevated on desktop', async ({ page }) => {
+    const cards = page.locator('.testimonial-card');
+    if (await cards.count() < 3) {
+      test.skip();
+      return;
+    }
+
+    // Second card (center of first group) should have the --center modifier
+    const centerCard = cards.nth(1);
+    await expect(centerCard).toHaveClass(/testimonial-card--center/, { timeout: 10000 });
+  });
+
+  test('clicking a dot transitions the carousel', async ({ page }) => {
     const dots = page.locator('.testimonials__dot');
     if (await dots.count() < 2) {
       test.skip();
       return;
     }
 
-    const track = page.locator('.testimonials__track').first();
-    const scrollBefore = await track.evaluate(el => el.scrollLeft);
-
+    // Click second dot and verify active state changes
     await dots.nth(1).click();
-    await page.waitForTimeout(500);
+    await expect(dots.nth(1)).toHaveClass(/testimonials__dot--active/, { timeout: 5000 });
 
-    const scrollAfter = await track.evaluate(el => el.scrollLeft);
-    expect(scrollAfter).toBeGreaterThan(scrollBefore);
+    // Verify track has a non-zero translateX
+    const track = page.locator('.testimonials__track').first();
+    await expect(track).not.toHaveCSS('transform', 'none', { timeout: 5000 });
+  });
+
+  test('auto-rotates after interval', async ({ page }) => {
+    test.setTimeout(30000);
+    const dots = page.locator('.testimonials__dot');
+    if (await dots.count() < 2) {
+      test.skip();
+      return;
+    }
+
+    await expect(dots.first()).toHaveClass(/testimonials__dot--active/);
+
+    // Wait for auto-rotation (9s interval + buffer)
+    await expect(dots.nth(1)).toHaveClass(/testimonials__dot--active/, { timeout: 15000 });
+  });
+
+  test('pauses auto-rotation on hover', async ({ page }) => {
+    test.setTimeout(30000);
+    const carousel = page.locator('review-carousel').first();
+    const dots = page.locator('.testimonials__dot');
+    if (await dots.count() < 2) {
+      test.skip();
+      return;
+    }
+
+    // Hover over carousel to pause
+    await carousel.hover();
+    await expect(dots.first()).toHaveClass(/testimonials__dot--active/);
+
+    // Wait longer than rotation interval while hovering
+    await page.waitForTimeout(10000);
+
+    // Should still be on first page
+    await expect(dots.first()).toHaveClass(/testimonials__dot--active/);
+  });
+
+  test('mobile shows single card layout', async ({ page }) => {
+    await page.setViewportSize({ width: 375, height: 812 });
+    await page.goto('/');
+
+    // On mobile, no --center class is added, wait for dots to be rebuilt
+    // The JS rebuilds dots for mobile: 1 per card instead of 1 per 3-card group
+    const cards = page.locator('.testimonial-card');
+    const cardCount = await cards.count();
+    if (cardCount < 2) {
+      test.skip();
+      return;
+    }
+
+    // Wait for dots to be rebuilt by JS (more dots on mobile than server-rendered)
+    const dots = page.locator('.testimonials__dot');
+    await expect(dots).toHaveCount(cardCount, { timeout: 15000 });
+
+    // Cards should be full-width on mobile
+    const card = cards.first();
+    const cardBox = await card.boundingBox();
+    expect(cardBox).toBeTruthy();
+    if (cardBox) {
+      expect(cardBox.width).toBeGreaterThan(300);
+    }
   });
 });

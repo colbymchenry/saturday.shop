@@ -1,22 +1,35 @@
-<!-- cmemory:tools-start -->
-## cmemory — Persistent Project Memory
+## Agent Workflow
 
-You have MCP tools that persist knowledge across sessions. Use them:
+This project uses specialized AI agents in `.claude/agents/`. **ALWAYS delegate to the appropriate agent rather than doing work directly.**
 
-**search_lessons** — Call this FIRST when starting any task, debugging any bug, or touching unfamiliar code. Query with natural language: "auth token refresh", "stripe webhook handling", "database migration order". Past sessions may have already solved what you're about to work on.
+| Step | Agent | Purpose | Invoke |
+|------|-------|---------|--------|
+| 1 | **architect** | Plan before implementing — scope affected sections, trade-offs, risks | `@architect` |
+| 2 | **coder** | Write/edit Liquid, CSS, JS following project conventions and the architect's plan | `@coder` |
+| 3 | **reviewer** | Review the diff for security, performance, consistency | `@reviewer` |
+| 4 | **tester** | Write and run Playwright e2e tests for affected sections | `@tester` |
+| 5 | **design-qa** | Visual QA — screenshot at mobile (375x812) + desktop (1440x900) and inspect | `@design-qa` |
+| — | **shopify-expert** | Shopify theme architecture, Liquid patterns, schema design | `@shopify-expert` |
 
-**save_lesson** — Call after: fixing a non-obvious bug, discovering unexpected API behavior, finding a workaround, or learning why something is built a certain way. Good lessons: bug root causes, API gotchas, file-specific patterns. Bad lessons: basic setup steps, obvious errors. Write 1-3 sentences. Tag with file paths and concepts.
+### Workflow
 
-**reject_lesson** — Call this when search_lessons returns something wrong or outdated based on what you currently see in the code. Keeping stale lessons hurts future sessions.
+For any feature, bug fix, or significant change:
 
-**update_profile** — Call this when you learn something structural about the project: the stack, how auth works, how data is stored, deployment setup, target audience. Also call when these change: new integrations, auth migrations, database changes, deployment updates. The profile helps future sessions understand this project immediately.
-<!-- cmemory:tools-end -->
+1. **Plan** → `@architect` analyzes the request, identifies affected sections/snippets/templates, and produces an implementation plan
+2. **Implement** → `@coder` writes code following the architect's plan and Shopify theme conventions
+3. **Review** → `@reviewer` checks the diff for security, performance, and consistency issues
+4. **Test** → `@tester` writes/updates Playwright e2e tests and runs them until green
+5. **Visual QA** → `@design-qa` screenshots affected pages at mobile + desktop and inspects for layout/responsive issues
 
-<!-- cmemory:profile-start -->
-<!-- cmemory:profile-end -->
+**Always start with the architect.** Even for seemingly simple changes, the architect identifies affected files, edge cases, and test requirements that are easy to miss when jumping straight to code.
 
-<!-- cmemory:lessons-start -->
-<!-- cmemory:lessons-end -->
+### When NOT to delegate
+
+- Quick questions about the codebase (just answer directly)
+- Reading/explaining code (just read and explain)
+- Git operations, deployments, or config changes (handle directly)
+
+---
 
 # CLAUDE.md
 

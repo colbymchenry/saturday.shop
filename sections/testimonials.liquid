@@ -49,7 +49,7 @@
       {% endfor %}
     </div>
 
-    <div class="testimonials__dots">
+    <div class="testimonials__dots" data-total-cards="{{ section.blocks.size }}">
       {% assign total_pages = section.blocks.size | minus: 1 | divided_by: 3 | plus: 1 %}
       {% for i in (1..total_pages) %}
         <button class="testimonials__dot {% if forloop.first %}testimonials__dot--active{% endif %}" data-page="{{ forloop.index0 }}" aria-label="Page {{ forloop.index }}"></button>
@@ -102,28 +102,19 @@
   /* Carousel */
   review-carousel {
     display: block;
+    overflow: hidden;
   }
 
   .testimonials__track {
     display: flex;
-    overflow-x: auto;
-    scroll-snap-type: x mandatory;
-    scrollbar-width: none;
-    -webkit-overflow-scrolling: touch;
-    scroll-behavior: smooth;
+    transition: transform 0.6s cubic-bezier(0.25, 0.1, 0.25, 1);
     gap: 20px;
-    padding: 0 var(--page-margin);
-  }
-
-  .testimonials__track::-webkit-scrollbar {
-    display: none;
+    padding: 20px 0;
   }
 
   /* Review card */
   .testimonial-card {
     flex: 0 0 calc(33.333% - 14px);
-    min-width: 280px;
-    scroll-snap-align: start;
     border: 1px solid var(--color-border);
     border-radius: 4px;
     padding: 32px 24px;
@@ -131,6 +122,12 @@
     flex-direction: column;
     align-items: center;
     text-align: center;
+    transition: transform 0.4s ease, box-shadow 0.4s ease;
+  }
+
+  .testimonial-card--center {
+    transform: scale(1.05);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
   }
 
   .testimonial-card__quote {
@@ -218,53 +215,26 @@
     opacity: 0.85;
   }
 
+  /* Mobile: single card with swipe */
   @media (max-width: 900px) {
+    .testimonials__track {
+      gap: 0;
+    }
+
     .testimonial-card {
-      flex: 0 0 80%;
+      flex: 0 0 100%;
+      margin: 0;
+      transition: transform 0.5s cubic-bezier(0.25, 0.1, 0.25, 1), opacity 0.5s ease;
+    }
+
+    .testimonial-card--center {
+      transform: none;
+      box-shadow: none;
     }
   }
 {% endstylesheet %}
 
-{% javascript %}
-  class ReviewCarousel extends HTMLElement {
-    connectedCallback() {
-      this.track = this.querySelector('.testimonials__track');
-      this.dots = this.querySelectorAll('.testimonials__dot');
-
-      this.dots.forEach(dot => {
-        dot.addEventListener('click', () => {
-          const page = parseInt(dot.dataset.page);
-          const card = this.track.querySelector('.testimonial-card');
-          if (!card) return;
-          const cardWidth = card.offsetWidth + 20;
-          this.track.scrollTo({ left: page * cardWidth * 3, behavior: 'smooth' });
-          this.setActiveDot(page);
-        });
-      });
-
-      this.track.addEventListener('scroll', () => {
-        if (this.scrollTimer) clearTimeout(this.scrollTimer);
-        this.scrollTimer = setTimeout(() => this.updateDots(), 100);
-      });
-    }
-
-    setActiveDot(index) {
-      this.dots.forEach((d, i) => d.classList.toggle('testimonials__dot--active', i === index));
-    }
-
-    updateDots() {
-      const card = this.track.querySelector('.testimonial-card');
-      if (!card) return;
-      const cardWidth = card.offsetWidth + 20;
-      const page = Math.round(this.track.scrollLeft / (cardWidth * 3));
-      this.setActiveDot(page);
-    }
-  }
-
-  if (!customElements.get('review-carousel')) {
-    customElements.define('review-carousel', ReviewCarousel);
-  }
-{% endjavascript %}
+<script src="{{ 'review-carousel.js' | asset_url }}" defer></script>
 
 {% schema %}
 {
