@@ -51,15 +51,62 @@
     },
     "hero-banner": {
       "type": "hero-banner",
+      "blocks": {
+        "slide-western": {
+          "type": "slide",
+          "settings": {
+            "image": "shopify://shop_images/SatCo-Western-1.png",
+            "subheading": "IT'S SATURDAY, Y'ALL.",
+            "heading_bold": "WESTERN",
+            "heading_script": "Collection",
+            "description": "Spirit of the west, soul of the college tradition.",
+            "button_text": "SHOP THE DROP",
+            "button_url": "",
+            "custom_font_bold_url": "",
+            "custom_font_bold_name": "",
+            "custom_font_script_url": "",
+            "custom_font_script_name": ""
+          }
+        },
+        "slide-retrowave": {
+          "type": "slide",
+          "settings": {
+            "subheading": "I WANT MY MTV...",
+            "heading_bold": "RETROWAVE",
+            "heading_script": "Collection",
+            "description": "Just like when your parents were in school.",
+            "button_text": "SHOP THE DROP",
+            "button_url": "",
+            "custom_font_bold_url": "",
+            "custom_font_bold_name": "",
+            "custom_font_script_url": "",
+            "custom_font_script_name": ""
+          }
+        },
+        "slide-gameday": {
+          "type": "slide",
+          "settings": {
+            "subheading": "GAME ON.",
+            "heading_bold": "GAME DAY",
+            "heading_script": "Collection",
+            "description": "Premium gameday apparel for every Saturday.",
+            "button_text": "SHOP THE DROP",
+            "button_url": "",
+            "custom_font_bold_url": "",
+            "custom_font_bold_name": "",
+            "custom_font_script_url": "",
+            "custom_font_script_name": ""
+          }
+        }
+      },
+      "block_order": [
+        "slide-western",
+        "slide-retrowave",
+        "slide-gameday"
+      ],
       "settings": {
-        "image": "shopify://shop_images/SatCo-Western-1.png",
-        "subheading": "IT'S SATURDAY, Y'ALL.",
-        "heading_bold": "WESTERN",
-        "heading_script": "Collection",
-        "description": "Spirit of the west, soul of the college tradition.",
-        "button_text": "SHOP THE DROP",
-        "button_url": "",
-        "height": 60
+        "height": 60,
+        "auto_advance": 7
       }
     },
     "brand-statement": {

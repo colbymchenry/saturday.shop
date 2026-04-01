@@ -1,53 +1,134 @@
-<section class="hero-banner full-width" style="--hero-height: {{ section.settings.height }}vh;">
-  {% if section.settings.image %}
-    <div class="hero-banner__image">
-      {{ section.settings.image | image_url: width: 2000 | image_tag: loading: 'eager' }}
-    </div>
-  {% else %}
-    <div class="hero-banner__image">
-      {{ 'hero-apparel-1' | placeholder_svg_tag }}
-    </div>
-  {% endif %}
+{%- comment -%}
+  Hero Carousel — full-width slides with per-slide custom Google Fonts.
+  Uses blocks (type: slide) so merchants can add / reorder in the theme editor.
+{%- endcomment -%}
 
-  <div class="hero-banner__overlay"></div>
+{%- comment -%} ── Load any custom Google Fonts requested by slides ── {%- endcomment -%}
+{%- for block in section.blocks -%}
+  {%- if block.settings.custom_font_bold_url != blank -%}
+    <link rel="stylesheet" href="{{ block.settings.custom_font_bold_url }}" media="print" onload="this.media='all'">
+  {%- endif -%}
+  {%- if block.settings.custom_font_script_url != blank -%}
+    <link rel="stylesheet" href="{{ block.settings.custom_font_script_url }}" media="print" onload="this.media='all'">
+  {%- endif -%}
+{%- endfor -%}
 
-  <div class="hero-banner__content">
-    {% if section.settings.subheading != blank %}
-      <p class="hero-banner__subheading">{{ section.settings.subheading }}</p>
-    {% endif %}
-
-    {% if section.settings.heading_bold != blank or section.settings.heading_script != blank %}
-      <h1 class="hero-banner__heading">
-        {%- if section.settings.heading_bold != blank -%}
-          <span class="hero-banner__heading-bold">{{ section.settings.heading_bold }}</span>
+<section
+  class="hero-banner full-width"
+  style="--hero-height: {{ section.settings.height }}vh;"
+  data-auto-advance="{{ section.settings.auto_advance }}"
+  aria-roledescription="carousel"
+  aria-label="Hero slideshow"
+>
+  {%- comment -%} ── Slide track ── {%- endcomment -%}
+  <div class="hero-banner__track">
+    {%- for block in section.blocks -%}
+      <div
+        class="hero-banner__slide{% if forloop.first %} hero-banner__slide--active{% endif %}"
+        role="group"
+        aria-roledescription="slide"
+        aria-label="Slide {{ forloop.index }} of {{ section.blocks.size }}"
+        {{ block.shopify_attributes }}
+        {%- if block.settings.custom_font_bold_name != blank %}
+          style="--slide-font-bold: '{{ block.settings.custom_font_bold_name }}', var(--font-heading--family);{% if block.settings.custom_font_script_name != blank %} --slide-font-script: '{{ block.settings.custom_font_script_name }}', var(--font-body--family);{% endif %}"
+        {%- elsif block.settings.custom_font_script_name != blank %}
+          style="--slide-font-script: '{{ block.settings.custom_font_script_name }}', var(--font-body--family);"
+        {%- endif %}
+      >
+        {%- if block.settings.image -%}
+          <div class="hero-banner__image">
+            {{ block.settings.image | image_url: width: 2000 | image_tag: loading: 'eager' }}
+          </div>
+        {%- else -%}
+          <div class="hero-banner__image">
+            {{ 'hero-apparel-1' | placeholder_svg_tag }}
+          </div>
         {%- endif -%}
-        {% if section.settings.heading_script != blank %}
-          <span class="hero-banner__heading-script">{{ section.settings.heading_script }}</span>
-        {% endif %}
-      </h1>
-    {% endif %}
 
-    {% if section.settings.description != blank %}
-      <p class="hero-banner__description">{{ section.settings.description }}</p>
-    {% endif %}
+        <div class="hero-banner__overlay"></div>
 
-    {% if section.settings.button_text != blank %}
-      <a href="{{ section.settings.button_url }}" class="hero-banner__button">
-        {{ section.settings.button_text }}
-      </a>
-    {% endif %}
+        <div class="hero-banner__content">
+          {%- if block.settings.subheading != blank -%}
+            <p class="hero-banner__subheading">{{ block.settings.subheading }}</p>
+          {%- endif -%}
+
+          {%- if block.settings.heading_bold != blank or block.settings.heading_script != blank -%}
+            <h2 class="hero-banner__heading">
+              {%- if block.settings.heading_bold != blank -%}
+                <span class="hero-banner__heading-bold">{{ block.settings.heading_bold }}</span>
+              {%- endif -%}
+              {%- if block.settings.heading_script != blank -%}
+                <span class="hero-banner__heading-script">{{ block.settings.heading_script }}</span>
+              {%- endif -%}
+            </h2>
+          {%- endif -%}
+
+          {%- if block.settings.description != blank -%}
+            <p class="hero-banner__description">{{ block.settings.description }}</p>
+          {%- endif -%}
+
+          {%- if block.settings.button_text != blank -%}
+            <a href="{{ block.settings.button_url }}" class="hero-banner__button">
+              {{ block.settings.button_text }}
+            </a>
+          {%- endif -%}
+        </div>
+      </div>
+    {%- endfor -%}
   </div>
+
+  {%- if section.blocks.size > 1 -%}
+    {%- comment -%} ── Arrow navigation ── {%- endcomment -%}
+    <button class="hero-banner__arrow hero-banner__arrow--prev" aria-label="Previous slide">
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M13 4L7 10L13 16" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+    <button class="hero-banner__arrow hero-banner__arrow--next" aria-label="Next slide">
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M7 4L13 10L7 16" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+
+    {%- comment -%} ── Dot indicators ── {%- endcomment -%}
+    <div class="hero-banner__dots" role="tablist" aria-label="Slide navigation">
+      {%- for block in section.blocks -%}
+        <button
+          class="hero-banner__dot{% if forloop.first %} hero-banner__dot--active{% endif %}"
+          role="tab"
+          aria-selected="{% if forloop.first %}true{% else %}false{% endif %}"
+          aria-label="Go to slide {{ forloop.index }}"
+          data-index="{{ forloop.index0 }}"
+        ></button>
+      {%- endfor -%}
+    </div>
+  {%- endif -%}
 </section>
 
 {% stylesheet %}
+  /* ── Carousel container ── */
   .hero-banner {
     position: relative;
-    display: flex;
-    align-items: flex-end;
     min-height: var(--hero-height, 80vh);
     overflow: hidden;
   }
 
+  .hero-banner__track {
+    display: flex;
+    height: 100%;
+    position: absolute;
+    inset: 0;
+    transition: transform 0.6s cubic-bezier(0.25, 0.1, 0.25, 1);
+    will-change: transform;
+  }
+
+  /* ── Individual slide ── */
+  .hero-banner__slide {
+    position: relative;
+    display: flex;
+    align-items: flex-end;
+    min-width: 100%;
+    min-height: var(--hero-height, 80vh);
+    flex-shrink: 0;
+  }
+
+  /* ── Image layer ── */
   .hero-banner__image {
     position: absolute;
     inset: 0;
@@ -61,6 +142,7 @@
     object-fit: cover;
   }
 
+  /* ── Gradient overlay ── */
   .hero-banner__overlay {
     position: absolute;
     inset: 0;
@@ -73,6 +155,7 @@
     z-index: 1;
   }
 
+  /* ── Content ── */
   .hero-banner__content {
     position: relative;
     z-index: 2;
@@ -98,14 +181,14 @@
   }
 
   .hero-banner__heading-bold {
-    font-family: var(--font-heading--family);
+    font-family: var(--slide-font-bold, var(--font-heading--family));
     font-weight: 800;
     text-transform: uppercase;
     letter-spacing: 0.02em;
   }
 
   .hero-banner__heading-script {
-    font-family: var(--font-body--family);
+    font-family: var(--slide-font-script, var(--font-body--family));
     font-weight: 400;
     font-style: italic;
     margin-left: 0.15em;
@@ -139,61 +222,195 @@
     opacity: 0.85;
   }
 
+  /* ── Arrow buttons ── */
+  .hero-banner__arrow {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 3;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    border: none;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(4px);
+    color: #fff;
+    cursor: pointer;
+    transition: background 0.2s ease;
+  }
+
+  .hero-banner__arrow:hover {
+    background: rgba(255, 255, 255, 0.3);
+  }
+
+  .hero-banner__arrow--prev { left: 16px; }
+  .hero-banner__arrow--next { right: 16px; }
+
+  /* ── Dot indicators ── */
+  .hero-banner__dots {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 3;
+    display: flex;
+    gap: 10px;
+  }
+
+  .hero-banner__dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    border: 2px solid rgba(255, 255, 255, 0.7);
+    background: transparent;
+    cursor: pointer;
+    padding: 0;
+    transition: background 0.2s ease, border-color 0.2s ease;
+  }
+
+  .hero-banner__dot--active {
+    background: #fff;
+    border-color: #fff;
+  }
+
+  /* ── Mobile ── */
   @media (max-width: 768px) {
     .hero-banner {
+      min-height: 60vh;
+    }
+
+    .hero-banner__slide {
       min-height: 60vh;
     }
 
     .hero-banner__content {
       padding: 32px 20px;
     }
+
+    .hero-banner__arrow {
+      width: 36px;
+      height: 36px;
+    }
+
+    .hero-banner__arrow--prev { left: 10px; }
+    .hero-banner__arrow--next { right: 10px; }
+
+    .hero-banner__dots {
+      bottom: 14px;
+    }
   }
 {% endstylesheet %}
 
+{% javascript %}
+  (function () {
+    const section = document.querySelector('.hero-banner[aria-roledescription="carousel"]');
+    if (!section) return;
+
+    const track = section.querySelector('.hero-banner__track');
+    const slides = Array.from(section.querySelectorAll('.hero-banner__slide'));
+    const dots = Array.from(section.querySelectorAll('.hero-banner__dot'));
+    const prevBtn = section.querySelector('.hero-banner__arrow--prev');
+    const nextBtn = section.querySelector('.hero-banner__arrow--next');
+
+    if (slides.length <= 1) return;
+
+    let current = 0;
+    let autoTimer = null;
+    const autoDelay = (parseInt(section.dataset.autoAdvance, 10) || 7) * 1000;
+
+    function goTo(index) {
+      current = ((index % slides.length) + slides.length) % slides.length;
+      track.style.transform = 'translateX(-' + (current * 100) + '%)';
+
+      slides.forEach(function (s, i) {
+        s.classList.toggle('hero-banner__slide--active', i === current);
+      });
+      dots.forEach(function (d, i) {
+        d.classList.toggle('hero-banner__dot--active', i === current);
+        d.setAttribute('aria-selected', i === current ? 'true' : 'false');
+      });
+    }
+
+    function next() { goTo(current + 1); }
+    function prev() { goTo(current - 1); }
+
+    /* Auto-advance */
+    function startAuto() {
+      stopAuto();
+      autoTimer = setInterval(next, autoDelay);
+    }
+    function stopAuto() {
+      if (autoTimer) { clearInterval(autoTimer); autoTimer = null; }
+    }
+
+    /* Pause on hover / focus */
+    section.addEventListener('mouseenter', stopAuto);
+    section.addEventListener('mouseleave', startAuto);
+    section.addEventListener('focusin', stopAuto);
+    section.addEventListener('focusout', startAuto);
+
+    /* Arrow buttons */
+    if (prevBtn) prevBtn.addEventListener('click', function () { prev(); startAuto(); });
+    if (nextBtn) nextBtn.addEventListener('click', function () { next(); startAuto(); });
+
+    /* Dots */
+    dots.forEach(function (dot) {
+      dot.addEventListener('click', function () {
+        goTo(parseInt(dot.dataset.index, 10));
+        startAuto();
+      });
+    });
+
+    /* Keyboard */
+    section.addEventListener('keydown', function (e) {
+      if (e.key === 'ArrowLeft') { prev(); startAuto(); }
+      if (e.key === 'ArrowRight') { next(); startAuto(); }
+    });
+
+    /* Touch / pointer swipe */
+    var pointerStart = null;
+    var pointerMoved = false;
+
+    section.addEventListener('pointerdown', function (e) {
+      if (e.pointerType === 'mouse') return;
+      pointerStart = { x: e.clientX, y: e.clientY };
+      pointerMoved = false;
+      stopAuto();
+    });
+
+    section.addEventListener('pointermove', function (e) {
+      if (!pointerStart) return;
+      var dx = e.clientX - pointerStart.x;
+      if (Math.abs(dx) > 10) pointerMoved = true;
+    });
+
+    section.addEventListener('pointerup', function (e) {
+      if (!pointerStart) return;
+      var dx = e.clientX - pointerStart.x;
+      if (Math.abs(dx) > 50) {
+        if (dx < 0) next(); else prev();
+      }
+      pointerStart = null;
+      startAuto();
+    });
+
+    section.addEventListener('pointercancel', function () {
+      pointerStart = null;
+      startAuto();
+    });
+
+    /* Kick off */
+    startAuto();
+  })();
+{% endjavascript %}
+
 {% schema %}
 {
-  "name": "t:general.hero_banner",
+  "name": "Hero carousel",
   "settings": [
-    {
-      "type": "image_picker",
-      "id": "image",
-      "label": "t:labels.background"
-    },
-    {
-      "type": "text",
-      "id": "subheading",
-      "label": "t:labels.subheading",
-      "default": "IT'S SATURDAY, Y'ALL."
-    },
-    {
-      "type": "text",
-      "id": "heading_bold",
-      "label": "t:labels.heading_bold",
-      "default": "WESTERN"
-    },
-    {
-      "type": "text",
-      "id": "heading_script",
-      "label": "t:labels.heading_script",
-      "default": "Collection"
-    },
-    {
-      "type": "text",
-      "id": "description",
-      "label": "t:labels.description",
-      "default": "Spirit of the west, soul of the college tradition."
-    },
-    {
-      "type": "text",
-      "id": "button_text",
-      "label": "t:labels.button_text",
-      "default": "SHOP THE DROP"
-    },
-    {
-      "type": "url",
-      "id": "button_url",
-      "label": "t:labels.button_url"
-    },
     {
       "type": "range",
       "id": "height",
@@ -203,11 +420,103 @@
       "step": 5,
       "unit": "vh",
       "default": 80
+    },
+    {
+      "type": "range",
+      "id": "auto_advance",
+      "label": "Auto-advance interval",
+      "info": "Seconds between slides. Set to 0 to disable.",
+      "min": 0,
+      "max": 12,
+      "step": 1,
+      "unit": "s",
+      "default": 7
+    }
+  ],
+  "blocks": [
+    {
+      "type": "slide",
+      "name": "Slide",
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "t:labels.background"
+        },
+        {
+          "type": "text",
+          "id": "subheading",
+          "label": "Subheading",
+          "default": "IT'S SATURDAY, Y'ALL."
+        },
+        {
+          "type": "text",
+          "id": "heading_bold",
+          "label": "Heading (bold)",
+          "default": "WESTERN"
+        },
+        {
+          "type": "text",
+          "id": "heading_script",
+          "label": "Heading (script)",
+          "default": "Collection"
+        },
+        {
+          "type": "text",
+          "id": "description",
+          "label": "Description",
+          "default": "Spirit of the west, soul of the college tradition."
+        },
+        {
+          "type": "text",
+          "id": "button_text",
+          "label": "Button text",
+          "default": "SHOP THE DROP"
+        },
+        {
+          "type": "url",
+          "id": "button_url",
+          "label": "Button URL"
+        },
+        {
+          "type": "header",
+          "content": "Custom fonts"
+        },
+        {
+          "type": "text",
+          "id": "custom_font_bold_url",
+          "label": "Google Fonts URL (bold heading)",
+          "info": "Full Google Fonts stylesheet URL, e.g. https://fonts.googleapis.com/css2?family=Oswald:wght@700&display=swap"
+        },
+        {
+          "type": "text",
+          "id": "custom_font_bold_name",
+          "label": "Font family name (bold heading)",
+          "info": "The font-family name, e.g. Oswald"
+        },
+        {
+          "type": "text",
+          "id": "custom_font_script_url",
+          "label": "Google Fonts URL (script heading)",
+          "info": "Full Google Fonts stylesheet URL, e.g. https://fonts.googleapis.com/css2?family=Dancing+Script&display=swap"
+        },
+        {
+          "type": "text",
+          "id": "custom_font_script_name",
+          "label": "Font family name (script heading)",
+          "info": "The font-family name, e.g. Dancing Script"
+        }
+      ]
     }
   ],
   "presets": [
     {
-      "name": "t:general.hero_banner"
+      "name": "Hero carousel",
+      "blocks": [
+        {
+          "type": "slide"
+        }
+      ]
     }
   ]
 }

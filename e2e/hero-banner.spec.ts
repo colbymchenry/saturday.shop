@@ -1,92 +1,158 @@
 import { test, expect } from '@playwright/test';
 
-test.describe('Hero banner', () => {
+test.describe('Hero carousel', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/');
   });
 
-  test('hero banner is visible with correct structure', async ({ page }) => {
+  test('carousel is visible with correct structure', async ({ page }) => {
     const hero = page.locator('.hero-banner').first();
     await expect(hero).toBeVisible();
 
-    // Should have an image (either uploaded or placeholder SVG)
-    const image = hero.locator('.hero-banner__image');
-    await expect(image).toBeVisible();
+    // Should have at least one slide
+    const slides = hero.locator('.hero-banner__slide');
+    expect(await slides.count()).toBeGreaterThanOrEqual(1);
 
-    // Should have the gradient overlay
-    const overlay = hero.locator('.hero-banner__overlay');
+    // First slide should have an image
+    const image = slides.first().locator('.hero-banner__image');
+    await expect(image).toBeAttached();
+
+    // First slide should have the gradient overlay
+    const overlay = slides.first().locator('.hero-banner__overlay');
     await expect(overlay).toBeAttached();
   });
 
-  test('hero banner displays content text', async ({ page }) => {
-    const content = page.locator('.hero-banner__content').first();
+  test('slides display content text', async ({ page }) => {
+    const firstSlide = page.locator('.hero-banner__slide').first();
+    const content = firstSlide.locator('.hero-banner__content');
     await expect(content).toBeVisible();
 
-    // Should have a heading
     const heading = content.locator('.hero-banner__heading');
     await expect(heading).toBeVisible();
     await expect(heading).not.toBeEmpty();
   });
 
-  test('hero banner heading has bold and/or script parts', async ({ page }) => {
+  test('slide heading has bold and/or script parts', async ({ page }) => {
     const heading = page.locator('.hero-banner__heading').first();
 
-    // At least one heading style should be present (bold or script)
-    const boldPart = heading.locator('.hero-banner__heading-bold');
-    const scriptPart = heading.locator('.hero-banner__heading-script');
-
-    const hasBold = await boldPart.count() > 0;
-    const hasScript = await scriptPart.count() > 0;
+    const hasBold = await heading.locator('.hero-banner__heading-bold').count() > 0;
+    const hasScript = await heading.locator('.hero-banner__heading-script').count() > 0;
     expect(hasBold || hasScript).toBe(true);
   });
 
-  test('hero banner has a CTA button that links somewhere', async ({ page }) => {
+  test('slide has a CTA button that links somewhere', async ({ page }) => {
     const button = page.locator('.hero-banner__button').first();
 
-    // Button may not be present if no button_text is set
     if (await button.count() === 0) {
       test.skip();
       return;
     }
 
     await expect(button).toBeVisible();
-
-    // Should have non-empty text
     const text = await button.textContent();
     expect(text?.trim().length).toBeGreaterThan(0);
 
-    // Should be a link (href may be empty if no URL configured in settings)
     const href = await button.getAttribute('href');
     expect(href).not.toBeNull();
   });
 
-  test('hero banner respects minimum height', async ({ page }) => {
+  test('carousel respects minimum height', async ({ page }) => {
     const hero = page.locator('.hero-banner').first();
     const box = await hero.boundingBox();
 
-    // Should be at least 40vh tall (the schema minimum)
     const viewportHeight = page.viewportSize()?.height ?? 720;
     const minExpected = viewportHeight * 0.4;
     expect(box?.height).toBeGreaterThanOrEqual(minExpected);
   });
 
-  test('hero banner image covers full section', async ({ page }) => {
+  test('slide image covers full section', async ({ page }) => {
     const hero = page.locator('.hero-banner').first();
-    const image = hero.locator('.hero-banner__image');
+    const slide = hero.locator('.hero-banner__slide').first();
+    const image = slide.locator('.hero-banner__image');
 
-    const heroBox = await hero.boundingBox();
+    const slideBox = await slide.boundingBox();
     const imageBox = await image.boundingBox();
 
-    if (heroBox && imageBox) {
-      // Image container should span the full hero area
-      expect(imageBox.width).toBeGreaterThanOrEqual(heroBox.width - 2);
-      expect(imageBox.height).toBeGreaterThanOrEqual(heroBox.height - 2);
+    if (slideBox && imageBox) {
+      expect(imageBox.width).toBeGreaterThanOrEqual(slideBox.width - 2);
+      expect(imageBox.height).toBeGreaterThanOrEqual(slideBox.height - 2);
     }
   });
 
-  test('hero content is positioned above overlay (z-index)', async ({ page }) => {
+  test('content is positioned above overlay (z-index)', async ({ page }) => {
     const content = page.locator('.hero-banner__content').first();
     const zIndex = await content.evaluate(el => getComputedStyle(el).zIndex);
     expect(Number(zIndex)).toBeGreaterThanOrEqual(2);
+  });
+
+  test('navigation controls are present when multiple slides exist', async ({ page }) => {
+    const slides = page.locator('.hero-banner__slide');
+    const count = await slides.count();
+
+    if (count <= 1) {
+      test.skip();
+      return;
+    }
+
+    // Arrow buttons
+    await expect(page.locator('.hero-banner__arrow--prev')).toBeVisible();
+    await expect(page.locator('.hero-banner__arrow--next')).toBeVisible();
+
+    // Dot indicators — one per slide
+    const dots = page.locator('.hero-banner__dot');
+    expect(await dots.count()).toBe(count);
+
+    // First dot should be active
+    await expect(dots.first()).toHaveClass(/hero-banner__dot--active/);
+  });
+
+  test('clicking next arrow advances the slide', async ({ page }) => {
+    const slides = page.locator('.hero-banner__slide');
+    if (await slides.count() <= 1) {
+      test.skip();
+      return;
+    }
+
+    // Wait for auto-advance to prove JS is loaded
+    await expect(slides.nth(1)).toHaveClass(/hero-banner__slide--active/, { timeout: 15000 });
+
+    // Click prev to go back, then next to advance again
+    const prevBtn = page.locator('.hero-banner__arrow--prev');
+    await prevBtn.click();
+    await expect(slides.nth(0)).toHaveClass(/hero-banner__slide--active/);
+
+    const nextBtn = page.locator('.hero-banner__arrow--next');
+    await nextBtn.click();
+    await expect(slides.nth(1)).toHaveClass(/hero-banner__slide--active/);
+
+    const dots = page.locator('.hero-banner__dot');
+    await expect(dots.nth(1)).toHaveClass(/hero-banner__dot--active/);
+  });
+
+  test('clicking a dot navigates to that slide', async ({ page }) => {
+    const slides = page.locator('.hero-banner__slide');
+    if (await slides.count() <= 2) {
+      test.skip();
+      return;
+    }
+
+    // Wait for auto-advance to prove JS is loaded
+    await expect(slides.nth(1)).toHaveClass(/hero-banner__slide--active/, { timeout: 15000 });
+
+    const dots = page.locator('.hero-banner__dot');
+    await dots.nth(0).click();
+    await expect(slides.nth(0)).toHaveClass(/hero-banner__slide--active/);
+
+    await dots.nth(2).click();
+    await expect(slides.nth(2)).toHaveClass(/hero-banner__slide--active/);
+    await expect(dots.nth(2)).toHaveClass(/hero-banner__dot--active/);
+  });
+
+  test('carousel has proper ARIA attributes', async ({ page }) => {
+    const hero = page.locator('.hero-banner').first();
+    await expect(hero).toHaveAttribute('aria-roledescription', 'carousel');
+
+    const firstSlide = page.locator('.hero-banner__slide').first();
+    await expect(firstSlide).toHaveAttribute('aria-roledescription', 'slide');
   });
 });
