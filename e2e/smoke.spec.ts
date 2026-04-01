@@ -252,6 +252,133 @@ test.describe('Desktop hides hamburger', () => {
   });
 });
 
+test.describe('Megamenu sidebar', () => {
+  test('sidebar dropdown renders on hover', async ({ page }) => {
+    await page.goto('/');
+    const sidebarDropdown = page.locator('.nav-dropdown--sidebar').first();
+    // Skip if no sidebar menus exist in current nav config
+    if (await sidebarDropdown.count() === 0) {
+      test.skip();
+      return;
+    }
+
+    await sidebarDropdown.hover();
+    await expect(sidebarDropdown.locator('.nav-dropdown__sidebar')).toBeVisible();
+    await expect(sidebarDropdown.locator('.nav-dropdown__preview')).toBeVisible();
+  });
+
+  test('sidebar item hover switches preview pane', async ({ page }) => {
+    await page.goto('/');
+    const sidebarDropdown = page.locator('.nav-dropdown--sidebar').first();
+    if (await sidebarDropdown.count() === 0) {
+      test.skip();
+      return;
+    }
+
+    await sidebarDropdown.hover();
+    await expect(sidebarDropdown.locator('.nav-dropdown__sidebar')).toBeVisible();
+
+    const items = sidebarDropdown.locator('.nav-dropdown__sidebar-item');
+    const itemCount = await items.count();
+    if (itemCount < 2) {
+      test.skip();
+      return;
+    }
+
+    // First pane should be active by default
+    const firstPane = sidebarDropdown.locator('[data-pane-index="0"]');
+    await expect(firstPane).not.toHaveAttribute('hidden', '');
+
+    // Hover the second item
+    await items.nth(1).hover();
+    await page.waitForTimeout(150); // Wait for 80ms debounce + render
+
+    const secondPane = sidebarDropdown.locator('[data-pane-index="1"]');
+    await expect(secondPane).not.toHaveAttribute('hidden', '');
+    await expect(firstPane).toHaveAttribute('hidden', '');
+  });
+
+  test('product cards visible in collection pane', async ({ page }) => {
+    await page.goto('/');
+    const sidebarDropdown = page.locator('.nav-dropdown--sidebar').first();
+    if (await sidebarDropdown.count() === 0) {
+      test.skip();
+      return;
+    }
+
+    await sidebarDropdown.hover();
+
+    // Find a pane with product cards (no grandchildren → products track)
+    const productTrack = sidebarDropdown.locator('.nav-dropdown__products-track').first();
+    if (await productTrack.count() === 0) {
+      test.skip();
+      return;
+    }
+
+    const cards = productTrack.locator('.product-card');
+    expect(await cards.count()).toBeGreaterThanOrEqual(1);
+
+    // "Shop All" link should be present
+    const shopAll = sidebarDropdown.locator('.nav-dropdown__products-shopall').first();
+    await expect(shopAll).toBeVisible();
+  });
+
+  test('collection thumbnails visible for child with sub-collections', async ({ page }) => {
+    await page.goto('/');
+    const sidebarDropdown = page.locator('.nav-dropdown--sidebar').first();
+    if (await sidebarDropdown.count() === 0) {
+      test.skip();
+      return;
+    }
+
+    await sidebarDropdown.hover();
+
+    // Find a sidebar item whose pane has a thumbs grid (child with grandchildren)
+    const thumbsGrid = sidebarDropdown.locator('.nav-dropdown__thumbs-grid').first();
+    if (await thumbsGrid.count() === 0) {
+      test.skip();
+      return;
+    }
+
+    // Navigate to the pane that has the thumbs grid
+    const pane = thumbsGrid.locator('..');
+    const paneIndex = await pane.getAttribute('data-pane-index');
+    if (paneIndex && paneIndex !== '0') {
+      const item = sidebarDropdown.locator(`[data-sidebar-index="${paneIndex}"]`);
+      await item.hover();
+      await page.waitForTimeout(150);
+    }
+
+    const thumbCards = thumbsGrid.locator('.nav-dropdown__thumb-card');
+    expect(await thumbCards.count()).toBeGreaterThanOrEqual(1);
+  });
+
+  test('product scroll arrows work', async ({ page }) => {
+    await page.goto('/');
+    const sidebarDropdown = page.locator('.nav-dropdown--sidebar').first();
+    if (await sidebarDropdown.count() === 0) {
+      test.skip();
+      return;
+    }
+
+    await sidebarDropdown.hover();
+
+    const track = sidebarDropdown.locator('.nav-dropdown__products-track').first();
+    if (await track.count() === 0) {
+      test.skip();
+      return;
+    }
+
+    const scrollBefore = await track.evaluate(el => el.scrollLeft);
+    const nextBtn = sidebarDropdown.locator('[data-scroll-dir="next"]').first();
+    await nextBtn.click();
+    await page.waitForTimeout(400); // Wait for smooth scroll
+
+    const scrollAfter = await track.evaluate(el => el.scrollLeft);
+    expect(scrollAfter).toBeGreaterThan(scrollBefore);
+  });
+});
+
 test.describe('No horizontal overflow', () => {
   const pages = ['/', '/search?q=a', '/cart', '/collections/all'];
 

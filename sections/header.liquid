@@ -1,3 +1,25 @@
+{%- assign has_sidebar_menu = false -%}
+{%- for link in section.settings.menu.links -%}
+  {%- if link.links.size > 0 -%}
+    {%- assign check_all = true -%}
+    {%- for child in link.links -%}
+      {%- unless child.url contains '/collections/' -%}
+        {%- assign check_all = false -%}
+        {%- break -%}
+      {%- endunless -%}
+    {%- endfor -%}
+    {%- if check_all -%}
+      {%- assign has_sidebar_menu = true -%}
+      {%- break -%}
+    {%- endif -%}
+  {%- endif -%}
+{%- endfor -%}
+
+{%- if has_sidebar_menu -%}
+  {{ 'product-card.css' | asset_url | stylesheet_tag }}
+  <script src="{{ 'product-card.js' | asset_url }}" defer="defer"></script>
+{%- endif -%}
+
 <header class="full-width">
   <button type="button" class="header__hamburger" aria-label="Open menu" data-menu-toggle>
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12h18"/><path d="M3 6h18"/><path d="M3 18h18"/></svg>
@@ -69,62 +91,143 @@
     </div>
     {% for link in section.settings.menu.links %}
       {% if link.links.size > 0 %}
-        <div class="nav-dropdown">
-          <button type="button" class="header__nav-link nav-dropdown__trigger" aria-expanded="false" aria-haspopup="true">
-            {{ link.title }}
-            <svg class="nav-dropdown__chevron" width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 4 5 6.5 7.5 4"/></svg>
-          </button>
-          <div class="nav-dropdown__panel">
-            <div class="nav-dropdown__mega">
-              <div class="nav-dropdown__columns">
-                {%- assign has_groups = false -%}
-                {%- for child in link.links -%}
-                  {%- if child.links.size > 0 -%}{%- assign has_groups = true -%}{%- break -%}{%- endif -%}
-                {%- endfor -%}
+        {%- assign all_collections = true -%}
+        {%- for child in link.links -%}
+          {%- unless child.url contains '/collections/' -%}
+            {%- assign all_collections = false -%}
+            {%- break -%}
+          {%- endunless -%}
+        {%- endfor -%}
 
-                {% if has_groups %}
+        {% if all_collections %}
+          {%- comment -%} Sidebar megamenu: product cards or collection thumbnails {%- endcomment -%}
+          <div class="nav-dropdown nav-dropdown--sidebar">
+            <button type="button" class="header__nav-link nav-dropdown__trigger" aria-expanded="false" aria-haspopup="true">
+              {{ link.title }}
+              <svg class="nav-dropdown__chevron" width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 4 5 6.5 7.5 4"/></svg>
+            </button>
+            <div class="nav-dropdown__panel">
+              <div class="nav-dropdown__sidebar-layout">
+                <div class="nav-dropdown__sidebar">
                   {% for child in link.links %}
-                    <div class="nav-dropdown__column">
+                    <button type="button"
+                      class="nav-dropdown__sidebar-item{% if forloop.first %} nav-dropdown__sidebar-item--active{% endif %}"
+                      data-sidebar-index="{{ forloop.index0 }}">
+                      {{ child.title }}
+                      <svg width="8" height="12" viewBox="0 0 8 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="1 1 6 6 1 11"/></svg>
+                    </button>
+                  {% endfor %}
+                </div>
+                <div class="nav-dropdown__preview">
+                  {% for child in link.links %}
+                    {%- assign child_handle = child.url | split: '/collections/' | last | split: '/' | first | split: '?' | first -%}
+                    {%- assign child_collection = collections[child_handle] -%}
+                    <div class="nav-dropdown__preview-pane{% if forloop.first %} nav-dropdown__preview-pane--active{% endif %}"
+                         data-pane-index="{{ forloop.index0 }}"
+                         {% unless forloop.first %}hidden{% endunless %}>
                       {% if child.links.size > 0 %}
-                        <h3 class="nav-dropdown__column-heading">
-                          {% if child.url != blank %}<a href="{{ child.url }}">{{ child.title }}</a>{% else %}{{ child.title }}{% endif %}
-                        </h3>
-                        {% for grandchild in child.links %}
-                          <a href="{{ grandchild.url }}" class="nav-dropdown__link">{{ grandchild.title }}</a>
-                        {% endfor %}
+                        <div class="nav-dropdown__thumbs-grid">
+                          {% for grandchild in child.links %}
+                            {%- assign gc_handle = grandchild.url | split: '/collections/' | last | split: '/' | first | split: '?' | first -%}
+                            {%- assign gc_collection = collections[gc_handle] -%}
+                            <a href="{{ grandchild.url }}" class="nav-dropdown__thumb-card">
+                              <div class="nav-dropdown__thumb-image">
+                                {% if gc_collection != blank and gc_collection.image.src != blank %}
+                                  {{ gc_collection.image | image_url: width: 480 | image_tag: loading: 'lazy' }}
+                                {% else %}
+                                  {{ 'collection-1' | placeholder_svg_tag }}
+                                {% endif %}
+                              </div>
+                              <div class="nav-dropdown__thumb-info">
+                                <span class="nav-dropdown__thumb-title">{{ grandchild.title }}</span>
+                                <span class="nav-dropdown__thumb-action">Shop now &rarr;</span>
+                              </div>
+                            </a>
+                          {% endfor %}
+                        </div>
                       {% else %}
-                        <a href="{{ child.url }}" class="nav-dropdown__link">{{ child.title }}</a>
+                        <div class="nav-dropdown__products-header">
+                          <a href="{{ child.url }}" class="nav-dropdown__products-shopall">Shop All {{ child.title }}</a>
+                          <div class="nav-dropdown__products-nav">
+                            <button type="button" class="nav-dropdown__products-arrow" data-scroll-dir="prev" aria-label="Previous">
+                              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+                            </button>
+                            <button type="button" class="nav-dropdown__products-arrow" data-scroll-dir="next" aria-label="Next">
+                              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+                            </button>
+                          </div>
+                        </div>
+                        <div class="nav-dropdown__products-track">
+                          {% for product in child_collection.products limit: 25 %}
+                            {% render 'product-card', product: product %}
+                          {% endfor %}
+                        </div>
                       {% endif %}
                     </div>
                   {% endfor %}
-                {% else %}
-                  <div class="nav-dropdown__column">
-                    {% for child in link.links %}
-                      <a href="{{ child.url }}" class="nav-dropdown__link">{{ child.title }}</a>
-                    {% endfor %}
-                  </div>
-                {% endif %}
+                </div>
               </div>
-              {% for block in section.blocks %}
-                {%- assign block_title_down = block.settings.menu_title | downcase -%}
-                {%- assign link_title_down = link.title | downcase -%}
-                {% if block.type == 'nav_promo' and block_title_down == link_title_down and block.settings.image %}
-                  <div class="nav-dropdown__promo" {{ block.shopify_attributes }}>
-                    <a href="{{ block.settings.link_url | default: '#' }}" class="nav-dropdown__promo-link">
-                      {{ block.settings.image | image_url: width: 500 | image_tag: loading: 'lazy', class: 'nav-dropdown__promo-image' }}
-                      {% if block.settings.heading != blank %}
-                        <span class="nav-dropdown__promo-caption">{{ block.settings.heading }}</span>
-                      {% endif %}
-                      {% if block.settings.link_text != blank %}
-                        <span class="nav-dropdown__promo-cta">{{ block.settings.link_text }}</span>
-                      {% endif %}
-                    </a>
-                  </div>
-                {% endif %}
-              {% endfor %}
             </div>
           </div>
-        </div>
+        {% else %}
+          {%- comment -%} Column megamenu: grouped links + optional promo {%- endcomment -%}
+          <div class="nav-dropdown">
+            <button type="button" class="header__nav-link nav-dropdown__trigger" aria-expanded="false" aria-haspopup="true">
+              {{ link.title }}
+              <svg class="nav-dropdown__chevron" width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 4 5 6.5 7.5 4"/></svg>
+            </button>
+            <div class="nav-dropdown__panel">
+              <div class="nav-dropdown__mega">
+                <div class="nav-dropdown__columns">
+                  {%- assign has_groups = false -%}
+                  {%- for child in link.links -%}
+                    {%- if child.links.size > 0 -%}{%- assign has_groups = true -%}{%- break -%}{%- endif -%}
+                  {%- endfor -%}
+
+                  {% if has_groups %}
+                    {% for child in link.links %}
+                      <div class="nav-dropdown__column">
+                        {% if child.links.size > 0 %}
+                          <h3 class="nav-dropdown__column-heading">
+                            {% if child.url != blank %}<a href="{{ child.url }}">{{ child.title }}</a>{% else %}{{ child.title }}{% endif %}
+                          </h3>
+                          {% for grandchild in child.links %}
+                            <a href="{{ grandchild.url }}" class="nav-dropdown__link">{{ grandchild.title }}</a>
+                          {% endfor %}
+                        {% else %}
+                          <a href="{{ child.url }}" class="nav-dropdown__link">{{ child.title }}</a>
+                        {% endif %}
+                      </div>
+                    {% endfor %}
+                  {% else %}
+                    <div class="nav-dropdown__column">
+                      {% for child in link.links %}
+                        <a href="{{ child.url }}" class="nav-dropdown__link">{{ child.title }}</a>
+                      {% endfor %}
+                    </div>
+                  {% endif %}
+                </div>
+                {% for block in section.blocks %}
+                  {%- assign block_title_down = block.settings.menu_title | downcase -%}
+                  {%- assign link_title_down = link.title | downcase -%}
+                  {% if block.type == 'nav_promo' and block_title_down == link_title_down and block.settings.image %}
+                    <div class="nav-dropdown__promo" {{ block.shopify_attributes }}>
+                      <a href="{{ block.settings.link_url | default: '#' }}" class="nav-dropdown__promo-link">
+                        {{ block.settings.image | image_url: width: 500 | image_tag: loading: 'lazy', class: 'nav-dropdown__promo-image' }}
+                        {% if block.settings.heading != blank %}
+                          <span class="nav-dropdown__promo-caption">{{ block.settings.heading }}</span>
+                        {% endif %}
+                        {% if block.settings.link_text != blank %}
+                          <span class="nav-dropdown__promo-cta">{{ block.settings.link_text }}</span>
+                        {% endif %}
+                      </a>
+                    </div>
+                  {% endif %}
+                {% endfor %}
+              </div>
+            </div>
+          </div>
+        {% endif %}
       {% else %}
         <a href="{{ link.url }}" class="header__nav-link">{{ link.title }}</a>
       {% endif %}
@@ -447,6 +550,246 @@
 
   .nav-dropdown__promo-cta:hover {
     opacity: 0.7;
+  }
+
+  /* Sidebar megamenu — panel override */
+  .nav-dropdown--sidebar {
+    position: static;
+  }
+
+  .nav-dropdown--sidebar .nav-dropdown__panel {
+    left: var(--page-margin);
+    right: var(--page-margin);
+    transform: translateY(-4px);
+    width: auto;
+    max-width: none;
+  }
+
+  .nav-dropdown--sidebar.nav-dropdown--open .nav-dropdown__panel {
+    transform: translateY(0);
+  }
+
+  /* Sidebar layout */
+  .nav-dropdown__sidebar-layout {
+    display: flex;
+    min-height: 380px;
+  }
+
+  .nav-dropdown__sidebar {
+    width: 260px;
+    flex-shrink: 0;
+    border-right: 1px solid var(--color-border);
+    padding: 16px 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .nav-dropdown__sidebar-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 11px 24px;
+    font-family: var(--font-body--family);
+    font-size: 0.85rem;
+    color: var(--color-foreground);
+    background: none;
+    border: none;
+    border-left: 3px solid transparent;
+    cursor: pointer;
+    text-align: left;
+    width: 100%;
+    transition: background-color 0.15s ease;
+  }
+
+  .nav-dropdown__sidebar-item svg {
+    opacity: 0.3;
+    flex-shrink: 0;
+  }
+
+  .nav-dropdown__sidebar-item--active {
+    border-left-color: var(--color-accent-gold);
+    font-weight: 600;
+    background: rgba(0, 0, 0, 0.02);
+  }
+
+  .nav-dropdown__sidebar-item--active svg {
+    opacity: 0.6;
+  }
+
+  .nav-dropdown__sidebar-item:hover {
+    background: rgba(0, 0, 0, 0.02);
+  }
+
+  /* Preview area */
+  .nav-dropdown__preview {
+    flex: 1;
+    min-width: 0;
+    padding: 24px 32px;
+  }
+
+  .nav-dropdown__preview-pane[hidden] {
+    display: none;
+  }
+
+  /* Products header — "Shop All" + arrows */
+  .nav-dropdown__products-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+  }
+
+  .nav-dropdown__products-shopall {
+    font-family: var(--font-heading--family);
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    text-decoration: none;
+    color: var(--color-accent-gold);
+    transition: opacity 0.15s ease;
+  }
+
+  .nav-dropdown__products-shopall:hover {
+    opacity: 0.7;
+  }
+
+  .nav-dropdown__products-nav {
+    display: flex;
+    gap: 8px;
+  }
+
+  .nav-dropdown__products-arrow {
+    width: 32px;
+    height: 32px;
+    border: 1px solid var(--color-border);
+    border-radius: 50%;
+    background: var(--color-background);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-foreground);
+    transition: opacity 0.2s ease;
+  }
+
+  .nav-dropdown__products-arrow:hover {
+    opacity: 0.7;
+  }
+
+  /* Products track — horizontal scroll */
+  .nav-dropdown__products-track {
+    display: flex;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+    gap: 0;
+  }
+
+  .nav-dropdown__products-track::-webkit-scrollbar {
+    display: none;
+  }
+
+  .nav-dropdown__products-track .product-card {
+    flex: 0 0 25%;
+    min-width: 200px;
+    scroll-snap-align: start;
+    border: 1px solid var(--color-border);
+    border-right: none;
+  }
+
+  .nav-dropdown__products-track .product-card:last-child {
+    border-right: 1px solid var(--color-border);
+  }
+
+  /* Collection thumbnails grid */
+  .nav-dropdown__thumbs-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 20px;
+    align-content: start;
+  }
+
+  .nav-dropdown__thumb-card {
+    display: flex;
+    flex-direction: column;
+    text-decoration: none;
+    color: inherit;
+    border-radius: 10px;
+    overflow: hidden;
+    background: var(--color-background);
+    border: 1px solid var(--color-border);
+    transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+  }
+
+  .nav-dropdown__thumb-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.1);
+    border-color: rgba(0, 0, 0, 0.12);
+  }
+
+  .nav-dropdown__thumb-card:hover .nav-dropdown__thumb-image img,
+  .nav-dropdown__thumb-card:hover .nav-dropdown__thumb-image svg {
+    transform: scale(1.06);
+  }
+
+  .nav-dropdown__thumb-card:hover .nav-dropdown__thumb-action {
+    opacity: 1;
+    color: var(--color-foreground);
+  }
+
+  .nav-dropdown__thumb-image {
+    width: 100%;
+    aspect-ratio: 5 / 4;
+    overflow: hidden;
+    background: #f5f5f3;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .nav-dropdown__thumb-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.35s ease;
+  }
+
+  .nav-dropdown__thumb-image svg {
+    width: 50%;
+    height: 50%;
+    display: block;
+    opacity: 0.18;
+    transition: transform 0.35s ease;
+  }
+
+  .nav-dropdown__thumb-info {
+    padding: 14px 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .nav-dropdown__thumb-title {
+    font-family: var(--font-body--family);
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--color-foreground);
+    letter-spacing: 0.01em;
+  }
+
+  .nav-dropdown__thumb-action {
+    font-family: var(--font-body--family);
+    font-size: 0.68rem;
+    color: rgba(0, 0, 0, 0.3);
+    white-space: nowrap;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    transition: opacity 0.2s ease, color 0.2s ease;
   }
 
   /* Mobile drawer groups */
@@ -1408,6 +1751,55 @@
     document.addEventListener('click', (e) => {
       dropdowns.forEach(dd => {
         if (!dd.contains(e.target)) closeDropdown(dd);
+      });
+    });
+  })();
+
+  // Sidebar megamenu: tab switching + product scroll
+  (function() {
+    document.querySelectorAll('.nav-dropdown--sidebar').forEach(dd => {
+      const items = dd.querySelectorAll('.nav-dropdown__sidebar-item');
+      const panes = dd.querySelectorAll('.nav-dropdown__preview-pane');
+      if (!items.length) return;
+
+      let hoverTimer = null;
+
+      function activate(index) {
+        items.forEach((item, i) => {
+          item.classList.toggle('nav-dropdown__sidebar-item--active', i === index);
+        });
+        panes.forEach((pane, i) => {
+          if (i === index) {
+            pane.hidden = false;
+            pane.classList.add('nav-dropdown__preview-pane--active');
+          } else {
+            pane.hidden = true;
+            pane.classList.remove('nav-dropdown__preview-pane--active');
+          }
+        });
+      }
+
+      items.forEach((item, i) => {
+        item.addEventListener('mouseenter', () => {
+          clearTimeout(hoverTimer);
+          hoverTimer = setTimeout(() => activate(i), 80);
+        });
+        item.addEventListener('click', () => {
+          clearTimeout(hoverTimer);
+          activate(i);
+        });
+      });
+
+      // Product track scrolling
+      dd.querySelectorAll('.nav-dropdown__products-arrow').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const pane = btn.closest('.nav-dropdown__preview-pane');
+          const track = pane?.querySelector('.nav-dropdown__products-track');
+          const card = track?.querySelector('.product-card');
+          if (!track || !card) return;
+          const dir = btn.dataset.scrollDir === 'next' ? 1 : -1;
+          track.scrollBy({ left: dir * card.offsetWidth, behavior: 'smooth' });
+        });
       });
     });
   })();
