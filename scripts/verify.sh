@@ -104,6 +104,10 @@ if [ -n "$SPEC_FILES" ]; then
   if [ $TEST_EXIT -ne 0 ]; then
     echo "🛑 BLOCKED: Playwright tests failed for affected files."
     echo "Fix the failing tests before completing your task."
+    echo ""
+    echo "Remaining checklist:"
+    echo "  Run shopify theme check"
+    exit 2  # Exit code 2 = BLOCKING — prevents Claude from completing the task
   else
     echo "✅ All affected tests passed."
   fi

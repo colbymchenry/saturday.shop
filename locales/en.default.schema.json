@@ -128,7 +128,10 @@
     "careers_department": "Department",
     "careers_location": "Location",
     "careers_type": "Employment type",
-    "careers_empty_text": "Empty state text"
+    "careers_empty_text": "Empty state text",
+    "fallback_collection": "Fallback collection",
+    "fallback_collection_info": "Shown to first-time visitors with no browsing history",
+    "fallback_heading": "Fallback heading"
   },
   "options": {
     "alignment": {

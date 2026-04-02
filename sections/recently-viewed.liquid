@@ -2,9 +2,9 @@
 <script src="{{ 'product-card.js' | asset_url }}" defer="defer"></script>
 
 <section class="recently-viewed full-width" style="background-color: {{ section.settings.background_color }};" hidden>
-  <h2 class="recently-viewed__title">{{ section.settings.heading }}</h2>
+  <h2 class="recently-viewed__title" data-recently-viewed-heading {% if section.settings.fallback_heading != blank %}data-fallback-heading="{{ section.settings.fallback_heading | escape }}"{% endif %}>{{ section.settings.heading | escape }}</h2>
 
-  <div class="recently-viewed__carousel">
+  <div class="recently-viewed__carousel" data-recently-viewed-main>
     <button class="recently-viewed__arrow recently-viewed__arrow--prev" data-dir="prev" aria-label="Previous">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
     </button>
@@ -15,6 +15,26 @@
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
     </button>
   </div>
+
+  {% if section.settings.fallback_collection != blank and section.settings.fallback_collection.products.size > 0 %}
+    <div class="recently-viewed__fallback" data-recently-viewed-fallback hidden>
+      <div class="recently-viewed__carousel">
+        <button class="recently-viewed__arrow recently-viewed__arrow--prev" data-dir="prev" aria-label="Previous">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+        </button>
+
+        <div class="recently-viewed__track" data-recently-viewed-fallback-track>
+          {% for product in section.settings.fallback_collection.products limit: 10 %}
+            {% render 'product-card', product: product %}
+          {% endfor %}
+        </div>
+
+        <button class="recently-viewed__arrow recently-viewed__arrow--next" data-dir="next" aria-label="Next">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+      </div>
+    </div>
+  {% endif %}
 </section>
 
 {% if product %}
@@ -42,6 +62,10 @@
     margin-bottom: 24px;
     padding-left: var(--page-margin);
     padding-right: var(--page-margin);
+  }
+
+  [data-recently-viewed-main][hidden] {
+    display: none;
   }
 
   .recently-viewed__carousel {
@@ -96,8 +120,8 @@
   }
 
   .recently-viewed__track .product-card {
-    flex: 0 0 21.5%;
-    min-width: 280px;
+    flex: 0 0 18%;
+    min-width: 240px;
     scroll-snap-align: start;
     border: 1px solid var(--color-border);
     border-right: none;
@@ -109,7 +133,7 @@
 
   @media (max-width: 1024px) {
     .recently-viewed__track .product-card {
-      flex: 0 0 33.333%;
+      flex: 0 0 28%;
     }
 
     .recently-viewed__arrow {
@@ -119,80 +143,117 @@
 
   @media (max-width: 600px) {
     .recently-viewed__track .product-card {
-      flex: 0 0 75%;
+      flex: 0 0 65%;
     }
   }
 {% endstylesheet %}
 
 <script>
   (function() {
-    const STORAGE_KEY = 'saturday-recently-viewed';
-    const MAX_ITEMS = 10;
+    var sectionRoot = document.currentScript.closest('.shopify-section');
+    if (!sectionRoot) return;
+
+    var STORAGE_KEY = 'saturday-recently-viewed';
+    var MAX_ITEMS = 10;
 
     function getHandles() {
       try {
-        const items = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
-        return items.map(item => typeof item === 'string' ? item : item.handle).filter(Boolean);
-      } catch { return []; }
+        var items = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+        return items.map(function(item) { return typeof item === 'string' ? item : item.handle; }).filter(Boolean);
+      } catch(e) { return []; }
     }
 
     function saveHandles(handles) {
       try { localStorage.setItem(STORAGE_KEY, JSON.stringify(handles)); }
-      catch {}
+      catch(e) {}
+    }
+
+    function wireArrows(container, track) {
+      container.querySelectorAll('[data-dir]').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+          var card = track.querySelector('.product-card');
+          if (!card) return;
+          track.scrollBy({
+            left: btn.dataset.dir === 'next' ? card.offsetWidth : -card.offsetWidth,
+            behavior: 'smooth'
+          });
+        });
+      });
     }
 
     // Track current product
-    const trackingEl = document.querySelector('[data-recently-viewed-tracking]');
+    var trackingEl = sectionRoot.querySelector('[data-recently-viewed-tracking]');
     if (trackingEl) {
-      const handle = JSON.parse(trackingEl.textContent);
-      const handles = getHandles().filter(h => h !== handle);
-      handles.unshift(handle);
-      saveHandles(handles.slice(0, MAX_ITEMS));
+      var handle = JSON.parse(trackingEl.textContent);
+      var stored = getHandles().filter(function(h) { return h !== handle; });
+      stored.unshift(handle);
+      saveHandles(stored.slice(0, MAX_ITEMS));
     }
 
-    // Render recently viewed cards
-    const track = document.querySelector('[data-recently-viewed-track]');
-    if (!track) return;
+    var section = sectionRoot.querySelector('.recently-viewed');
+    var track = sectionRoot.querySelector('[data-recently-viewed-track]');
+    var mainCarousel = sectionRoot.querySelector('[data-recently-viewed-main]');
+    var fallback = sectionRoot.querySelector('[data-recently-viewed-fallback]');
+    var fallbackTrack = sectionRoot.querySelector('[data-recently-viewed-fallback-track]');
+    var headingEl = sectionRoot.querySelector('[data-recently-viewed-heading]');
 
-    const handles = getHandles();
-    const currentHandle = trackingEl ? JSON.parse(trackingEl.textContent) : null;
-    const filtered = handles.filter(h => h !== currentHandle);
-    if (filtered.length === 0) return;
+    if (!section || !track) return;
 
-    const section = track.closest('.recently-viewed');
-
-    Promise.all(
-      filtered.map(handle =>
-        fetch('/products/' + handle + '?section_id=product-card-render')
-          .then(function(res) { return res.ok ? res.text() : null; })
-          .catch(function() { return null; })
-      )
-    ).then(function(results) {
-      var html = results
-        .filter(Boolean)
-        .map(function(text) {
-          var match = text.match(/<product-card[\s\S]*<\/product-card>/);
-          return match ? match[0] : '';
-        })
-        .filter(Boolean)
-        .join('');
-
-      if (!html) return;
-      track.innerHTML = html;
+    // Design mode: show everything for merchant preview
+    if (window.Shopify && window.Shopify.designMode) {
       section.hidden = false;
-    });
+      if (mainCarousel && track && track.children.length === 0) {
+        mainCarousel.hidden = true;
+      }
+      if (fallback) fallback.hidden = false;
+      if (fallbackTrack) wireArrows(fallback, fallbackTrack);
+      wireArrows(mainCarousel || section, track);
+      return;
+    }
 
-    // Carousel arrows
-    section.querySelectorAll('[data-dir]').forEach(function(btn) {
-      btn.addEventListener('click', function() {
-        var card = track.querySelector('.product-card');
-        if (!card) return;
-        track.scrollBy({
-          left: btn.dataset.dir === 'next' ? card.offsetWidth : -card.offsetWidth,
-          behavior: 'smooth'
-        });
+    function isValidHandle(h) {
+      return /^[a-z0-9-]+$/.test(h);
+    }
+
+    var handles = getHandles();
+    var currentHandle = handle || null;
+    var filtered = handles.filter(function(h) { return h !== currentHandle; }).filter(isValidHandle);
+
+    if (filtered.length > 0) {
+      // State 1: Has recently viewed products — fetch and render
+      Promise.all(
+        filtered.map(function(h) {
+          return fetch('/products/' + h + '?section_id=product-card-render')
+            .then(function(res) { return res.ok ? res.text() : null; })
+            .catch(function() { return null; });
+        })
+      ).then(function(results) {
+        var html = results
+          .filter(Boolean)
+          .map(function(text) {
+            var match = text.match(/<product-card[\s\S]*<\/product-card>/);
+            return match ? match[0] : '';
+          })
+          .filter(Boolean)
+          .join('');
+
+        if (!html) return;
+        track.innerHTML = html;
+        section.hidden = false;
+        wireArrows(mainCarousel || section, track);
       });
-    });
+    } else if (fallback && fallbackTrack) {
+      // State 2: No recently viewed, but fallback collection exists
+      if (mainCarousel) mainCarousel.hidden = true;
+      fallback.hidden = false;
+      section.hidden = false;
+      if (headingEl) {
+        var fallbackHeading = headingEl.getAttribute('data-fallback-heading');
+        if (fallbackHeading) headingEl.textContent = fallbackHeading;
+      }
+      wireArrows(fallback, fallbackTrack);
+    }
+    // State 3: No recently viewed and no fallback — stay hidden (default)
   })();
 </script>
 
@@ -205,6 +266,18 @@
       "id": "heading",
       "label": "t:labels.heading",
       "default": "RECENTLY VIEWED"
+    },
+    {
+      "type": "collection",
+      "id": "fallback_collection",
+      "label": "t:labels.fallback_collection",
+      "info": "t:labels.fallback_collection_info"
+    },
+    {
+      "type": "text",
+      "id": "fallback_heading",
+      "label": "t:labels.fallback_heading",
+      "default": "NEW ARRIVALS"
     },
     {
       "type": "color",

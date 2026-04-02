@@ -8,14 +8,16 @@ echo "=== Agent Reminder ==="
 echo "INSTRUCTION: Delegate to the right agent. Do not do the work directly."
 echo ""
 
+workflow=""
 for f in "$agents_dir"/*.md; do
   [ -f "$f" ] || continue
   name=$(basename "$f" .md)
-  desc=$(awk '/^description:/{sub(/^description: */, ""); print; exit}' "$f")
+  desc=$(awk '/^---$/,/^---$/{if(/^description:/){sub(/^description: */, ""); print; exit}}' "$f")
   printf "  @%-14s — %s\n" "$name" "$desc"
+  workflow="${workflow:+$workflow → }@$name"
 done
 
 echo ""
-echo "Workflow: @architect → @coder → @reviewer → @tester"
-echo "Start with @architect for any feature, fix, or significant change."
+echo "Workflow: $workflow"
+echo "Start with the first agent for any feature, fix, or significant change."
 echo "=== End Agent Reminder ==="

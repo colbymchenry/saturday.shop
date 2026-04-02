@@ -89,7 +89,9 @@
     "recently-viewed": {
       "type": "recently-viewed",
       "settings": {
-        "heading": "Recently Viewed",
+        "heading": "RECENTLY VIEWED",
+        "fallback_collection": "new-releases",
+        "fallback_heading": "NEW ARRIVALS",
         "background_color": "#F5F2EB"
       }
     }
