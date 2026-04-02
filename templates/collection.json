@@ -20,14 +20,6 @@
             "image": "shopify://shop_images/4.jpg"
           }
         },
-        "cat_hoodies": {
-          "type": "category",
-          "settings": {
-            "tag": "Hoodie",
-            "label": "Hoodies",
-            "image": "shopify://shop_images/auburn-koozie.png"
-          }
-        },
         "cat_accessories": {
           "type": "category",
           "settings": {
@@ -35,28 +27,11 @@
             "label": "Accessories",
             "image": "shopify://shop_images/auburn-koozie.png"
           }
-        },
-        "cat_flags": {
-          "type": "category",
-          "settings": {
-            "tag": "Flag",
-            "label": "Flags"
-          }
-        },
-        "cat_koozies": {
-          "type": "category",
-          "settings": {
-            "tag": "Koozie",
-            "label": "Koozies"
-          }
         }
       },
       "block_order": [
         "cat_tees",
-        "cat_hoodies",
-        "cat_accessories",
-        "cat_flags",
-        "cat_koozies"
+        "cat_accessories"
       ],
       "settings": {}
     }
