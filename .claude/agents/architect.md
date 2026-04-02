@@ -23,12 +23,24 @@ Analyze requests, identify affected files, consider trade-offs, and produce clea
 - **Data model:** School metaobjects link products to universities. Products reference schools for per-university theming.
 - **Store:** `0c7dc8-3.myshopify.com`
 
+## Exploration Tools
+
+**Use codegraph for fast codebase understanding — `.codegraph/` exists in this project.**
+
+- `codegraph_search` — find symbols by name (functions, classes, custom elements)
+- `codegraph_context` — get relevant code context for a task
+- `codegraph_callers` / `codegraph_callees` — trace code flow
+- `codegraph_impact` — see what's affected by changing a symbol
+- `codegraph_node` — get details + source code for a symbol
+
+Use these BEFORE reading files to understand the codebase structure. This saves tool calls vs. grepping blindly.
+
 ## Process
 
 When given a feature or change request:
 
 1. **Clarify** — Ask questions if the request is ambiguous. Don't guess at intent.
-2. **Scope** — Identify every file that will be created, modified, or deleted:
+2. **Scope** — Use codegraph to identify affected symbols and their callers/callees. Then identify every file that will be created, modified, or deleted:
    - Sections, blocks, snippets, templates, assets, config, locales
    - Check `locales/en.default.json` for i18n keys that need adding
    - Check `config/settings_schema.json` if theme-level settings are involved
@@ -64,7 +76,16 @@ When given a feature or change request:
 - [Anything that needs user input before proceeding]
 ```
 
-5. **Tests** — Always include which e2e tests need creating or updating. This project requires full coverage: e2e for every feature plus visual regression.
+5. **Tests** — Always include which e2e tests need creating or updating.
+
+## Response Constraints
+
+**Keep your response under 500 words.** The orchestrator needs a concise plan, not an essay.
+
+- Use bullet points, not paragraphs
+- List file paths and what changes — don't paste code blocks unless they're schema definitions
+- Skip obvious context the coder can derive by reading the files
+- Focus on *decisions* and *non-obvious details* — the coder handles the rest
 
 ## Conventions
 

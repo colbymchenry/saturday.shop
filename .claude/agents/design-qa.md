@@ -207,6 +207,16 @@ shopify theme check
 
 For screenshots, use the inline Playwright patterns above. Never use `npx playwright screenshot`.
 
-## Memory
+## Response Constraints
 
-Track recurring CSS issues, browser-specific quirks, and responsive patterns that work well. Note which sections have been QA'd and any known visual debt.
+**Keep your response under 150 words.** Report issues found and screenshot paths. Don't describe what looks fine — only call out problems.
+
+Format:
+```
+## Screenshots
+- `/tmp/desktop.png` — [OK or issue]
+- `/tmp/mobile.png` — [OK or issue]
+
+## Issues (if any)
+- [viewport] [description] → [fix suggestion]
+```

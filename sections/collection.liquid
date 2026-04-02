@@ -128,6 +128,53 @@
     </collection-sort>
   </div>
 
+  {%- comment -%} Build matching categories from blocks {%- endcomment -%}
+  {%- assign has_matching_categories = false -%}
+  {%- for block in section.blocks -%}
+    {%- if block.type == 'category' and block.settings.tag != blank -%}
+      {%- assign tag_trimmed = block.settings.tag | strip -%}
+      {%- if collection.all_tags contains tag_trimmed -%}
+        {%- assign has_matching_categories = true -%}
+        {%- break -%}
+      {%- endif -%}
+    {%- endif -%}
+  {%- endfor -%}
+
+  {%- if has_matching_categories -%}
+    <collection-filter data-collection-handle="{{ collection.handle }}" data-section-id="{{ section.id }}"
+      {% if school %}style="--school-primary: {{ school.primary_color }};"{% endif %}>
+      <nav class="collection__filters" aria-label="{{ 'collections.filter_all' | t }}">
+        <div class="collection__filters-scroll">
+          <a href="{{ routes.collections_url }}/{{ collection.handle }}"
+             class="collection__filter-btn{% unless collection.current_tags %} collection__filter-btn--active{% endunless %}"
+             style="--pill-index: 0">
+            {{ 'collections.filter_all' | t }}
+          </a>
+          {%- assign pill_index = 1 -%}
+          {%- for block in section.blocks -%}
+            {%- if block.type == 'category' and block.settings.tag != blank -%}
+              {%- assign tag_trimmed = block.settings.tag | strip -%}
+              {%- if collection.all_tags contains tag_trimmed -%}
+                <a href="{{ routes.collections_url }}/{{ collection.handle }}/{{ tag_trimmed | url_encode }}"
+                   class="collection__filter-btn{% if collection.current_tags contains tag_trimmed %} collection__filter-btn--active{% endif %}"
+                   style="--pill-index: {{ pill_index }}"
+                   {{ block.shopify_attributes }}>
+                  {%- if block.settings.image -%}
+                    <span class="collection__filter-icon">
+                      {{ block.settings.image | image_url: width: 56 | image_tag: loading: 'lazy', class: 'collection__filter-icon-img' }}
+                    </span>
+                  {%- endif -%}
+                  <span class="collection__filter-label">{{ block.settings.label | default: tag_trimmed | escape }}</span>
+                </a>
+                {%- assign pill_index = pill_index | plus: 1 -%}
+              {%- endif -%}
+            {%- endif -%}
+          {%- endfor -%}
+        </div>
+      </nav>
+    </collection-filter>
+  {%- endif -%}
+
   {% paginate collection.products by 20 %}
     <div class="collection__grid" data-collection-grid>
       {% for product in collection.products %}
@@ -537,6 +584,121 @@
     }
   }
 
+  /* ───── Category filters (pill chips) ───── */
+  .collection__filters {
+    margin-bottom: 0;
+    padding: 0 0 4px;
+  }
+
+  .collection__filters-scroll {
+    display: flex;
+    gap: 10px;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+    padding: 8px 0 16px;
+  }
+
+  .collection__filters-scroll::-webkit-scrollbar {
+    display: none;
+  }
+
+  .collection__filter-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-family: var(--font-heading--family);
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    flex-shrink: 0;
+    padding: 6px 18px;
+    border-radius: 7px;
+    border: 1.5px solid var(--color-border);
+    background: color-mix(in srgb, var(--color-foreground) 3%, transparent);
+    color: var(--color-foreground);
+    text-decoration: none;
+    cursor: pointer;
+    transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+    animation: filter-pill-enter 0.35s ease-out both;
+    animation-delay: calc(var(--pill-index, 0) * 0.05s);
+  }
+
+  .collection__filter-btn:has(.collection__filter-icon) {
+    padding-left: 6px;
+  }
+
+  .collection__filter-btn:hover {
+    background: color-mix(in srgb, var(--color-foreground) 8%, transparent);
+    border-color: color-mix(in srgb, var(--color-foreground) 20%, transparent);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  }
+
+  .collection__filter-btn--active {
+    background: var(--school-primary, var(--color-foreground));
+    color: white;
+    border-color: var(--school-primary, var(--color-foreground));
+  }
+
+  .collection__filter-btn--active:hover {
+    background: color-mix(in srgb, var(--school-primary, var(--color-foreground)) 85%, black);
+    border-color: color-mix(in srgb, var(--school-primary, var(--color-foreground)) 85%, black);
+    color: white;
+  }
+
+  .collection__filter-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    overflow: hidden;
+    flex-shrink: 0;
+    border: 1.5px solid var(--color-border);
+    background: var(--color-background);
+  }
+
+  .collection__filter-btn--active .collection__filter-icon {
+    border-color: rgba(255, 255, 255, 0.3);
+  }
+
+  .collection__filter-icon-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  @keyframes filter-pill-enter {
+    0% {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* ───── Grid loading state ───── */
+  .collection__grid--loading {
+    opacity: 0.4;
+    pointer-events: none;
+    transition: opacity 0.15s ease;
+  }
+
+  .collection__empty {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 4rem 1rem;
+    font-family: var(--font-body--family);
+    font-size: 0.95rem;
+    color: var(--color-muted);
+  }
+
   .collection__grid {
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -844,7 +1006,14 @@
   }
 
   /* ───── Infinite scroll ───── */
-  (function () {
+  var _infiniteObserver = null;
+
+  function initInfiniteScroll() {
+    if (_infiniteObserver) {
+      _infiniteObserver.disconnect();
+      _infiniteObserver = null;
+    }
+
     var sentinel = document.querySelector('[data-infinite-sentinel]');
     if (!sentinel) return;
 
@@ -864,13 +1033,15 @@
       return;
     }
 
-    var observer = new IntersectionObserver(function (entries) {
+    sentinel.hidden = false;
+
+    _infiniteObserver = new IntersectionObserver(function (entries) {
       if (entries[0].isIntersecting && !loading && nextUrl) {
         loadNextPage();
       }
     }, { rootMargin: '200px' });
 
-    observer.observe(sentinel);
+    _infiniteObserver.observe(sentinel);
 
     function loadNextPage() {
       loading = true;
@@ -907,24 +1078,174 @@
 
           if (!nextUrl || currentPage >= totalPages) {
             sentinel.hidden = true;
-            observer.disconnect();
+            _infiniteObserver.disconnect();
           }
 
           loading = false;
         })
         .catch(function () {
           sentinel.hidden = true;
-          observer.disconnect();
+          _infiniteObserver.disconnect();
           if (paginationNav) paginationNav.removeAttribute('data-pagination-hidden');
           loading = false;
         });
     }
-  })();
+  }
+
+  initInfiniteScroll();
+
+  /* ───── Collection filter web component ───── */
+  class CollectionFilter extends HTMLElement {
+    connectedCallback() {
+      this._abortController = null;
+      this.addEventListener('click', this._onClick.bind(this));
+      window.addEventListener('popstate', this._onPopState.bind(this));
+    }
+
+    disconnectedCallback() {
+      window.removeEventListener('popstate', this._onPopState.bind(this));
+      if (this._abortController) this._abortController.abort();
+    }
+
+    _onClick(e) {
+      var link = e.target.closest('.collection__filter-btn');
+      if (!link) return;
+      e.preventDefault();
+      this._filterTo(link.href, link);
+    }
+
+    _onPopState() {
+      this._filterTo(window.location.href);
+    }
+
+    _filterTo(url, activeLink) {
+      if (this._abortController) this._abortController.abort();
+      this._abortController = new AbortController();
+
+      var sectionId = this.getAttribute('data-section-id');
+      var grid = document.querySelector('[data-collection-grid]');
+      if (!grid) return;
+
+      /* Optimistic active-state update */
+      if (activeLink) {
+        this.querySelectorAll('.collection__filter-btn').forEach(function (btn) {
+          btn.classList.remove('collection__filter-btn--active');
+        });
+        activeLink.classList.add('collection__filter-btn--active');
+      }
+
+      grid.classList.add('collection__grid--loading');
+
+      /* Build fetch URL with section_id and preserve sort_by */
+      var fetchUrl = new URL(url, window.location.origin);
+      var currentUrl = new URL(window.location.href);
+      var sortBy = currentUrl.searchParams.get('sort_by');
+      if (sortBy) fetchUrl.searchParams.set('sort_by', sortBy);
+      fetchUrl.searchParams.set('section_id', sectionId);
+
+      var self = this;
+
+      fetch(fetchUrl.toString(), { signal: this._abortController.signal })
+        .then(function (res) {
+          if (!res.ok) throw new Error('Failed to fetch');
+          return res.text();
+        })
+        .then(function (html) {
+          var parser = new DOMParser();
+          var doc = parser.parseFromString(html, 'text/html');
+
+          /* Replace product grid */
+          var newGrid = doc.querySelector('[data-collection-grid]');
+          if (newGrid) {
+            grid.innerHTML = newGrid.innerHTML;
+          } else {
+            grid.innerHTML = '';
+          }
+
+          /* Replace product count */
+          var newCount = doc.querySelector('.collection__count');
+          var oldCount = document.querySelector('.collection__count');
+          if (newCount && oldCount) {
+            oldCount.textContent = newCount.textContent;
+          }
+
+          /* Replace sentinel */
+          var newSentinel = doc.querySelector('[data-infinite-sentinel]');
+          var oldSentinel = document.querySelector('[data-infinite-sentinel]');
+          if (newSentinel && oldSentinel) {
+            oldSentinel.replaceWith(newSentinel);
+          }
+
+          /* Replace pagination */
+          var newPagination = doc.querySelector('[data-pagination-nav]');
+          var oldPagination = document.querySelector('[data-pagination-nav]');
+          if (newPagination && oldPagination) {
+            oldPagination.replaceWith(newPagination);
+          } else if (oldPagination && !newPagination) {
+            oldPagination.remove();
+          }
+
+          /* Update active state from server response for popstate */
+          if (!activeLink) {
+            var newFilters = doc.querySelector('.collection__filters-scroll');
+            var oldFilters = self.querySelector('.collection__filters-scroll');
+            if (newFilters && oldFilters) {
+              oldFilters.innerHTML = newFilters.innerHTML;
+            }
+          }
+
+          /* Re-init infinite scroll */
+          initInfiniteScroll();
+
+          grid.classList.remove('collection__grid--loading');
+
+          /* Update URL without section_id */
+          var pushUrl = new URL(url, window.location.origin);
+          if (sortBy) pushUrl.searchParams.set('sort_by', sortBy);
+          pushUrl.searchParams.delete('section_id');
+          history.pushState(null, '', pushUrl.toString());
+        })
+        .catch(function (err) {
+          if (err.name === 'AbortError') return;
+          grid.classList.remove('collection__grid--loading');
+        });
+    }
+  }
+
+  if (!customElements.get('collection-filter')) {
+    customElements.define('collection-filter', CollectionFilter);
+  }
 {% endjavascript %}
 
 {% schema %}
 {
   "name": "t:general.collection",
-  "settings": []
+  "settings": [],
+  "blocks": [
+    {
+      "type": "category",
+      "name": "t:general.category",
+      "limit": 10,
+      "settings": [
+        {
+          "type": "text",
+          "id": "tag",
+          "label": "t:labels.tag",
+          "info": "t:labels.tag_info"
+        },
+        {
+          "type": "text",
+          "id": "label",
+          "label": "t:labels.label"
+        },
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "t:labels.category_image",
+          "info": "t:labels.category_image_info"
+        }
+      ]
+    }
+  ]
 }
 {% endschema %}

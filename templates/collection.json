@@ -11,7 +11,15 @@
   "sections": {
     "main": {
       "type": "collection",
-      "settings": {}
+      "settings": {},
+      "blocks": {
+        "cat_tees": { "type": "category", "settings": { "tag": "T-Shirt", "label": "Tees" } },
+        "cat_hoodies": { "type": "category", "settings": { "tag": "Hoodie", "label": "Hoodies" } },
+        "cat_accessories": { "type": "category", "settings": { "tag": "Accessories", "label": "Accessories" } },
+        "cat_flags": { "type": "category", "settings": { "tag": "Flag", "label": "Flags" } },
+        "cat_koozies": { "type": "category", "settings": { "tag": "Koozie", "label": "Koozies" } }
+      },
+      "block_order": ["cat_tees", "cat_hoodies", "cat_accessories", "cat_flags", "cat_koozies"]
     }
   },
   "order": [

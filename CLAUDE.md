@@ -1,27 +1,14 @@
 ## Agent Workflow
 
-This project uses specialized AI agents in `.claude/agents/`. **ALWAYS delegate to the appropriate agent rather than doing work directly.**
+For features, fixes, or UI changes → delegate to `@orchestrator`. It manages the full pipeline internally:
 
-| Step | Agent | Purpose | Invoke |
-|------|-------|---------|--------|
-| 1 | **architect** | Plan before implementing — scope affected sections, trade-offs, risks | `@architect` |
-| 2 | **coder** | Write/edit Liquid, CSS, JS following project conventions and the architect's plan | `@coder` |
-| 3 | **reviewer** | Review the diff for security, performance, consistency | `@reviewer` |
-| 4 | **tester** | Write and run Playwright e2e tests for affected sections | `@tester` |
-| 5 | **design-qa** | Visual QA — screenshot at mobile (375x812) + desktop (1440x900) and inspect | `@design-qa` |
-| — | **shopify-expert** | Shopify theme architecture, Liquid patterns, schema design | `@shopify-expert` |
+```
+@orchestrator → @architect → @coder → @tester ↔ @coder → @reviewer → @design-qa
+```
 
-### Workflow
+The orchestrator returns a concise structured summary. All verbose agent output stays inside its context.
 
-For any feature, bug fix, or significant change:
-
-1. **Plan** → `@architect` analyzes the request, identifies affected sections/snippets/templates, and produces an implementation plan
-2. **Implement** → `@coder` writes code following the architect's plan and Shopify theme conventions
-3. **Review** → `@reviewer` checks the diff for security, performance, and consistency issues
-4. **Test** → `@tester` writes/updates Playwright e2e tests and runs them until green
-5. **Visual QA** → `@design-qa` screenshots affected pages at mobile + desktop and inspects for layout/responsive issues
-
-**Always start with the architect.** Even for seemingly simple changes, the architect identifies affected files, edge cases, and test requirements that are easy to miss when jumping straight to code.
+For Shopify-specific questions → `@shopify-expert` directly.
 
 ### When NOT to delegate
 
@@ -36,17 +23,6 @@ For any feature, bug fix, or significant change:
 ## Local Dev Server
 
 The local dev server is running at **http://127.0.0.1:9292**. Use `curl` via Bash to fetch pages from it — **WebFetch cannot reach localhost** (it routes through an external service). Use this URL for e2e tests (`BASE_URL=http://127.0.0.1:9292`).
-
-## CRITICAL: Testing Is Part of Done
-
-**Before completing ANY task**, you MUST:
-1. Check `git diff --name-only` to see what files you changed
-2. Use the file mapping below to identify affected e2e test files
-3. Update those e2e tests (new tests for new features, fix broken selectors for changed UI)
-4. Run `shopify theme check` and affected e2e tests
-5. Do NOT consider the task complete until all tests pass
-
-This is non-negotiable. The Stop hook will block you if you skip this.
 
 ---
 

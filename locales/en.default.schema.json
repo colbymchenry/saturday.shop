@@ -67,6 +67,7 @@
     "careers_cta": "Careers CTA",
     "text": "Text",
     "theme": "Theme",
+    "category": "Category",
     "typography": "Typography"
   },
   "labels": {
@@ -131,7 +132,12 @@
     "careers_empty_text": "Empty state text",
     "fallback_collection": "Fallback collection",
     "fallback_collection_info": "Shown to first-time visitors with no browsing history",
-    "fallback_heading": "Fallback heading"
+    "fallback_heading": "Fallback heading",
+    "label": "Label",
+    "tag": "Tag",
+    "tag_info": "The product tag to filter by (must match exactly)",
+    "category_image": "Icon image",
+    "category_image_info": "Optional small image shown beside the label (cropped to circle)"
   },
   "options": {
     "alignment": {

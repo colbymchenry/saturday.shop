@@ -46,7 +46,9 @@
   },
   "collections": {
     "title": "Collections",
-    "view_all": "View all"
+    "view_all": "View all",
+    "filter_all": "All",
+    "filter_no_results": "No products match this filter."
   },
   "gift_card": {
     "add_to_apple_wallet": "Add to Apple Wallet",
