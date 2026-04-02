@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
-# Stop hook — shows what changed, finds affected tests via codegraph,
-# and runs only those Playwright tests.
+# Verify script — called by the tester agent to check changed files and run affected tests.
+# Do NOT register as a Stop hook — the tester agent calls this as part of its workflow.
 #
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
@@ -80,9 +80,9 @@ NOT_MODIFIED=""
 while IFS= read -r test_file; do
   [ -z "$test_file" ] && continue
   if echo "$ALL_CHANGED" | grep -qF "$test_file"; then
-    MODIFIED="${MODIFIED}  ✅ ${test_file}"$'\n'
+    MODIFIED="${MODIFIED}  ${test_file} (updated)"$'\n'
   else
-    NOT_MODIFIED="${NOT_MODIFIED}  ⚠️  ${test_file}"$'\n'
+    NOT_MODIFIED="${NOT_MODIFIED}  ${test_file} (not updated)"$'\n'
   fi
 done <<< "$ALL_AFFECTED"
 
@@ -97,19 +97,19 @@ SPEC_FILES=$(echo "$ALL_AFFECTED" | grep '\.spec\.' | tr '\n' ' ')
 if [ -n "$SPEC_FILES" ]; then
   echo "═══ Running affected Playwright tests ═══"
   cd "$PROJECT_ROOT"
-  npx playwright test $SPEC_FILES 2>&1
+  BASE_URL=http://127.0.0.1:9292 npx playwright test $SPEC_FILES 2>&1
   TEST_EXIT=$?
   echo ""
 
   if [ $TEST_EXIT -ne 0 ]; then
-    echo "🛑 BLOCKED: Playwright tests failed for affected files."
+    echo "BLOCKED: Playwright tests failed for affected files."
     echo "Fix the failing tests before completing your task."
     echo ""
     echo "Remaining checklist:"
     echo "  Run shopify theme check"
-    exit 2  # Exit code 2 = BLOCKING — prevents Claude from completing the task
+    exit 2
   else
-    echo "✅ All affected tests passed."
+    echo "All affected tests passed."
   fi
 else
   echo "No Playwright spec files to run."
