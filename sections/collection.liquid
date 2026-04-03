@@ -148,7 +148,7 @@
           <a href="{{ routes.collections_url }}/{{ collection.handle }}"
              class="collection__filter-btn{% unless collection.current_tags %} collection__filter-btn--active{% endunless %}"
              style="--pill-index: 0">
-            {{ 'collections.filter_all' | t }}
+            <span class="collection__filter-label">{{ 'collections.filter_all' | t }}</span>
           </a>
           {%- assign pill_index = 1 -%}
           {%- for block in section.blocks -%}
@@ -161,7 +161,7 @@
                    {{ block.shopify_attributes }}>
                   {%- if block.settings.image -%}
                     <span class="collection__filter-icon">
-                      {{ block.settings.image | image_url: width: 56 | image_tag: loading: 'lazy', class: 'collection__filter-icon-img' }}
+                      {{ block.settings.image | image_url: width: 200 | image_tag: loading: 'lazy', class: 'collection__filter-icon-img' }}
                     </span>
                   {%- endif -%}
                   <span class="collection__filter-label">{{ block.settings.label | default: tag_trimmed | escape }}</span>
@@ -584,19 +584,19 @@
     }
   }
 
-  /* ───── Category filters (pill chips) ───── */
+  /* ───── Category filters (cards) ───── */
   .collection__filters {
     margin-bottom: 0;
-    padding: 0 0 4px;
+    padding: 0;
   }
 
   .collection__filters-scroll {
     display: flex;
-    gap: 10px;
+    gap: 16px;
     overflow-x: auto;
     scrollbar-width: none;
     -webkit-overflow-scrolling: touch;
-    padding: 8px 0 16px;
+    padding: 12px 0 24px;
   }
 
   .collection__filters-scroll::-webkit-scrollbar {
@@ -604,75 +604,73 @@
   }
 
   .collection__filter-btn {
-    display: inline-flex;
+    display: flex;
+    flex-direction: column;
     align-items: center;
     gap: 8px;
+    width: 100px;
     font-family: var(--font-heading--family);
-    font-size: 0.7rem;
+    font-size: 0.65rem;
     font-weight: 700;
     letter-spacing: 0.08em;
     text-transform: uppercase;
     white-space: nowrap;
     flex-shrink: 0;
-    padding: 6px 18px;
-    border-radius: 7px;
-    border: 1.5px solid var(--color-border);
-    background: color-mix(in srgb, var(--color-foreground) 3%, transparent);
+    padding: 0;
+    border: none;
+    background: none;
     color: var(--color-foreground);
     text-decoration: none;
     cursor: pointer;
-    transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
-    animation: filter-pill-enter 0.35s ease-out both;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+    animation: filter-card-enter 0.35s ease-out both;
     animation-delay: calc(var(--pill-index, 0) * 0.05s);
   }
 
-  .collection__filter-btn:has(.collection__filter-icon) {
-    padding-left: 6px;
-  }
-
   .collection__filter-btn:hover {
-    background: color-mix(in srgb, var(--color-foreground) 8%, transparent);
-    border-color: color-mix(in srgb, var(--color-foreground) 20%, transparent);
-    transform: translateY(-1px);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    opacity: 0.75;
   }
 
-  .collection__filter-btn--active {
-    background: var(--school-primary, var(--color-foreground));
-    color: white;
-    border-color: var(--school-primary, var(--color-foreground));
+  .collection__filter-btn:hover .collection__filter-icon-img {
+    transform: scale(1.05);
   }
 
-  .collection__filter-btn--active:hover {
-    background: color-mix(in srgb, var(--school-primary, var(--color-foreground)) 85%, black);
-    border-color: color-mix(in srgb, var(--school-primary, var(--color-foreground)) 85%, black);
-    color: white;
+  .collection__filter-btn--active .collection__filter-label {
+    font-weight: 800;
+    border-bottom: 2px solid var(--school-primary, var(--color-foreground));
+    padding-bottom: 2px;
   }
 
   .collection__filter-icon {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 26px;
-    height: 26px;
-    border-radius: 50%;
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    border-radius: 8px;
     overflow: hidden;
-    flex-shrink: 0;
-    border: 1.5px solid var(--color-border);
-    background: var(--color-background);
-  }
-
-  .collection__filter-btn--active .collection__filter-icon {
-    border-color: rgba(255, 255, 255, 0.3);
+    background: #f5f5f5;
   }
 
   .collection__filter-icon-img {
     width: 100%;
     height: 100%;
-    object-fit: cover;
+    object-fit: contain;
+    padding: 4px;
+    transition: transform 0.2s ease;
   }
 
-  @keyframes filter-pill-enter {
+  .collection__filter-label {
+    text-align: center;
+  }
+
+  @media (max-width: 768px) {
+    .collection__filter-btn {
+      width: 80px;
+    }
+  }
+
+  @keyframes filter-card-enter {
     0% {
       opacity: 0;
       transform: translateY(8px);

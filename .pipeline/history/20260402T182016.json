@@ -1,0 +1,30 @@
+{
+  "id": "20260402T182016",
+  "task": "/var/folders/_l/lfnw71vd10z8vnq0h1qztbz40000gn/T/TemporaryItems/NSIRD_screencaptureui_wlq3hI/Screenshot\\ 2026-04-02\\ at\\ 5.40.39 PM.png",
+  "agent": "claude",
+  "status": "failed",
+  "started_at": "2026-04-02T18:20:16.227809-05:00",
+  "ended_at": "2026-04-02T18:25:26.163776-05:00",
+  "steps": [
+    {
+      "name": "architect",
+      "status": "passed",
+      "attempt": 1,
+      "started_at": "2026-04-02T18:20:16.230263-05:00",
+      "ended_at": "2026-04-02T18:23:29.259484-05:00"
+    },
+    {
+      "name": "coder",
+      "status": "passed",
+      "attempt": 1,
+      "started_at": "2026-04-02T18:23:29.262218-05:00",
+      "ended_at": "2026-04-02T18:25:26.118405-05:00"
+    },
+    {
+      "name": "tester",
+      "status": "running",
+      "attempt": 1,
+      "started_at": "2026-04-02T18:25:26.120696-05:00"
+    }
+  ]
+}

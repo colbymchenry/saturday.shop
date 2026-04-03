@@ -1,3 +1,11 @@
+# Task
+
+/var/folders/_l/lfnw71vd10z8vnq0h1qztbz40000gn/T/TemporaryItems/NSIRD_screencaptureui_wlq3hI/Screenshot\ 2026-04-02\ at\ 5.40.39 PM.png
+
+# Context from Previous Steps
+
+## Architect's Plan
+
 # Footer Navigation — Implementation Plan
 
 ## Task Summary
@@ -128,3 +136,11 @@ This would go in a new `e2e/footer.spec.ts` or be added to `e2e/smoke.spec.ts`.
 ALL CLEAR
 
 The footer template code (`sections/footer.liquid`) already fully implements all required features. The only gaps are **Shopify Admin content changes** (adding missing navigation links and setting social media URLs), which require no theme code modifications.
+
+
+# Output
+
+Implement the architect's plan by editing source files. You MUST make actual code changes — do not just describe what to do. Read the relevant files, edit them, and run the project's linter. If no source files are changed, this step has failed.
+
+Write your complete response to `.pipeline/<your-agent-name>.md` before finishing.
+End your response with a `## Result` section containing exactly one of: PASS, FAIL, ALL CLEAR, or ISSUES FOUND (whichever applies to your role).

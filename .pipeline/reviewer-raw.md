@@ -308,3 +308,8 @@
 ⏺ Footer is rendering correctly. All spec requirements verified:
 
 ────────────────────────────────────────────────────────────────────────────────
+❯ 
+────────────────────────────────────────────────────────────────────────────────
+  [Opus 4.6 (1M context)] │ saturday.shop git:(main*) │ iterative-humming-st…
+  ⏵⏵ bypass permissions on (shift+tab to cycle)
+                                                                 (@oo@) Mottler

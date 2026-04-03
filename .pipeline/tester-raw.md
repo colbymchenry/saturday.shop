@@ -1,3 +1,9 @@
+▐▛███▜▌   Claude Code v2.1.90
+▝▜█████▛▘  Opus 4.6 (1M context) with high effort · Claude Max
+  ▘▘ ▝▝    ~/GitKraken/Personal/saturday.shop
+
+❯ # Task
+
 /var/folders/_l/lfnw71vd10z8vnq0h1qztbz40000gn/T/TemporaryItems/NSIRD_screencap
 tureui_wlq3hI/Screenshot\ 2026-04-02\ at\ 5.40.39 PM.png
 
@@ -100,3 +106,8 @@ FAIL, ALL CLEAR, or ISSUES FOUND (whichever applies to your role).
    Shopify GraphQL.
 
 ────────────────────────────────────────────────────────────────────────────────
+❯ 
+────────────────────────────────────────────────────────────────────────────────
+  [Opus 4.6 (1M context)] │ saturday.shop git:(main*) │ steady-greeting-pine…
+  ⏵⏵ bypass permissions on (shift+tab to cycle)
+                                                                 (@oo@) Mottler
