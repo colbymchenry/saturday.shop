@@ -60,6 +60,17 @@
     ]
   },
   {
+    "name": "t:general.favicon",
+    "settings": [
+      {
+        "type": "image_picker",
+        "id": "favicon",
+        "label": "t:labels.favicon",
+        "info": "t:labels.favicon_info"
+      }
+    ]
+  },
+  {
     "name": "t:general.colors",
     "settings": [
       {
