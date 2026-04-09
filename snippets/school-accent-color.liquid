@@ -1,0 +1,17 @@
+{% doc %}
+  Outputs the resolved accent color for a school.
+
+  When `use_secondary_for_accent` is truthy and `secondary_color` exists,
+  outputs the secondary color; otherwise outputs the primary color.
+
+  @param {metaobject} school - A School metaobject
+
+  @example
+    {% capture accent_color %}{% render 'school-accent-color', school: school %}{% endcapture %}
+    <div style="--school-primary: {{ accent_color | strip }};">
+{% enddoc %}
+{%- if school.use_secondary_for_accent and school.secondary_color != blank -%}
+  {{- school.secondary_color -}}
+{%- else -%}
+  {{- school.primary_color -}}
+{%- endif -%}
