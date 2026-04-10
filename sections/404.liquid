@@ -55,7 +55,7 @@
           {{ school.slug | json }}: {
             logo: {{ school.logo | image_url: width: 300 | json }},
             name: {{ school.name | json }},
-            color: "{{ school.primary_color }}",
+            color: "{% if school.use_secondary_for_accent and school.secondary_color != blank %}{{ school.secondary_color }}{% else %}{{ school.primary_color }}{% endif %}",
             slogan: {{ school.slogan | json }}
           }{% unless forloop.last %},{% endunless %}
         {%- endfor -%}

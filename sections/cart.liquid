@@ -26,7 +26,8 @@
             {%- endfor -%}
           {%- endpaginate -%}
 
-          <div class="cart__line" data-line-key="{{ item.key }}"{% if item_school %} style="--line-accent: {{ item_school.primary_color }}"{% endif %}>
+          {% capture accent_color %}{% render 'school-accent-color', school: item_school %}{% endcapture %}
+          <div class="cart__line" data-line-key="{{ item.key }}"{% if item_school %} style="--line-accent: {{ accent_color | strip }}"{% endif %}>
             <a href="{{ item.url }}" class="cart__line-image">
               {%- if item.image -%}
                 <img

@@ -8,9 +8,10 @@
   {%- paginate shop.metaobjects.school.values by 250 -%}
     {
       {%- for school in shop.metaobjects.school.values -%}
+        {%- capture accent_color -%}{%- render 'school-accent-color', school: school -%}{%- endcapture -%}
         {{ school.slug | json }}: {
           "name": {{ school.name | json }},
-          "color": "{{ school.primary_color }}"
+          "color": "{{ accent_color | strip }}"
         }{%- unless forloop.last -%},{%- endunless -%}
       {%- endfor -%}
     }

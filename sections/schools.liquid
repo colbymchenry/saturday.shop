@@ -133,7 +133,8 @@
             {%- if school.logo -%}
               {{ school.logo | image_url: width: 24 | image_tag: class: 'schools-page__school-logo', loading: 'lazy' }}
             {%- else -%}
-              <span class="schools-page__school-dot" style="background-color: {{ school.primary_color }};"></span>
+              {%- capture accent_color -%}{%- render 'school-accent-color', school: school -%}{%- endcapture -%}
+              <span class="schools-page__school-dot" style="background-color: {{ accent_color | strip }};"></span>
             {%- endif -%}
             <span class="schools-page__school-name">{{ school.name }}</span>
             {%- unless is_live -%}

@@ -14,7 +14,7 @@
   {%- endfor -%}
 {%- endpaginate -%}
 
-<div class="product-features full-width" {% if school %}style="--school-primary: {{ school.primary_color }};"{% endif %}>
+<div class="product-features full-width" {% if school %}{% capture accent_color %}{% render 'school-accent-color', school: school %}{% endcapture %}style="--school-primary: {{ accent_color | strip }};"{% endif %}>
   <div class="product-features__inner">
     <div class="product-features__header">
       <h2 class="product-features__heading">

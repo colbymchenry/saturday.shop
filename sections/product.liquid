@@ -19,7 +19,7 @@
 
 <product-page
   class="product"
-  {% if school %}style="--school-primary: {{ school.primary_color }};"{% endif %}
+  {% if school %}{% capture accent_color %}{% render 'school-accent-color', school: school %}{% endcapture %}style="--school-primary: {{ accent_color | strip }};"{% endif %}
 >
   {%- comment -%} ── Left: Image gallery ── {%- endcomment -%}
   <div class="product__gallery">

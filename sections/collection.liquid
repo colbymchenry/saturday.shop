@@ -11,7 +11,8 @@
 {%- endpaginate -%}
 
 {% if collection.all_products_count == 0 %}
-  <div class="coming-soon full-width" {% if school %}style="--school-primary: {{ school.primary_color }};"{% endif %}>
+  {% capture accent_color %}{% render 'school-accent-color', school: school %}{% endcapture %}
+  <div class="coming-soon full-width" {% if school %}style="--school-primary: {{ accent_color | strip }};"{% endif %}>
     <div class="coming-soon__stripes"></div>
     <div class="coming-soon__content">
       {%- if school.logo -%}
@@ -43,7 +44,8 @@
   <script src="{{ 'product-card.js' | asset_url }}" defer="defer"></script>
 
   {% if school %}
-    <div class="school-header full-width" style="--school-primary: {{ school.primary_color }};{% if school.secondary_color %} --school-secondary: {{ school.secondary_color }};{% endif %}">
+    {% capture accent_color %}{% render 'school-accent-color', school: school %}{% endcapture %}
+    <div class="school-header full-width" style="--school-primary: {{ accent_color | strip }};{% if school.secondary_color %} --school-secondary: {{ school.secondary_color }};{% endif %}">
       <div class="school-header__stripes"></div>
 
       {%- if school.slogan -%}
@@ -141,8 +143,9 @@
   {%- endfor -%}
 
   {%- if has_matching_categories -%}
+    {% capture accent_color %}{% render 'school-accent-color', school: school %}{% endcapture %}
     <collection-filter data-collection-handle="{{ collection.handle }}" data-section-id="{{ section.id }}"
-      {% if school %}style="--school-primary: {{ school.primary_color }};"{% endif %}>
+      {% if school %}style="--school-primary: {{ accent_color | strip }};"{% endif %}>
       <nav class="collection__filters" aria-label="{{ 'collections.filter_all' | t }}">
         <div class="collection__filters-scroll">
           <a href="{{ routes.collections_url }}/{{ collection.handle }}"
