@@ -1,35 +1,3 @@
-## Agent Workflow
-
-For features, fixes, or UI changes → delegate to `@orchestrator`. It manages the full pipeline internally:
-
-```
-@orchestrator → @architect → @coder → @tester ↔ @coder → @reviewer → @design-qa
-```
-
-The orchestrator returns a concise structured summary. All verbose agent output stays inside its context.
-
-### Specialized Agents
-
-- `@shopify-expert` — Shopify-specific questions (Liquid, metaobjects, theme APIs, admin)
-- `@seo-performance` — Core Web Vitals, SEO audits, Lighthouse optimization
-- `@design-qa` — Visual QA at 3 viewports (mobile 375x812, tablet 768x1024, desktop 1440x900)
-
-### When NOT to delegate
-
-- Quick questions about the codebase (just answer directly)
-- Reading/explaining code (just read and explain)
-- Git operations, deployments, or config changes (handle directly)
-
-### Conventions
-
-- **Commits:** Conventional Commits (`feat:`, `fix:`, `chore:`, `refactor:`, `test:`, `docs:`)
-- **Attribution:** Undercover mode — no AI mentions in commits or PRs
-- **Review priorities:** Performance, Consistency
-- **Test coverage:** Pragmatic — test what matters
-- **Architecture:** Component-driven (composable, reusable sections and blocks)
-
----
-
 # CLAUDE.md
 
 ## Local Dev Server

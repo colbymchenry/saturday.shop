@@ -1,0 +1,12 @@
+{
+  "adapter": "postgresql",
+  "config": {
+    "connectionUrl": "postgresql://neondb_owner:npg_MFu8V2pGYrHw@ep-still-scene-ak5bl6fh-pooler.c-3.us-west-2.aws.neon.tech/neondb?sslmode=require&channel_binding=require",
+    "host": "ep-still-scene-ak5bl6fh-pooler.c-3.us-west-2.aws.neon.tech",
+    "port": 5432,
+    "database": "neondb",
+    "user": "neondb_owner",
+    "ssl": true,
+    "password": "npg_MFu8V2pGYrHw"
+  }
+}

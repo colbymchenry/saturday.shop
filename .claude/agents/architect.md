@@ -1,8 +1,9 @@
 ---
 name: architect
 description: Plans implementations for the Shopify theme before code gets written. Use proactively before implementing features, UI changes, or significant refactors.
-tools: Read, Glob, Grep, Bash, AskUserQuestion
 model: inherit
+color: yellow
+tools: Read, Glob, Grep, Bash, AskUserQuestion
 memory: project
 effort: high
 ---
