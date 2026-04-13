@@ -201,11 +201,13 @@
 
   /* Product card overrides for carousel context */
   .featured-collection__track .product-card {
-    flex: 0 0 21.5%;
-    min-width: 280px;
+    flex: 0 0 18%;
+    min-width: 140px;
     scroll-snap-align: start;
     border: 1px solid var(--color-border);
     border-right: none;
+    opacity: 0;
+    transform: translateX(40px);
   }
 
   .featured-collection__track .product-card:last-child {
@@ -214,7 +216,7 @@
 
   @media (max-width: 1024px) {
     .featured-collection__track .product-card {
-      flex: 0 0 33.333%;
+      flex: 0 0 28%;
     }
 
     .featured-collection__arrow {
@@ -224,35 +226,79 @@
 
   @media (max-width: 600px) {
     .featured-collection__track .product-card {
-      flex: 0 0 75%;
+      flex: 0 0 38%;
+    }
+  }
+
+  .carousel--visible .featured-collection__track .product-card {
+    opacity: 1;
+    transform: translateX(0);
+    transition: opacity 0.5s ease, transform 0.5s ease;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .featured-collection__track .product-card,
+    .carousel--visible .featured-collection__track .product-card {
+      opacity: 1;
+      transform: none;
+      transition: none;
     }
   }
 {% endstylesheet %}
 
-{% javascript %}
-  class ProductCarousel extends HTMLElement {
-    connectedCallback() {
-      this.track = this.querySelector('.featured-collection__track');
-      this.querySelectorAll('.featured-collection__arrow').forEach(btn => {
-        btn.addEventListener('click', () => this.scroll(btn.dataset.dir));
-      });
+<script>
+  (function() {
+    class ProductCarousel extends HTMLElement {
+      connectedCallback() {
+        this.track = this.querySelector('.featured-collection__track');
+        this.querySelectorAll('.featured-collection__arrow').forEach(btn => {
+          btn.addEventListener('click', () => this.scroll(btn.dataset.dir));
+        });
+        this.initEntrance();
+      }
+
+      scroll(dir) {
+        const card = this.track.querySelector('.product-card');
+        if (!card) return;
+        const distance = card.offsetWidth;
+        this.track.scrollBy({
+          left: dir === 'next' ? distance : -distance,
+          behavior: 'smooth'
+        });
+      }
+
+      initEntrance() {
+        const section = this.closest('.featured-collection');
+        if (!section) return;
+
+        if (window.Shopify && window.Shopify.designMode) {
+          section.classList.add('carousel--visible');
+          this.track.querySelectorAll('.product-card').forEach(card => {
+            card.style.transition = 'none';
+          });
+          return;
+        }
+
+        this.track.querySelectorAll('.product-card').forEach((card, i) => {
+          card.style.transitionDelay = Math.min(i * 100, 700) + 'ms';
+        });
+
+        const observer = new IntersectionObserver(entries => {
+          if (entries[0].isIntersecting) {
+            section.classList.add('carousel--visible');
+            observer.unobserve(section);
+          }
+        }, { threshold: 0.15 });
+
+        observer.observe(section);
+      }
     }
 
-    scroll(dir) {
-      const card = this.track.querySelector('.product-card');
-      if (!card) return;
-      const distance = card.offsetWidth;
-      this.track.scrollBy({
-        left: dir === 'next' ? distance : -distance,
-        behavior: 'smooth'
-      });
+    if (!customElements.get('product-carousel')) {
+      customElements.define('product-carousel', ProductCarousel);
     }
-  }
-
-  if (!customElements.get('product-carousel')) {
-    customElements.define('product-carousel', ProductCarousel);
-  }
-{% endjavascript %}
+  })();
+</script>
 
 {% schema %}
 {
