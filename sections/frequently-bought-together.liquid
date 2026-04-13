@@ -1,28 +1,58 @@
 {% comment %}
-  Frequently Bought Together — shows the current product plus complementary
-  product recommendations with checkboxes, total price, and bulk add-to-cart.
-  Uses the shared product-card snippet for consistent card rendering.
+  Frequently Bought Together — shows the current product plus companion
+  products (sourced from product tags) with checkboxes, total price,
+  and bulk add-to-cart.
+
+  Tag convention: add tags prefixed with "fbt:" followed by the companion
+  product's handle. Example: fbt:auburn-vintage-tee, fbt:gameday-hat.
+  Up to 2 companion products are shown.
 {% endcomment %}
 
-{{ 'product-card.css' | asset_url | stylesheet_tag }}
-<script src="{{ 'product-card.js' | asset_url }}" defer="defer"></script>
+
+{%- liquid
+  assign fbt_handles = ''
+  for tag in product.tags
+    assign tag_prefix = tag | slice: 0, 4
+    if tag_prefix == 'fbt:'
+      assign handle = tag | slice: 4, 200
+      if fbt_handles == ''
+        assign fbt_handles = handle
+      else
+        assign fbt_handles = fbt_handles | append: ',' | append: handle
+      endif
+    endif
+  endfor
+-%}
 
 <frequently-bought
   class="fbt"
   data-product-id="{{ product.id }}"
+  {% if fbt_handles != '' %}data-fbt-handles="{{ fbt_handles }}"{% endif %}
   hidden
 >
   <h2 class="fbt__title">{{ section.settings.heading }}</h2>
-  <div class="fbt__rule"></div>
 
   <div class="fbt__products" data-fbt-products>
-    <div class="fbt__item fbt__item--current" data-fbt-item data-checked="true">
-      <span class="fbt__item-label">This item</span>
-      <div class="fbt__item-card">
-        <div class="fbt__checkbox fbt__checkbox--checked" data-fbt-checkbox>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+    <div class="fbt__item fbt__item--current" data-fbt-item data-checked="true" data-fbt-variants="{{ product.variants | json | escape }}">
+      <div class="fbt__checkbox fbt__checkbox--checked" data-fbt-checkbox>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+      </div>
+      <img class="fbt__thumb" src="{{ product.featured_image | image_url: width: 200 }}" alt="{{ product.featured_image.alt | escape }}" width="70" height="70" loading="lazy">
+      <div class="fbt__details">
+        <div class="fbt__row-header">
+          <span class="fbt__product-title">{{ product.title }}</span>
+          <span class="fbt__product-price" data-fbt-price>{{ product.selected_or_first_available_variant.price | money }}</span>
         </div>
-        {% render 'product-card', product: product %}
+        {%- if product.variants.size > 1 -%}
+          <select class="fbt__variant-select" data-fbt-variant-select>
+            {%- for variant in product.variants -%}
+              <option value="{{ variant.id }}" {% if variant == product.selected_or_first_available_variant %}selected{% endif %}>
+                {{ variant.title }}
+              </option>
+            {%- endfor -%}
+          </select>
+        {%- endif -%}
+        <input type="hidden" data-variant-id value="{{ product.selected_or_first_available_variant.id }}">
       </div>
     </div>
   </div>
@@ -40,85 +70,43 @@
 
 {% stylesheet %}
   .fbt {
-    padding: 4rem var(--page-margin);
-    text-align: center;
-    max-width: var(--page-width);
-    margin: 0 auto;
+    display: block;
+    padding: 2rem 0;
+    overflow: hidden;
   }
 
-  .fbt[hidden] {
-    display: none;
-  }
+  .fbt[hidden] { display: none; }
 
   .fbt__title {
     font-family: var(--font-heading--family);
-    font-size: clamp(1rem, 2vw, 1.3rem);
+    font-size: clamp(0.85rem, 2vw, 1.1rem);
     font-weight: 800;
     text-transform: uppercase;
     letter-spacing: 0.1em;
-    margin: 0;
+    text-align: center;
+    margin: 0 0 1.25rem;
   }
 
-  .fbt__rule {
-    width: 40px;
-    height: 3px;
-    background: var(--color-foreground);
-    margin: 1rem auto 2.5rem;
-  }
-
-  /* ── Product cards row ── */
   .fbt__products {
     display: flex;
-    align-items: flex-start;
-    justify-content: center;
-    gap: 0;
-    flex-wrap: wrap;
+    flex-direction: column;
   }
 
   .fbt__item {
-    width: 250px;
-    flex-shrink: 0;
-    text-align: left;
-  }
-
-  .fbt__item-label {
-    display: block;
-    font-family: var(--font-heading--family);
-    font-size: 0.6rem;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    opacity: 0.5;
-    margin-bottom: 0.5rem;
-  }
-
-  .fbt__item-card {
-    position: relative;
-  }
-
-  .fbt__item-card .product-card {
-    border: 1px solid var(--color-border);
-  }
-
-  .fbt__plus {
     display: flex;
     align-items: center;
-    justify-content: center;
-    width: 32px;
-    align-self: center;
-    font-size: 1.5rem;
-    color: var(--color-foreground);
-    opacity: 0.3;
-    flex-shrink: 0;
+    gap: 0.75rem;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid var(--color-border);
   }
 
-  /* ── Checkbox ── */
+  .fbt__item:first-child {
+    border-top: 1px solid var(--color-border);
+  }
+
   .fbt__checkbox {
-    position: absolute;
-    top: 8px;
-    right: 8px;
-    width: 24px;
-    height: 24px;
+    width: 22px;
+    height: 22px;
     border: 2px solid var(--color-border);
     border-radius: 4px;
     display: flex;
@@ -126,40 +114,82 @@
     justify-content: center;
     cursor: pointer;
     background: transparent;
-    z-index: 3;
+    flex-shrink: 0;
     transition: background-color 0.15s ease, border-color 0.15s ease;
   }
 
-  .fbt__checkbox svg {
-    opacity: 0;
-  }
+  .fbt__checkbox svg { opacity: 0; }
 
   .fbt__checkbox--checked {
     background: var(--color-foreground);
     border-color: var(--color-foreground);
   }
 
-  .fbt__checkbox--checked svg {
-    opacity: 1;
+  .fbt__checkbox--checked svg { opacity: 1; }
+
+  .fbt__thumb {
+    width: 60px;
+    height: 60px;
+    object-fit: cover;
+    border-radius: 6px;
+    flex-shrink: 0;
+    background: var(--color-border);
   }
 
-  /* ── Footer ── */
+  .fbt__details {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .fbt__row-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 0.5rem;
+    min-width: 0;
+  }
+
+  .fbt__product-title {
+    font-family: var(--font-body--family);
+    font-size: 0.85rem;
+    font-weight: 600;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .fbt__product-price {
+    font-family: var(--font-body--family);
+    font-size: 0.85rem;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+
+  .fbt__variant-select {
+    display: block;
+    font-family: var(--font-body--family);
+    font-size: 0.75rem;
+    color: rgba(0, 0, 0, 0.5);
+    border: none;
+    background: none;
+    padding: 0.15rem 0 0;
+    margin: 0;
+    cursor: pointer;
+  }
+
   .fbt__footer {
-    margin-top: 2rem;
+    margin-top: 1.25rem;
     display: flex;
     flex-direction: column;
-    align-items: center;
-    gap: 1rem;
+    gap: 0.75rem;
   }
 
-  .fbt__footer[hidden] {
-    display: none;
-  }
+  .fbt__footer[hidden] { display: none; }
 
   .fbt__total {
     display: flex;
+    justify-content: space-between;
     align-items: baseline;
-    gap: 0.5rem;
   }
 
   .fbt__total-label {
@@ -172,12 +202,13 @@
 
   .fbt__total-price {
     font-family: var(--font-body--family);
-    font-size: 1.1rem;
+    font-size: 1rem;
     font-weight: 700;
   }
 
   .fbt__add-all {
-    padding: 1rem 3rem;
+    width: 100%;
+    padding: 0.875rem;
     font-family: var(--font-heading--family);
     font-size: 0.8rem;
     font-weight: 700;
@@ -190,25 +221,12 @@
     transition: opacity 0.2s ease;
   }
 
-  .fbt__add-all:hover {
-    opacity: 0.85;
-  }
+  .fbt__add-all:hover { opacity: 0.85; }
 
-  @media (max-width: 768px) {
-    .fbt__products {
-      flex-direction: column;
-      align-items: center;
-    }
-
-    .fbt__plus {
-      transform: rotate(90deg);
-      width: auto;
-      height: 32px;
-    }
-
-    .fbt__item {
-      width: 280px;
-    }
+  @media (min-width: 769px) {
+    .fbt__footer { align-items: center; }
+    .fbt__total { justify-content: center; gap: 0.5rem; }
+    .fbt__add-all { width: auto; padding: 0.875rem 3rem; }
   }
 {% endstylesheet %}
 
@@ -222,77 +240,114 @@
       this.countEl = this.querySelector('[data-fbt-count]');
       this.addAllBtn = this.querySelector('[data-fbt-add-all]');
 
-      var currentCheckbox = this.querySelector('.fbt__item--current [data-fbt-checkbox]');
+      var currentItem = this.querySelector('.fbt__item--current');
+      var currentCheckbox = currentItem && currentItem.querySelector('[data-fbt-checkbox]');
       if (currentCheckbox) {
-        currentCheckbox.addEventListener('click', () => this.toggleItem(currentCheckbox.closest('[data-fbt-item]')));
+        currentCheckbox.addEventListener('click', () => this.toggleItem(currentItem));
+      }
+      var currentSelect = currentItem && currentItem.querySelector('[data-fbt-variant-select]');
+      if (currentSelect) {
+        currentSelect.addEventListener('change', () => this.onVariantChange(currentItem));
       }
 
-      this.addEventListener('variant:change', () => this.updateTotal());
       this.addAllBtn.addEventListener('click', () => this.addAllToCart());
-
-      this.fetchRecommendations();
+      this.loadCompanions();
     }
 
-    async fetchRecommendations() {
-      try {
-        var products = await this.fetchIntent('complementary');
-        if (products.length === 0) {
-          products = await this.fetchIntent('related');
-        }
-        if (products.length === 0) return;
-        products = products.slice(0, 2);
+    async loadCompanions() {
+      var handlesAttr = this.dataset.fbtHandles;
+      if (!handlesAttr) return;
 
-        await this.renderRecommendations(products);
+      var handles = handlesAttr.split(',').slice(0, 2);
+      if (handles.length === 0) return;
+
+      try {
+        await this.renderCompanions(handles);
+        if (this.querySelectorAll('[data-fbt-item]:not(.fbt__item--current)').length === 0) return;
         this.hidden = false;
         this.footer.hidden = false;
         this.updateTotal();
       } catch {}
     }
 
-    async fetchIntent(intent) {
-      var res = await fetch(
-        '/recommendations/products.json?product_id=' + this.productId + '&limit=4&intent=' + intent
-      );
-      if (!res.ok) return [];
-      var data = await res.json();
-      return data.products || [];
-    }
-
-    async renderRecommendations(products) {
+    async renderCompanions(handles) {
       var results = await Promise.all(
-        products.map(function(product) {
-          return fetch('/products/' + product.handle + '?section_id=product-card-render')
-            .then(function(res) { return res.ok ? res.text() : null; })
+        handles.map(function(handle) {
+          return fetch('/products/' + handle + '.js')
+            .then(function(res) { return res.ok ? res.json() : null; })
             .catch(function() { return null; });
         })
       );
 
-      results.forEach(function(html) {
-        if (!html) return;
+      results.forEach(function(product) {
+        if (!product || !product.variants || product.variants.length === 0) return;
 
-        var match = html.match(/<product-card[\s\S]*<\/product-card>/);
-        if (!match) return;
+        var variant = product.variants[0];
+        var imgSrc = product.featured_image || '';
+        if (imgSrc) {
+          var sep = imgSrc.indexOf('?') > -1 ? '&' : '?';
+          imgSrc += sep + 'width=200&height=200&crop=center';
+        }
 
-        var plus = document.createElement('div');
-        plus.className = 'fbt__plus';
-        plus.textContent = '+';
-        this.productsContainer.appendChild(plus);
+        var showSelect = product.variants.length > 1 ||
+          (product.variants.length === 1 && variant.title !== 'Default Title');
+        var variantOptions = '';
+        if (showSelect) {
+          variantOptions = '<select class="fbt__variant-select" data-fbt-variant-select>' +
+            product.variants.map(function(v) {
+              return '<option value="' + v.id + '"' +
+                (v.id === variant.id ? ' selected' : '') + '>' +
+                this.escapeHtml(v.title) + '</option>';
+            }.bind(this)).join('') + '</select>';
+        }
 
         var item = document.createElement('div');
         item.className = 'fbt__item';
         item.dataset.fbtItem = '';
         item.dataset.checked = 'true';
+        item.dataset.fbtVariants = JSON.stringify(product.variants);
         item.innerHTML =
-          '<div class="fbt__item-card">' +
-            '<div class="fbt__checkbox fbt__checkbox--checked" data-fbt-checkbox>' +
-              '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>' +
+          '<div class="fbt__checkbox fbt__checkbox--checked" data-fbt-checkbox>' +
+            '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>' +
+          '</div>' +
+          '<img class="fbt__thumb" src="' + imgSrc + '" alt="" width="70" height="70" loading="lazy">' +
+          '<div class="fbt__details">' +
+            '<div class="fbt__row-header">' +
+              '<span class="fbt__product-title">' + this.escapeHtml(product.title) + '</span>' +
+              '<span class="fbt__product-price" data-fbt-price>' + this.formatMoney(variant.price) + '</span>' +
             '</div>' +
-            match[0] +
+            variantOptions +
+            '<input type="hidden" data-variant-id value="' + variant.id + '">' +
           '</div>';
 
         item.querySelector('[data-fbt-checkbox]').addEventListener('click', () => this.toggleItem(item));
+        var select = item.querySelector('[data-fbt-variant-select]');
+        if (select) {
+          select.addEventListener('change', () => this.onVariantChange(item));
+        }
         this.productsContainer.appendChild(item);
       }.bind(this));
+    }
+
+    escapeHtml(str) {
+      var div = document.createElement('div');
+      div.textContent = str;
+      return div.innerHTML;
+    }
+
+    onVariantChange(item) {
+      var select = item.querySelector('[data-fbt-variant-select]');
+      var variantInput = item.querySelector('[data-variant-id]');
+      var priceEl = item.querySelector('[data-fbt-price]');
+      if (!select || !variantInput || !item.dataset.fbtVariants) return;
+
+      variantInput.value = select.value;
+      try {
+        var variants = JSON.parse(item.dataset.fbtVariants);
+        var variant = variants.find(function(v) { return v.id === parseInt(select.value); });
+        if (variant && priceEl) priceEl.textContent = this.formatMoney(variant.price);
+      } catch {}
+      this.updateTotal();
     }
 
     toggleItem(item) {
@@ -304,14 +359,11 @@
     }
 
     getItemPrice(item) {
-      var card = item.querySelector('product-card');
-      if (!card) return 0;
-      var variantsEl = card.querySelector('[data-variants]');
-      var variantInput = card.querySelector('[data-variant-id]');
-      if (!variantsEl || !variantInput) return 0;
+      var variantInput = item.querySelector('[data-variant-id]');
+      if (!item.dataset.fbtVariants || !variantInput) return 0;
 
       try {
-        var variants = JSON.parse(variantsEl.textContent);
+        var variants = JSON.parse(item.dataset.fbtVariants);
         var selectedId = parseInt(variantInput.value);
         var variant = variants.find(function(v) { return v.id === selectedId; });
         return variant ? variant.price : 0;
@@ -337,9 +389,7 @@
       var cartItems = [];
 
       items.forEach(function(item) {
-        var card = item.querySelector('product-card');
-        if (!card) return;
-        var variantInput = card.querySelector('[data-variant-id]');
+        var variantInput = item.querySelector('[data-variant-id]');
         if (variantInput) {
           cartItems.push({ id: parseInt(variantInput.value), quantity: 1 });
         }
