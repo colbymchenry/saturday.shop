@@ -129,6 +129,12 @@
       },
       {
         "type": "color",
+        "id": "color_card_border",
+        "default": "#E0E0E0",
+        "label": "t:labels.card_border_color"
+      },
+      {
+        "type": "color",
         "id": "color_muted",
         "default": "#666666",
         "label": "t:labels.muted_text"
