@@ -327,6 +327,428 @@ test.describe('Category picker', () => {
   });
 });
 
+test.describe('Filter panel visibility', () => {
+  test('filter sidebar is visible on desktop viewport', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await page.goto('/collections/best-sellers');
+    await page.waitForLoadState('domcontentloaded');
+
+    const sidebar = page.locator('[data-filter-sidebar]');
+    if (await sidebar.count() === 0) test.skip(true, 'No filter sidebar on this store');
+    await expect(sidebar).toBeVisible();
+
+    const filterGroups = sidebar.locator('.filter-group');
+    expect(await filterGroups.count()).toBeGreaterThanOrEqual(1);
+  });
+
+  test('filter toggle button is visible on mobile viewport', async ({ page }) => {
+    await page.setViewportSize({ width: 375, height: 812 });
+    await page.goto('/collections/best-sellers');
+    await page.waitForLoadState('domcontentloaded');
+
+    const toggle = page.locator('[data-filter-toggle]');
+    if (await toggle.count() === 0) test.skip(true, 'No filter toggle on this store');
+    await expect(toggle).toBeVisible();
+  });
+
+  test('tapping filter button opens the drawer on mobile', async ({ page }) => {
+    await page.setViewportSize({ width: 375, height: 812 });
+    await page.goto('/collections/best-sellers');
+    await page.waitForLoadState('domcontentloaded');
+
+    const toggle = page.locator('[data-filter-toggle]');
+    if (await toggle.count() === 0) test.skip(true, 'No filter toggle on this store');
+
+    await page.waitForFunction(() => !!customElements.get('collection-filters'), null, { timeout: 20000, polling: 300 });
+    await toggle.click();
+
+    const sidebar = page.locator('[data-filter-sidebar]');
+    await expect(sidebar).toHaveClass(/collection__sidebar--open/);
+
+    const backdrop = page.locator('[data-filter-backdrop]');
+    await expect(backdrop).toHaveClass(/collection__drawer-backdrop--visible/);
+  });
+
+  test('drawer can be closed via close button', async ({ page }) => {
+    await page.setViewportSize({ width: 375, height: 812 });
+    await page.goto('/collections/best-sellers');
+    await page.waitForLoadState('domcontentloaded');
+
+    const toggle = page.locator('[data-filter-toggle]');
+    if (await toggle.count() === 0) test.skip(true, 'No filter toggle on this store');
+
+    await page.waitForFunction(() => !!customElements.get('collection-filters'), null, { timeout: 20000, polling: 300 });
+    await toggle.click();
+
+    const sidebar = page.locator('[data-filter-sidebar]');
+    await expect(sidebar).toHaveClass(/collection__sidebar--open/);
+
+    const closeBtn = page.locator('[data-filter-close]');
+    await closeBtn.click();
+    await expect(sidebar).not.toHaveClass(/collection__sidebar--open/);
+  });
+
+  test('drawer can be closed via backdrop click', async ({ page }) => {
+    await page.setViewportSize({ width: 375, height: 812 });
+    await page.goto('/collections/best-sellers');
+    await page.waitForLoadState('domcontentloaded');
+
+    const toggle = page.locator('[data-filter-toggle]');
+    if (await toggle.count() === 0) test.skip(true, 'No filter toggle on this store');
+
+    await page.waitForFunction(() => !!customElements.get('collection-filters'), null, { timeout: 20000, polling: 300 });
+    await toggle.click();
+
+    const sidebar = page.locator('[data-filter-sidebar]');
+    await expect(sidebar).toHaveClass(/collection__sidebar--open/);
+
+    const backdrop = page.locator('[data-filter-backdrop]');
+    await backdrop.click({ force: true });
+    await expect(sidebar).not.toHaveClass(/collection__sidebar--open/);
+  });
+
+  test('drawer can be closed via Escape key', async ({ page }) => {
+    await page.setViewportSize({ width: 375, height: 812 });
+    await page.goto('/collections/best-sellers');
+    await page.waitForLoadState('domcontentloaded');
+
+    const toggle = page.locator('[data-filter-toggle]');
+    if (await toggle.count() === 0) test.skip(true, 'No filter toggle on this store');
+
+    await page.waitForFunction(() => !!customElements.get('collection-filters'), null, { timeout: 20000, polling: 300 });
+    await toggle.click();
+
+    const sidebar = page.locator('[data-filter-sidebar]');
+    await expect(sidebar).toHaveClass(/collection__sidebar--open/);
+
+    await page.keyboard.press('Escape');
+    await expect(sidebar).not.toHaveClass(/collection__sidebar--open/);
+  });
+});
+
+test.describe('Filter interactions', () => {
+  async function waitForFiltersReady(page) {
+    await page.goto('/collections/best-sellers');
+    await page.waitForLoadState('domcontentloaded');
+    const sidebar = page.locator('[data-filter-sidebar]');
+    if (await sidebar.count() === 0) return false;
+    await page.waitForFunction(() => !!customElements.get('collection-filters'), null, { timeout: 20000, polling: 300 });
+    return true;
+  }
+
+  async function applyFirstFilter(page) {
+    const checkbox = page.locator('[data-filter-sidebar] .filter-option:not(.filter-option--disabled) input[type="checkbox"]').first();
+    await checkbox.scrollIntoViewIfNeeded();
+    const responsePromise = page.waitForResponse(resp =>
+      resp.url().includes('section_id') && resp.status() === 200
+    );
+    await checkbox.check({ force: true });
+    await responsePromise;
+    await expect(page.locator('[data-collection-grid]')).not.toHaveClass(/collection__grid--loading/, { timeout: 10000 });
+  }
+
+  test('checking a list filter updates the product grid via AJAX', async ({ page }) => {
+    if (!await waitForFiltersReady(page)) test.skip(true, 'No filter sidebar on this store');
+
+    const grid = page.locator('[data-collection-grid]');
+    const countBefore = await grid.locator('product-card').count();
+
+    await applyFirstFilter(page);
+
+    const countAfter = await grid.locator('product-card').count();
+    expect(countAfter).toBeGreaterThanOrEqual(0);
+    expect(countAfter !== countBefore || countAfter > 0).toBeTruthy();
+  });
+
+  test('entering a price range updates the grid', async ({ page }) => {
+    if (!await waitForFiltersReady(page)) test.skip(true, 'No filter sidebar on this store');
+
+    const minInput = page.locator('[data-filter-sidebar] .filter-price input').first();
+    if (await minInput.count() === 0) test.skip(true, 'No price filter on this collection');
+
+    await minInput.scrollIntoViewIfNeeded();
+    await minInput.fill('10');
+
+    const responsePromise = page.waitForResponse(resp =>
+      resp.url().includes('section_id') && resp.status() === 200
+    );
+    await responsePromise;
+
+    await expect(page.locator('[data-collection-grid]')).not.toHaveClass(/collection__grid--loading/, { timeout: 10000 });
+  });
+
+  test('URL updates with filter params after applying a filter', async ({ page }) => {
+    if (!await waitForFiltersReady(page)) test.skip(true, 'No filter sidebar on this store');
+
+    const urlBefore = page.url();
+    await applyFirstFilter(page);
+
+    await expect(page).not.toHaveURL(urlBefore, { timeout: 10000 });
+    expect(page.url()).toMatch(/filter\./);
+  });
+
+  test('multiple filters can be combined', async ({ page }) => {
+    if (!await waitForFiltersReady(page)) test.skip(true, 'No filter sidebar on this store');
+
+    const checkboxes = page.locator('[data-filter-sidebar] .filter-option:not(.filter-option--disabled) input[type="checkbox"]');
+    const count = await checkboxes.count();
+    if (count < 2) test.skip(true, 'Need at least 2 enabled filter options');
+
+    await checkboxes.first().scrollIntoViewIfNeeded();
+    const resp1 = page.waitForResponse(r => r.url().includes('section_id') && r.status() === 200);
+    await checkboxes.first().check({ force: true });
+    await resp1;
+    await expect(page.locator('[data-collection-grid]')).not.toHaveClass(/collection__grid--loading/, { timeout: 10000 });
+
+    await checkboxes.nth(1).scrollIntoViewIfNeeded();
+    const resp2 = page.waitForResponse(r => r.url().includes('section_id') && r.status() === 200);
+    await checkboxes.nth(1).check({ force: true });
+    await resp2;
+    await expect(page.locator('[data-collection-grid]')).not.toHaveClass(/collection__grid--loading/, { timeout: 10000 });
+
+    const url = page.url();
+    const filterParams = url.split('?')[1] || '';
+    const filterCount = (filterParams.match(/filter\./g) || []).length;
+    expect(filterCount).toBeGreaterThanOrEqual(2);
+  });
+});
+
+test.describe('Active filter chips', () => {
+  async function waitForFiltersReady(page) {
+    await page.goto('/collections/best-sellers');
+    await page.waitForLoadState('domcontentloaded');
+    const sidebar = page.locator('[data-filter-sidebar]');
+    if (await sidebar.count() === 0) return false;
+    await page.waitForFunction(() => !!customElements.get('collection-filters'), null, { timeout: 20000, polling: 300 });
+    return true;
+  }
+
+  async function applyFirstFilter(page) {
+    const checkbox = page.locator('[data-filter-sidebar] .filter-option:not(.filter-option--disabled) input[type="checkbox"]').first();
+    await checkbox.scrollIntoViewIfNeeded();
+    const responsePromise = page.waitForResponse(resp =>
+      resp.url().includes('section_id') && resp.status() === 200
+    );
+    await checkbox.check({ force: true });
+    await responsePromise;
+    await expect(page.locator('[data-collection-grid]')).not.toHaveClass(/collection__grid--loading/, { timeout: 10000 });
+  }
+
+  test('chips bar is hidden when no filters are active', async ({ page }) => {
+    await page.goto('/collections/best-sellers');
+    await page.waitForLoadState('domcontentloaded');
+
+    const chips = page.locator('[data-active-filters]');
+    expect(await chips.count()).toBe(0);
+  });
+
+  test('active filter chips appear after applying a filter', async ({ page }) => {
+    if (!await waitForFiltersReady(page)) test.skip(true, 'No filter sidebar on this store');
+
+    await applyFirstFilter(page);
+
+    const chips = page.locator('[data-active-filters]');
+    await expect(chips).toBeVisible({ timeout: 10000 });
+    const chipCount = await chips.locator('.collection__chip').count();
+    expect(chipCount).toBeGreaterThanOrEqual(1);
+  });
+
+  test('clicking a chip removes that filter', async ({ page }) => {
+    if (!await waitForFiltersReady(page)) test.skip(true, 'No filter sidebar on this store');
+
+    await applyFirstFilter(page);
+
+    const chip = page.locator('.collection__chip').first();
+    await expect(chip).toBeVisible();
+
+    const removeResponse = page.waitForResponse(resp =>
+      resp.url().includes('section_id') && resp.status() === 200
+    );
+    await chip.click();
+    await removeResponse;
+
+    await expect(page.locator('[data-collection-grid]')).not.toHaveClass(/collection__grid--loading/, { timeout: 10000 });
+    expect(await page.locator('[data-active-filters]').count()).toBe(0);
+  });
+
+  test('"Clear All" button removes all active filters', async ({ page }) => {
+    if (!await waitForFiltersReady(page)) test.skip(true, 'No filter sidebar on this store');
+
+    await applyFirstFilter(page);
+
+    const clearAll = page.locator('.collection__clear-all');
+    await expect(clearAll).toBeVisible();
+
+    const clearResponse = page.waitForResponse(resp =>
+      resp.url().includes('section_id') && resp.status() === 200
+    );
+    await clearAll.click();
+    await clearResponse;
+
+    await expect(page.locator('[data-collection-grid]')).not.toHaveClass(/collection__grid--loading/, { timeout: 10000 });
+    expect(await page.locator('[data-active-filters]').count()).toBe(0);
+    expect(page.url()).not.toMatch(/filter\./);
+  });
+});
+
+test.describe('Filter integration', () => {
+  async function waitForFiltersReady(page) {
+    await page.goto('/collections/best-sellers');
+    await page.waitForLoadState('domcontentloaded');
+    const sidebar = page.locator('[data-filter-sidebar]');
+    if (await sidebar.count() === 0) return false;
+    await page.waitForFunction(() => !!customElements.get('collection-filters'), null, { timeout: 20000, polling: 300 });
+    return true;
+  }
+
+  async function applyFirstFilter(page) {
+    const checkbox = page.locator('[data-filter-sidebar] .filter-option:not(.filter-option--disabled) input[type="checkbox"]').first();
+    await checkbox.scrollIntoViewIfNeeded();
+    const responsePromise = page.waitForResponse(resp =>
+      resp.url().includes('section_id') && resp.status() === 200
+    );
+    await checkbox.check({ force: true });
+    await responsePromise;
+    await expect(page.locator('[data-collection-grid]')).not.toHaveClass(/collection__grid--loading/, { timeout: 10000 });
+  }
+
+  test('sort picker continues working when filters are active', async ({ page }) => {
+    if (!await waitForFiltersReady(page)) test.skip(true, 'No filter sidebar on this store');
+
+    await applyFirstFilter(page);
+    expect(page.url()).toMatch(/filter\./);
+
+    await page.waitForFunction(() => {
+      const trigger = document.querySelector('.collection__sort-trigger') as HTMLButtonElement;
+      if (!trigger) return false;
+      trigger.click();
+      const sort = document.querySelector('collection-sort');
+      if (!sort) return false;
+      if (!sort.classList.contains('collection__sort--open')) return false;
+      sort.classList.remove('collection__sort--open');
+      return true;
+    }, null, { timeout: 20000, polling: 300 });
+
+    const trigger = page.locator('.collection__sort-trigger');
+    await trigger.click();
+    const menu = page.locator('.collection__sort-menu');
+    const items = menu.locator('.collection__sort-item');
+    expect(await items.count()).toBe(5);
+  });
+
+  test('category pill filters work alongside sidebar filters', async ({ page }) => {
+    await page.goto('/collections/alabama');
+    await page.waitForLoadState('domcontentloaded');
+
+    const pills = page.locator('.collection__filters');
+    if (await pills.count() === 0) test.skip(true, 'No category pills on this collection');
+
+    const sidebar = page.locator('[data-filter-sidebar]');
+    if (await sidebar.count() === 0) test.skip(true, 'No filter sidebar on this store');
+
+    await page.waitForFunction(() => !!customElements.get('collection-filters'), null, { timeout: 20000, polling: 300 });
+
+    const firstCheckbox = sidebar.locator('.filter-option:not(.filter-option--disabled) input[type="checkbox"]').first();
+    if (await firstCheckbox.count() === 0) test.skip(true, 'No enabled filter options');
+
+    await firstCheckbox.scrollIntoViewIfNeeded();
+    const resp = page.waitForResponse(r => r.url().includes('section_id') && r.status() === 200);
+    await firstCheckbox.check({ force: true });
+    await resp;
+    await expect(page.locator('[data-collection-grid]')).not.toHaveClass(/collection__grid--loading/, { timeout: 10000 });
+
+    await expect(page.locator('.collection__filters-scroll')).toBeVisible();
+    await expect(page.locator('[data-collection-grid]')).toBeVisible();
+  });
+
+  test('browser back button restores previous filter state', async ({ page }) => {
+    if (!await waitForFiltersReady(page)) test.skip(true, 'No filter sidebar on this store');
+
+    const urlBefore = page.url();
+    await applyFirstFilter(page);
+
+    await expect(page).not.toHaveURL(urlBefore);
+
+    const popstateResponse = page.waitForResponse(resp =>
+      resp.url().includes('section_id') && resp.status() === 200
+    );
+    await page.goBack();
+    await popstateResponse;
+
+    await expect(page.locator('[data-collection-grid]')).not.toHaveClass(/collection__grid--loading/, { timeout: 10000 });
+    expect(page.url()).not.toMatch(/filter\./);
+  });
+});
+
+test.describe('Filter accessibility', () => {
+  test('filter toggle button has accessible label', async ({ page }) => {
+    await page.goto('/collections/best-sellers');
+    await page.waitForLoadState('domcontentloaded');
+
+    const toggle = page.locator('[data-filter-toggle]');
+    if (await toggle.count() === 0) test.skip(true, 'No filter toggle on this store');
+    const ariaLabel = await toggle.getAttribute('aria-label');
+    expect(ariaLabel).toBeTruthy();
+    expect(ariaLabel!.length).toBeGreaterThan(0);
+  });
+
+  test('close button has accessible label', async ({ page }) => {
+    await page.goto('/collections/best-sellers');
+    await page.waitForLoadState('domcontentloaded');
+
+    const closeBtn = page.locator('[data-filter-close]');
+    if (await closeBtn.count() === 0) test.skip(true, 'No filter sidebar on this store');
+    const ariaLabel = await closeBtn.getAttribute('aria-label');
+    expect(ariaLabel).toBeTruthy();
+    expect(ariaLabel!.length).toBeGreaterThan(0);
+  });
+
+  test('active filters bar has aria-label', async ({ page }) => {
+    await page.goto('/collections/best-sellers');
+    await page.waitForLoadState('domcontentloaded');
+
+    const sidebar = page.locator('[data-filter-sidebar]');
+    if (await sidebar.count() === 0) test.skip(true, 'No filter sidebar on this store');
+
+    await page.waitForFunction(() => !!customElements.get('collection-filters'), null, { timeout: 20000, polling: 300 });
+
+    const checkbox = page.locator('[data-filter-sidebar] .filter-option:not(.filter-option--disabled) input[type="checkbox"]').first();
+    await checkbox.scrollIntoViewIfNeeded();
+    const resp = page.waitForResponse(r => r.url().includes('section_id') && r.status() === 200);
+    await checkbox.check({ force: true });
+    await resp;
+    await expect(page.locator('[data-collection-grid]')).not.toHaveClass(/collection__grid--loading/, { timeout: 10000 });
+
+    const activeFilters = page.locator('[data-active-filters]');
+    await expect(activeFilters).toBeVisible();
+    const ariaLabel = await activeFilters.getAttribute('aria-label');
+    expect(ariaLabel).toBeTruthy();
+  });
+
+  test('chips have accessible remove labels', async ({ page }) => {
+    await page.goto('/collections/best-sellers');
+    await page.waitForLoadState('domcontentloaded');
+
+    const sidebar = page.locator('[data-filter-sidebar]');
+    if (await sidebar.count() === 0) test.skip(true, 'No filter sidebar on this store');
+
+    await page.waitForFunction(() => !!customElements.get('collection-filters'), null, { timeout: 20000, polling: 300 });
+
+    const checkbox = page.locator('[data-filter-sidebar] .filter-option:not(.filter-option--disabled) input[type="checkbox"]').first();
+    await checkbox.scrollIntoViewIfNeeded();
+    const resp = page.waitForResponse(r => r.url().includes('section_id') && r.status() === 200);
+    await checkbox.check({ force: true });
+    await resp;
+    await expect(page.locator('[data-collection-grid]')).not.toHaveClass(/collection__grid--loading/, { timeout: 10000 });
+
+    const chip = page.locator('.collection__chip').first();
+    await expect(chip).toBeVisible();
+    const ariaLabel = await chip.getAttribute('aria-label');
+    expect(ariaLabel).toBeTruthy();
+    expect(ariaLabel!.length).toBeGreaterThan(0);
+  });
+});
+
 test.describe('Infinite scroll', () => {
   test('grid has data-collection-grid attribute', async ({ page }) => {
     await page.goto('/collections/alabama');

@@ -87,6 +87,8 @@
 
   {%- assign current_sort = collection.sort_by | default: collection.default_sort_by -%}
 
+  <collection-filters data-section-id="{{ section.id }}">
+
   <div class="collection__toolbar">
     <div class="collection__toolbar-left">
       <nav class="collection__breadcrumbs" aria-label="Breadcrumb">
@@ -98,11 +100,19 @@
         {% endif %}
         <span aria-current="page"><strong>{{ collection.title }}</strong></span>
       </nav>
-      <p class="collection__count">{{ collection.all_products_count }} {{ collection.all_products_count | pluralize: 'product', 'products' }}</p>
+      <p class="collection__count" data-product-count>{{ collection.products_count }} {{ collection.products_count | pluralize: 'product', 'products' }}</p>
     </div>
 
-    <collection-sort class="collection__sort">
-      <button type="button" class="collection__sort-trigger">
+    <div class="collection__toolbar-right">
+      {%- if collection.filters.size > 0 -%}
+        <button type="button" class="collection__filter-toggle" data-filter-toggle
+          aria-label="{{ 'collections.filters.toggle_filters_aria_label' | t }}">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22,3 2,3 10,12.46 10,19 14,21 14,12.46"/></svg>
+          <span>{{ 'collections.filters.title_singular' | t }}</span>
+        </button>
+      {%- endif -%}
+      <collection-sort class="collection__sort">
+        <button type="button" class="collection__sort-trigger">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M3 12h12M3 18h6"/></svg>
         <span>Sort: <strong>
           {%- case current_sort -%}
@@ -128,6 +138,7 @@
         {% endfor %}
       </ul>
     </collection-sort>
+    </div>
   </div>
 
   {%- comment -%} Build matching categories from blocks {%- endcomment -%}
@@ -178,6 +189,125 @@
     </collection-filter>
   {%- endif -%}
 
+  {%- assign has_active_filters = false -%}
+  {%- for filter in collection.filters -%}
+    {%- if filter.type == 'price_range' -%}
+      {%- if filter.min_value.value != nil or filter.max_value.value != nil -%}
+        {%- assign has_active_filters = true -%}
+        {%- break -%}
+      {%- endif -%}
+    {%- elsif filter.active_values.size > 0 -%}
+      {%- assign has_active_filters = true -%}
+      {%- break -%}
+    {%- endif -%}
+  {%- endfor -%}
+
+  {%- if has_active_filters -%}
+    <div class="collection__active-filters" data-active-filters aria-label="{{ 'collections.filters.active_filters' | t }}">
+      {%- for filter in collection.filters -%}
+        {%- if filter.type == 'price_range' -%}
+          {%- if filter.min_value.value != nil or filter.max_value.value != nil -%}
+            {%- assign min_price = filter.min_value.value | default: 0 | money_without_trailing_zeros -%}
+            {%- assign max_price = filter.max_value.value | default: filter.range_max | money_without_trailing_zeros -%}
+            <a href="{{ filter.url_to_remove }}" class="collection__chip" aria-label="{{ 'collections.filters.remove_chip_aria_label' | t: filter: filter.label }}">
+              <span class="collection__chip-label">{{ min_price }} – {{ max_price }}</span>
+              <svg class="collection__chip-x" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+            </a>
+          {%- endif -%}
+        {%- else -%}
+          {%- for value in filter.active_values -%}
+            <a href="{{ value.url_to_remove }}" class="collection__chip" aria-label="{{ 'collections.filters.remove_chip_aria_label' | t: filter: value.label }}">
+              <span class="collection__chip-label">{{ value.label }}</span>
+              <svg class="collection__chip-x" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+            </a>
+          {%- endfor -%}
+        {%- endif -%}
+      {%- endfor -%}
+      <a href="{{ collection.url }}" class="collection__clear-all">{{ 'collections.filters.clear_all' | t }}</a>
+    </div>
+  {%- endif -%}
+
+  <div class="collection__body">
+    {%- if collection.filters.size > 0 -%}
+      <div class="collection__drawer-backdrop" data-filter-backdrop></div>
+      <aside class="collection__sidebar" data-filter-sidebar>
+        <form class="collection__sidebar-form" data-collection-filters-form method="get" action="{{ collection.url }}">
+          {%- if current_sort -%}
+            <input type="hidden" name="sort_by" value="{{ current_sort }}">
+          {%- endif -%}
+          <div class="collection__sidebar-header">
+            <span class="collection__sidebar-title">{{ 'collections.filters.title' | t }}</span>
+            <button type="button" class="collection__sidebar-close" data-filter-close
+              aria-label="{{ 'collections.filters.close_drawer_aria_label' | t }}">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+          </div>
+          <div class="collection__sidebar-body">
+            {%- for filter in collection.filters -%}
+              <details class="filter-group" open>
+                <summary class="filter-group__header">
+                  <span class="filter-group__title">{{ filter.label }}</span>
+                  <svg class="filter-group__chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+                </summary>
+                <div class="filter-group__content">
+                  {%- if filter.type == 'list' -%}
+                    {%- for value in filter.values -%}
+                      <label class="filter-option{% if value.active %} filter-option--active{% endif %}{% if value.count == 0 %} filter-option--disabled{% endif %}">
+                        <input type="checkbox"
+                          name="{{ value.param_name }}"
+                          value="{{ value.value }}"
+                          {% if value.active %}checked{% endif %}
+                          {% if value.count == 0 %}disabled{% endif %}>
+                        <span class="filter-option__checkbox"></span>
+                        <span class="filter-option__label">{{ value.label }}</span>
+                        <span class="filter-option__count">({{ value.count }})</span>
+                      </label>
+                    {%- endfor -%}
+                  {%- elsif filter.type == 'price_range' -%}
+                    <div class="filter-price">
+                      <div class="filter-price__field">
+                        <label for="Filter-{{ filter.min_value.param_name | handleize }}">{{ 'collections.filters.from' | t }}</label>
+                        <div class="filter-price__input-wrap">
+                          <span class="filter-price__currency">{{ cart.currency.symbol }}</span>
+                          <input type="number"
+                            id="Filter-{{ filter.min_value.param_name | handleize }}"
+                            name="{{ filter.min_value.param_name }}"
+                            {%- if filter.min_value.value %} value="{{ filter.min_value.value | money_without_currency | replace: ',', '' }}"{% endif %}
+                            min="0"
+                            {%- if filter.range_max %} max="{{ filter.range_max | money_without_currency | replace: ',', '' }}"{% endif %}
+                            placeholder="{{ 'collections.filters.min_price' | t }}">
+                        </div>
+                      </div>
+                      <span class="filter-price__sep">&ndash;</span>
+                      <div class="filter-price__field">
+                        <label for="Filter-{{ filter.max_value.param_name | handleize }}">{{ 'collections.filters.to' | t }}</label>
+                        <div class="filter-price__input-wrap">
+                          <span class="filter-price__currency">{{ cart.currency.symbol }}</span>
+                          <input type="number"
+                            id="Filter-{{ filter.max_value.param_name | handleize }}"
+                            name="{{ filter.max_value.param_name }}"
+                            {%- if filter.max_value.value %} value="{{ filter.max_value.value | money_without_currency | replace: ',', '' }}"{% endif %}
+                            min="0"
+                            {%- if filter.range_max %} max="{{ filter.range_max | money_without_currency | replace: ',', '' }}"{% endif %}
+                            placeholder="{{ 'collections.filters.max_price' | t }}">
+                        </div>
+                      </div>
+                    </div>
+                  {%- endif -%}
+                </div>
+              </details>
+            {%- endfor -%}
+          </div>
+          <div class="collection__sidebar-footer">
+            <button type="submit" class="collection__sidebar-apply">
+              {{ 'collections.filters.show_results' | t }}
+            </button>
+          </div>
+        </form>
+      </aside>
+    {%- endif -%}
+
+    <div class="collection__main">
   {% paginate collection.products by 20 %}
     <div class="collection__grid" data-collection-grid>
       {% for product in collection.products %}
@@ -220,6 +350,10 @@
       </nav>
     {% endif %}
   {% endpaginate %}
+    </div>
+  </div>
+
+  </collection-filters>
 {% endif %}
 
 {% stylesheet %}
@@ -684,6 +818,68 @@
     }
   }
 
+  /* ───── Active filter chips ───── */
+  .collection__active-filters {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    padding: 0 0 20px;
+  }
+
+  .collection__chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    font-family: var(--font-heading--family);
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    text-decoration: none;
+    color: var(--color-foreground);
+    background: var(--color-background);
+    border: 1.5px solid var(--color-border);
+    border-radius: 100px;
+    cursor: pointer;
+    transition: border-color 0.15s ease, background-color 0.15s ease;
+  }
+
+  .collection__chip:hover {
+    border-color: var(--color-foreground);
+    background: rgba(0, 0, 0, 0.03);
+  }
+
+  .collection__chip-x {
+    flex-shrink: 0;
+    opacity: 0.5;
+    transition: opacity 0.15s ease;
+  }
+
+  .collection__chip:hover .collection__chip-x {
+    opacity: 1;
+  }
+
+  .collection__clear-all {
+    font-family: var(--font-heading--family);
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    text-decoration: none;
+    color: var(--color-foreground);
+    opacity: 0.5;
+    padding: 6px 4px;
+    transition: opacity 0.15s ease;
+  }
+
+  .collection__clear-all:hover {
+    opacity: 1;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
   /* ───── Grid loading state ───── */
   .collection__grid--loading {
     opacity: 0.4;
@@ -983,6 +1179,352 @@
     0% { opacity: 0; transform: translateY(20px); }
     100% { opacity: 1; transform: translateY(0); }
   }
+
+  /* ───── Filter sidebar / drawer ───── */
+  .collection__toolbar-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+
+  .collection__filter-toggle {
+    display: none;
+  }
+
+  .collection__body {
+    display: grid;
+    grid-template-columns: 260px 1fr;
+    gap: 0 32px;
+    align-items: start;
+  }
+
+  .collection__body:not(:has(.collection__sidebar)) {
+    grid-template-columns: 1fr;
+  }
+
+  .collection__sidebar {
+    position: sticky;
+    top: 80px;
+    max-height: calc(100vh - 96px);
+    display: flex;
+    flex-direction: column;
+  }
+
+  .collection__sidebar-form {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+  }
+
+  .collection__sidebar-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 0 16px;
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .collection__sidebar-title {
+    font-family: var(--font-heading--family);
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+
+  .collection__sidebar-close {
+    display: none;
+  }
+
+  .collection__sidebar-body {
+    flex: 1;
+    overflow-y: auto;
+    scrollbar-width: thin;
+  }
+
+  .collection__sidebar-footer {
+    display: none;
+  }
+
+  .collection__drawer-backdrop {
+    display: none;
+  }
+
+  /* ───── Filter groups (accordion) ───── */
+  .filter-group {
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .filter-group__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 0;
+    cursor: pointer;
+    list-style: none;
+    user-select: none;
+  }
+
+  .filter-group__header::-webkit-details-marker {
+    display: none;
+  }
+
+  .filter-group__title {
+    font-family: var(--font-heading--family);
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  .filter-group__chevron {
+    transition: transform 0.2s ease;
+  }
+
+  .filter-group[open] .filter-group__chevron {
+    transform: rotate(180deg);
+  }
+
+  .filter-group__content {
+    padding: 0 0 16px;
+  }
+
+  /* ───── Filter options (checkboxes) ───── */
+  .filter-option {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 0;
+    cursor: pointer;
+    font-family: var(--font-body--family);
+    font-size: 0.85rem;
+  }
+
+  .filter-option input[type="checkbox"] {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+  }
+
+  .filter-option__checkbox {
+    width: 16px;
+    height: 16px;
+    border: 1.5px solid var(--color-border);
+    border-radius: 2px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.15s, border-color 0.15s;
+  }
+
+  .filter-option:hover .filter-option__checkbox {
+    border-color: var(--color-foreground);
+  }
+
+  .filter-option input:checked + .filter-option__checkbox {
+    background: var(--color-foreground);
+    border-color: var(--color-foreground);
+  }
+
+  .filter-option input:checked + .filter-option__checkbox::after {
+    content: '';
+    width: 8px;
+    height: 5px;
+    border-left: 2px solid var(--color-background);
+    border-bottom: 2px solid var(--color-background);
+    transform: rotate(-45deg) translateY(-1px);
+  }
+
+  .filter-option--active .filter-option__label {
+    font-weight: 600;
+  }
+
+  .filter-option--disabled {
+    opacity: 0.4;
+    pointer-events: none;
+  }
+
+  .filter-option__count {
+    margin-left: auto;
+    font-size: 0.75rem;
+    opacity: 0.5;
+  }
+
+  /* ───── Price range ───── */
+  .filter-price {
+    display: flex;
+    align-items: flex-end;
+    gap: 8px;
+  }
+
+  .filter-price__field {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .filter-price__field label {
+    display: block;
+    font-family: var(--font-body--family);
+    font-size: 0.7rem;
+    color: var(--color-foreground);
+    opacity: 0.6;
+    margin-bottom: 4px;
+  }
+
+  .filter-price__input-wrap {
+    display: flex;
+    align-items: center;
+    border: 1.5px solid var(--color-border);
+    padding: 0 8px;
+    transition: border-color 0.15s;
+  }
+
+  .filter-price__input-wrap:focus-within {
+    border-color: var(--color-foreground);
+  }
+
+  .filter-price__currency {
+    font-family: var(--font-body--family);
+    font-size: 0.8rem;
+    opacity: 0.5;
+    flex-shrink: 0;
+  }
+
+  .filter-price__input-wrap input {
+    width: 100%;
+    border: none;
+    outline: none;
+    font-family: var(--font-body--family);
+    font-size: 0.85rem;
+    padding: 8px 4px;
+    background: transparent;
+    color: var(--color-foreground);
+    -moz-appearance: textfield;
+  }
+
+  .filter-price__input-wrap input::-webkit-inner-spin-button,
+  .filter-price__input-wrap input::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+  }
+
+  .filter-price__sep {
+    font-size: 0.85rem;
+    opacity: 0.4;
+    padding-bottom: 10px;
+  }
+
+  /* ───── Mobile: drawer + toggle ───── */
+  @media (max-width: 767px) {
+    .collection__body {
+      grid-template-columns: 1fr;
+    }
+
+    .collection__filter-toggle {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 14px;
+      font-family: var(--font-heading--family);
+      font-size: 0.7rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      border: 1.5px solid var(--color-border);
+      background: transparent;
+      color: var(--color-foreground);
+      cursor: pointer;
+      white-space: nowrap;
+      transition: border-color 0.15s ease;
+    }
+
+    .collection__filter-toggle:hover {
+      border-color: var(--color-foreground);
+    }
+
+    .collection__sidebar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      width: min(320px, 85vw);
+      z-index: 100;
+      background: var(--color-background);
+      transform: translateX(-100%);
+      transition: transform 0.3s ease;
+      max-height: none;
+    }
+
+    .collection__sidebar--open {
+      transform: translateX(0);
+    }
+
+    .collection__sidebar-header {
+      padding: 16px;
+      flex-shrink: 0;
+    }
+
+    .collection__sidebar-close {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 32px;
+      border: none;
+      background: none;
+      color: var(--color-foreground);
+      cursor: pointer;
+      padding: 0;
+    }
+
+    .collection__sidebar-body {
+      padding: 0 16px;
+    }
+
+    .collection__sidebar-footer {
+      display: block;
+      padding: 16px;
+      border-top: 1px solid var(--color-border);
+      flex-shrink: 0;
+    }
+
+    .collection__sidebar-apply {
+      display: block;
+      width: 100%;
+      padding: 14px;
+      font-family: var(--font-heading--family);
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      border: none;
+      background: var(--color-foreground);
+      color: var(--color-background);
+      cursor: pointer;
+      transition: opacity 0.15s;
+    }
+
+    .collection__sidebar-apply:hover {
+      opacity: 0.85;
+    }
+
+    .collection__drawer-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.4);
+      z-index: 99;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.3s, visibility 0.3s;
+    }
+
+    .collection__drawer-backdrop--visible {
+      opacity: 1;
+      visibility: visible;
+    }
+  }
 {% endstylesheet %}
 
 {% javascript %}
@@ -1095,53 +1637,124 @@
 
   initInfiniteScroll();
 
-  /* ───── Collection filter web component ───── */
-  class CollectionFilter extends HTMLElement {
+  /* ───── Collection filters AJAX web component ───── */
+  class CollectionFilters extends HTMLElement {
     connectedCallback() {
       this._abortController = null;
-      this.addEventListener('click', this._onClick.bind(this));
-      window.addEventListener('popstate', this._onPopState.bind(this));
+      this._priceDebounce = null;
+
+      this._onPopState = this._handlePopState.bind(this);
+      window.addEventListener('popstate', this._onPopState);
+
+      this._onKeyDown = function (e) {
+        if (e.key === 'Escape') this.closeDrawer();
+      }.bind(this);
+      document.addEventListener('keydown', this._onKeyDown);
+
+      this.addEventListener('click', this._handleClick.bind(this));
+
+      var form = this.querySelector('[data-collection-filters-form]');
+      if (form) {
+        form.addEventListener('submit', function (e) {
+          e.preventDefault();
+          this._submitForm(form);
+        }.bind(this));
+
+        form.addEventListener('change', function (e) {
+          if (e.target.type === 'checkbox') this._submitForm(form);
+        }.bind(this));
+
+        form.addEventListener('input', function (e) {
+          if (e.target.closest('.filter-price')) {
+            clearTimeout(this._priceDebounce);
+            this._priceDebounce = setTimeout(function () {
+              this._submitForm(form);
+            }.bind(this), 600);
+          }
+        }.bind(this));
+      }
+
+      var toggle = this.querySelector('[data-filter-toggle]');
+      if (toggle) toggle.addEventListener('click', this.openDrawer.bind(this));
+      var closeBtn = this.querySelector('[data-filter-close]');
+      if (closeBtn) closeBtn.addEventListener('click', this.closeDrawer.bind(this));
+      var backdrop = this.querySelector('[data-filter-backdrop]');
+      if (backdrop) backdrop.addEventListener('click', this.closeDrawer.bind(this));
     }
 
     disconnectedCallback() {
-      window.removeEventListener('popstate', this._onPopState.bind(this));
+      window.removeEventListener('popstate', this._onPopState);
+      document.removeEventListener('keydown', this._onKeyDown);
       if (this._abortController) this._abortController.abort();
+      clearTimeout(this._priceDebounce);
     }
 
-    _onClick(e) {
-      var link = e.target.closest('.collection__filter-btn');
-      if (!link) return;
-      e.preventDefault();
-      this._filterTo(link.href, link);
+    openDrawer() {
+      var sidebar = this.querySelector('[data-filter-sidebar]');
+      var backdrop = this.querySelector('[data-filter-backdrop]');
+      if (sidebar) sidebar.classList.add('collection__sidebar--open');
+      if (backdrop) backdrop.classList.add('collection__drawer-backdrop--visible');
+      document.body.style.overflow = 'hidden';
     }
 
-    _onPopState() {
-      this._filterTo(window.location.href);
+    closeDrawer() {
+      var sidebar = this.querySelector('[data-filter-sidebar]');
+      var backdrop = this.querySelector('[data-filter-backdrop]');
+      if (sidebar) sidebar.classList.remove('collection__sidebar--open');
+      if (backdrop) backdrop.classList.remove('collection__drawer-backdrop--visible');
+      document.body.style.overflow = '';
     }
 
-    _filterTo(url, activeLink) {
+    _handleClick(e) {
+      var chip = e.target.closest('.collection__chip');
+      if (chip) {
+        e.preventDefault();
+        this.navigateTo(chip.href);
+        return;
+      }
+
+      var clearAll = e.target.closest('.collection__clear-all');
+      if (clearAll) {
+        e.preventDefault();
+        this.navigateTo(clearAll.href);
+        return;
+      }
+    }
+
+    _handlePopState() {
+      this.navigateTo(window.location.href, false);
+    }
+
+    _submitForm(form) {
+      var formData = new FormData(form);
+      var url = new URL(form.action, window.location.origin);
+
+      url.search = '';
+
+      for (var pair of formData.entries()) {
+        if (pair[1] !== '') url.searchParams.append(pair[0], pair[1]);
+      }
+
+      var currentUrl = new URL(window.location.href);
+      var sortBy = currentUrl.searchParams.get('sort_by');
+      if (sortBy) url.searchParams.set('sort_by', sortBy);
+
+      this.closeDrawer();
+      this.navigateTo(url.toString());
+    }
+
+    navigateTo(url, pushState) {
+      if (pushState === undefined) pushState = true;
       if (this._abortController) this._abortController.abort();
       this._abortController = new AbortController();
 
       var sectionId = this.getAttribute('data-section-id');
-      var grid = document.querySelector('[data-collection-grid]');
+      var grid = this.querySelector('[data-collection-grid]');
       if (!grid) return;
-
-      /* Optimistic active-state update */
-      if (activeLink) {
-        this.querySelectorAll('.collection__filter-btn').forEach(function (btn) {
-          btn.classList.remove('collection__filter-btn--active');
-        });
-        activeLink.classList.add('collection__filter-btn--active');
-      }
 
       grid.classList.add('collection__grid--loading');
 
-      /* Build fetch URL with section_id and preserve sort_by */
       var fetchUrl = new URL(url, window.location.origin);
-      var currentUrl = new URL(window.location.href);
-      var sortBy = currentUrl.searchParams.get('sort_by');
-      if (sortBy) fetchUrl.searchParams.set('sort_by', sortBy);
       fetchUrl.searchParams.set('section_id', sectionId);
 
       var self = this;
@@ -1152,64 +1765,108 @@
           return res.text();
         })
         .then(function (html) {
-          var parser = new DOMParser();
-          var doc = parser.parseFromString(html, 'text/html');
+          var doc = new DOMParser().parseFromString(html, 'text/html');
 
           /* Replace product grid */
           var newGrid = doc.querySelector('[data-collection-grid]');
-          if (newGrid) {
-            grid.innerHTML = newGrid.innerHTML;
-          } else {
-            grid.innerHTML = '';
-          }
+          if (newGrid) grid.innerHTML = newGrid.innerHTML;
+          else grid.innerHTML = '';
 
           /* Replace product count */
-          var newCount = doc.querySelector('.collection__count');
-          var oldCount = document.querySelector('.collection__count');
-          if (newCount && oldCount) {
-            oldCount.textContent = newCount.textContent;
+          var newCount = doc.querySelector('[data-product-count]');
+          var oldCount = self.querySelector('[data-product-count]');
+          if (newCount && oldCount) oldCount.textContent = newCount.textContent;
+
+          /* Replace active chips bar */
+          var newChips = doc.querySelector('[data-active-filters]');
+          var oldChips = self.querySelector('[data-active-filters]');
+          if (newChips && oldChips) {
+            oldChips.replaceWith(newChips);
+          } else if (!newChips && oldChips) {
+            oldChips.remove();
+          } else if (newChips && !oldChips) {
+            var body = self.querySelector('.collection__body');
+            if (body) body.before(newChips);
+          }
+
+          /* Replace filter badge */
+          var newBadge = doc.querySelector('[data-filter-badge]');
+          var oldBadge = self.querySelector('[data-filter-badge]');
+          var toggleBtn = self.querySelector('[data-filter-toggle]');
+          if (newBadge && !oldBadge && toggleBtn) {
+            toggleBtn.insertAdjacentHTML('beforeend', newBadge.outerHTML);
+          } else if (!newBadge && oldBadge) {
+            oldBadge.remove();
+          }
+
+          /* Replace sidebar body (filter counts & active states) */
+          var newSidebarBody = doc.querySelector('.collection__sidebar-body');
+          var oldSidebarBody = self.querySelector('.collection__sidebar-body');
+          if (newSidebarBody && oldSidebarBody) {
+            oldSidebarBody.innerHTML = newSidebarBody.innerHTML;
           }
 
           /* Replace sentinel */
           var newSentinel = doc.querySelector('[data-infinite-sentinel]');
-          var oldSentinel = document.querySelector('[data-infinite-sentinel]');
-          if (newSentinel && oldSentinel) {
-            oldSentinel.replaceWith(newSentinel);
-          }
+          var oldSentinel = self.querySelector('[data-infinite-sentinel]');
+          if (newSentinel && oldSentinel) oldSentinel.replaceWith(newSentinel);
 
           /* Replace pagination */
-          var newPagination = doc.querySelector('[data-pagination-nav]');
-          var oldPagination = document.querySelector('[data-pagination-nav]');
-          if (newPagination && oldPagination) {
-            oldPagination.replaceWith(newPagination);
-          } else if (oldPagination && !newPagination) {
-            oldPagination.remove();
-          }
+          var newPag = doc.querySelector('[data-pagination-nav]');
+          var oldPag = self.querySelector('[data-pagination-nav]');
+          if (newPag && oldPag) oldPag.replaceWith(newPag);
+          else if (oldPag && !newPag) oldPag.remove();
 
-          /* Update active state from server response for popstate */
-          if (!activeLink) {
-            var newFilters = doc.querySelector('.collection__filters-scroll');
-            var oldFilters = self.querySelector('.collection__filters-scroll');
-            if (newFilters && oldFilters) {
-              oldFilters.innerHTML = newFilters.innerHTML;
-            }
-          }
+          /* Replace category pills active state */
+          var newPills = doc.querySelector('.collection__filters-scroll');
+          var oldPills = self.querySelector('.collection__filters-scroll');
+          if (newPills && oldPills) oldPills.innerHTML = newPills.innerHTML;
 
-          /* Re-init infinite scroll */
           initInfiniteScroll();
-
           grid.classList.remove('collection__grid--loading');
 
-          /* Update URL without section_id */
-          var pushUrl = new URL(url, window.location.origin);
-          if (sortBy) pushUrl.searchParams.set('sort_by', sortBy);
-          pushUrl.searchParams.delete('section_id');
-          history.pushState(null, '', pushUrl.toString());
+          if (pushState) {
+            var pushUrl = new URL(url, window.location.origin);
+            pushUrl.searchParams.delete('section_id');
+            history.pushState(null, '', pushUrl.toString());
+          }
         })
         .catch(function (err) {
           if (err.name === 'AbortError') return;
           grid.classList.remove('collection__grid--loading');
         });
+    }
+  }
+
+  if (!customElements.get('collection-filters')) {
+    customElements.define('collection-filters', CollectionFilters);
+  }
+
+  /* ───── Category pill filter (delegates AJAX to CollectionFilters) ───── */
+  class CollectionFilter extends HTMLElement {
+    connectedCallback() {
+      this.addEventListener('click', this._onClick.bind(this));
+    }
+
+    _onClick(e) {
+      var link = e.target.closest('.collection__filter-btn');
+      if (!link) return;
+      e.preventDefault();
+
+      this.querySelectorAll('.collection__filter-btn').forEach(function (btn) {
+        btn.classList.remove('collection__filter-btn--active');
+      });
+      link.classList.add('collection__filter-btn--active');
+
+      var parent = this.closest('collection-filters');
+      if (parent) {
+        var targetUrl = new URL(link.href, window.location.origin);
+        var currentUrl = new URL(window.location.href);
+        currentUrl.searchParams.forEach(function (val, key) {
+          if (key.startsWith('filter.')) targetUrl.searchParams.append(key, val);
+        });
+        parent.navigateTo(targetUrl.toString());
+      }
     }
   }
 
