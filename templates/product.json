@@ -41,6 +41,33 @@
         "materials"
       ]
     },
+    "marquee": {
+      "type": "marquee",
+      "settings": {
+        "use_school_color": true,
+        "background_color": "#1a1a1a",
+        "text_color": "#FFFFFF",
+        "speed": 20
+      },
+      "blocks": {
+        "shipping": {
+          "type": "phrase",
+          "settings": {
+            "text": "FREE SHIPPING ON ORDERS $100+"
+          }
+        },
+        "tagline": {
+          "type": "phrase",
+          "settings": {
+            "text": "RELAX, THE TRADITION"
+          }
+        }
+      },
+      "block_order": [
+        "shipping",
+        "tagline"
+      ]
+    },
     "features": {
       "type": "product-features",
       "settings": {
@@ -98,6 +125,7 @@
   },
   "order": [
     "main",
+    "marquee",
     "features",
     "fbt",
     "recently-viewed"

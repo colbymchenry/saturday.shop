@@ -611,6 +611,155 @@ test.describe('Product page — Accordions', () => {
   });
 });
 
+// ─── Accordion Image Support ───────────────────────────────────────────────
+
+test.describe('Product page — Accordion Images', () => {
+  async function openAllAccordions(page: Page) {
+    const accordions = page.locator('.product__accordion');
+    const count = await accordions.count();
+    for (let i = 0; i < count; i++) {
+      const acc = accordions.nth(i);
+      if ((await acc.getAttribute('open')) === null) {
+        await acc.locator('summary').click();
+      }
+    }
+  }
+
+  test('accordion without image has no image element and content is visible', async ({
+    page,
+  }) => {
+    await page.goto(AUBURN_PRODUCT);
+
+    const sizeGuide = page
+      .locator('.product__accordion')
+      .filter({ hasText: 'SIZE GUIDE' });
+    await sizeGuide.locator('summary').click();
+    await expect(sizeGuide).toHaveAttribute('open', '');
+
+    const content = sizeGuide.locator('.product__accordion-content');
+    await expect(content).toBeVisible();
+    await expect(content).not.toHaveClass(
+      /product__accordion-content--has-image/
+    );
+
+    expect(await sizeGuide.locator('.product__accordion-image').count()).toBe(
+      0
+    );
+
+    const text = await content.textContent();
+    expect(text!.trim().length).toBeGreaterThan(0);
+  });
+
+  test('all text-only accordions expand without regression', async ({
+    page,
+  }) => {
+    await page.goto(AUBURN_PRODUCT);
+
+    const accordions = page.locator(
+      '.product__accordion:not(:has(.product__accordion-content--has-image))'
+    );
+    const count = await accordions.count();
+    expect(count).toBeGreaterThanOrEqual(1);
+
+    for (let i = 0; i < count; i++) {
+      const acc = accordions.nth(i);
+      if ((await acc.getAttribute('open')) === null) {
+        await acc.locator('summary').click();
+      }
+      await expect(acc).toHaveAttribute('open', '');
+      await expect(acc.locator('.product__accordion-content')).toBeVisible();
+    }
+  });
+
+  test('accordion with image shows image with lazy loading', async ({
+    page,
+  }) => {
+    await page.goto(AUBURN_PRODUCT);
+    await openAllAccordions(page);
+
+    const imageContent = page.locator(
+      '.product__accordion-content--has-image'
+    );
+    if ((await imageContent.count()) === 0) {
+      test.skip();
+      return;
+    }
+
+    const first = imageContent.first();
+
+    const img = first.locator('.product__accordion-image');
+    await expect(img).toBeVisible();
+    await expect(img).toHaveAttribute('loading', 'lazy');
+
+    const text = first.locator('.product__accordion-text');
+    await expect(text).toBeVisible();
+    const textContent = await text.textContent();
+    expect(textContent!.trim().length).toBeGreaterThan(0);
+  });
+
+  test('accordion image is side-by-side with text on desktop', async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 1200, height: 900 });
+    await page.goto(AUBURN_PRODUCT);
+    await openAllAccordions(page);
+
+    const imageContent = page.locator(
+      '.product__accordion-content--has-image'
+    );
+    if ((await imageContent.count()) === 0) {
+      test.skip();
+      return;
+    }
+
+    const first = imageContent.first();
+    const imgBox = await first
+      .locator('.product__accordion-image')
+      .boundingBox();
+    const textBox = await first
+      .locator('.product__accordion-text')
+      .boundingBox();
+
+    expect(imgBox).toBeTruthy();
+    expect(textBox).toBeTruthy();
+
+    // Side-by-side: image and text Y positions should be roughly aligned
+    expect(Math.abs(imgBox!.y - textBox!.y)).toBeLessThan(50);
+    // Container uses 2-column grid, so each element takes roughly half the width
+    const containerBox = await first.boundingBox();
+    expect(containerBox).toBeTruthy();
+    expect(imgBox!.width).toBeLessThan(containerBox!.width * 0.65);
+  });
+
+  test('accordion image stacks above text on mobile', async ({ page }) => {
+    await page.setViewportSize({ width: 375, height: 812 });
+    await page.goto(AUBURN_PRODUCT);
+    await openAllAccordions(page);
+
+    const imageContent = page.locator(
+      '.product__accordion-content--has-image'
+    );
+    if ((await imageContent.count()) === 0) {
+      test.skip();
+      return;
+    }
+
+    const first = imageContent.first();
+    const imgBox = await first
+      .locator('.product__accordion-image')
+      .boundingBox();
+    const textBox = await first
+      .locator('.product__accordion-text')
+      .boundingBox();
+
+    expect(imgBox).toBeTruthy();
+    expect(textBox).toBeTruthy();
+
+    // Stacked: image bottom should be at or above text top
+    expect(imgBox!.y + imgBox!.height).toBeLessThanOrEqual(textBox!.y + 10);
+  });
+});
+
 // ─── School Color Integration ───────────────────────────────────────────────
 
 test.describe('Product page — School Color', () => {

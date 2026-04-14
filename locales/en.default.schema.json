@@ -142,7 +142,8 @@
     "tag_info": "The product tag to filter by (must match exactly)",
     "category_image": "Icon image",
     "category_image_info": "Optional small image shown beside the label (cropped to circle)",
-    "social_media": "Social media"
+    "social_media": "Social media",
+    "use_school_color": "Use school color"
   },
   "options": {
     "alignment": {

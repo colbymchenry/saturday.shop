@@ -1,14 +1,35 @@
+{%- liquid
+  assign marquee_bg = section.settings.background_color
+  assign marquee_fg = section.settings.text_color
+
+  if section.settings.use_school_color and product != nil
+    paginate shop.metaobjects.school.values by 250
+      for col in product.collections
+        assign found_school = shop.metaobjects.school.values | where: 'slug', col.handle | first
+        if found_school
+          capture school_accent
+            render 'school-accent-color', school: found_school
+          endcapture
+          assign marquee_bg = school_accent | strip
+          assign marquee_fg = '#FFFFFF'
+          break
+        endif
+      endfor
+    endpaginate
+  endif
+-%}
+
 <marquee-scroll
   class="marquee full-width"
-  style="background-color: {{ section.settings.background_color }}; --marquee-duration: {{ section.settings.speed }}s;"
+  style="background-color: {{ marquee_bg }}; --marquee-duration: {{ section.settings.speed }}s;"
 >
   <div class="marquee__track" data-marquee-track>
     <div class="marquee__content" data-marquee-content>
       {% for block in section.blocks %}
-        <span class="marquee__item" style="color: {{ section.settings.text_color }};" {{ block.shopify_attributes }}>
+        <span class="marquee__item" style="color: {{ marquee_fg }};" {{ block.shopify_attributes }}>
           {{ block.settings.text }}
         </span>
-        <span class="marquee__separator" style="color: {{ section.settings.text_color }};">✦</span>
+        <span class="marquee__separator" style="color: {{ marquee_fg }};">✦</span>
       {% endfor %}
     </div>
   </div>
@@ -114,6 +135,12 @@
 {
   "name": "t:general.marquee",
   "settings": [
+    {
+      "type": "checkbox",
+      "id": "use_school_color",
+      "label": "t:labels.use_school_color",
+      "default": false
+    },
     {
       "type": "color",
       "id": "background_color",
