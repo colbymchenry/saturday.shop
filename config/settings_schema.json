@@ -85,6 +85,12 @@
       },
       {
         "type": "color",
+        "id": "color_page_background",
+        "default": "#F5F2EB",
+        "label": "t:labels.page_background"
+      },
+      {
+        "type": "color",
         "id": "color_foreground",
         "default": "#000000",
         "label": "t:labels.foreground"

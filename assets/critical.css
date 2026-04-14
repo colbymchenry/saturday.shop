@@ -76,7 +76,7 @@ body {
   font-family: var(--font-body--family);
   font-style: var(--font-body--style);
   font-weight: var(--font-body--weight);
-  background-color: var(--color-background);
+  background-color: var(--color-page-background);
   color: var(--color-foreground);
 }
 
@@ -101,7 +101,7 @@ main {
   position: sticky;
   top: 0;
   z-index: 100;
-  background-color: var(--color-background);
+  background-color: var(--color-page-background);
 }
 
 /** Section layout utilities */
