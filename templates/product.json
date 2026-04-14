@@ -33,9 +33,41 @@
             "heading": "Materials",
             "content": "<p>100% ring-spun cotton, garment-dyed for a soft, broken-in feel from day one. Pre-shrunk to minimize shrinkage. 6.1 oz heavyweight fabric.</p>"
           }
+        },
+        "trust_licensed": {
+          "type": "trust_badge",
+          "settings": {
+            "icon": "icon-licensed.svg",
+            "label": "Officially Licensed"
+          }
+        },
+        "trust_shipping": {
+          "type": "trust_badge",
+          "settings": {
+            "icon": "icon-shipping.svg",
+            "label": "Free Shipping $100+"
+          }
+        },
+        "trust_returns": {
+          "type": "trust_badge",
+          "settings": {
+            "icon": "icon-returns.svg",
+            "label": "Easy Returns & Exchanges"
+          }
+        },
+        "trust_guarantee": {
+          "type": "trust_badge",
+          "settings": {
+            "icon": "icon-guarantee.svg",
+            "label": "Guarantee Compliments"
+          }
         }
       },
       "block_order": [
+        "trust_licensed",
+        "trust_shipping",
+        "trust_returns",
+        "trust_guarantee",
         "size_guide",
         "shipping",
         "materials"

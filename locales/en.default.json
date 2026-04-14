@@ -103,5 +103,11 @@
     "submit": "Search",
     "no_results_html": "No results found for {{ terms }}",
     "results_for_html": "{{ count }} results found for {{ terms }}"
+  },
+  "trust_badges": {
+    "officially_licensed": "Officially Licensed",
+    "free_shipping": "Free Shipping $100+",
+    "easy_returns": "Easy Returns & Exchanges",
+    "guarantee_compliments": "Guarantee Compliments"
   }
 }

@@ -115,6 +115,27 @@
       </button>
     {% endform %}
 
+    {%- assign trust_badges = section.blocks | where: 'type', 'trust_badge' -%}
+    {%- if trust_badges.size > 0 -%}
+      <div class="product__trust-badges">
+        {%- for block in trust_badges -%}
+          <div class="product__trust-badge" {{ block.shopify_attributes }}>
+            {%- if block.settings.icon != blank -%}
+              <img
+                src="{{ block.settings.icon | asset_url }}"
+                alt=""
+                width="24"
+                height="24"
+                loading="lazy"
+                class="product__trust-badge-icon"
+              >
+            {%- endif -%}
+            <span class="product__trust-badge-label">{{ block.settings.label }}</span>
+          </div>
+        {%- endfor -%}
+      </div>
+    {%- endif -%}
+
     <div class="product__accordions">
       <details class="product__accordion" open>
         <summary class="product__accordion-trigger">
@@ -127,27 +148,29 @@
       </details>
 
       {%- for block in section.blocks -%}
-        <details class="product__accordion" {{ block.shopify_attributes }}>
-          <summary class="product__accordion-trigger">
-            <span>{{ block.settings.heading | upcase }}</span>
-            <svg class="product__accordion-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
-          </summary>
-          <div class="product__accordion-content{% if block.settings.image %} product__accordion-content--has-image{% endif %}">
-            {%- if block.settings.image -%}
-              <img
-                class="product__accordion-image"
-                src="{{ block.settings.image | image_url: width: 400 }}"
-                alt="{{ block.settings.image.alt | default: block.settings.heading | escape }}"
-                width="{{ block.settings.image.width }}"
-                height="{{ block.settings.image.height }}"
-                loading="lazy"
-              >
-            {%- endif -%}
-            <div class="product__accordion-text">
-              {{ block.settings.content }}
+        {%- if block.type == 'accordion' -%}
+          <details class="product__accordion" {{ block.shopify_attributes }}>
+            <summary class="product__accordion-trigger">
+              <span>{{ block.settings.heading | upcase }}</span>
+              <svg class="product__accordion-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+            </summary>
+            <div class="product__accordion-content{% if block.settings.image %} product__accordion-content--has-image{% endif %}">
+              {%- if block.settings.image -%}
+                <img
+                  class="product__accordion-image"
+                  src="{{ block.settings.image | image_url: width: 400 }}"
+                  alt="{{ block.settings.image.alt | default: block.settings.heading | escape }}"
+                  width="{{ block.settings.image.width }}"
+                  height="{{ block.settings.image.height }}"
+                  loading="lazy"
+                >
+              {%- endif -%}
+              <div class="product__accordion-text">
+                {{ block.settings.content }}
+              </div>
             </div>
-          </div>
-        </details>
+          </details>
+        {%- endif -%}
       {%- endfor -%}
     </div>
 
@@ -387,6 +410,42 @@
     cursor: not-allowed;
   }
 
+  /* ── Trust Badges ── */
+  .product__trust-badges {
+    display: flex;
+    align-items: flex-start;
+    gap: 1.5rem;
+    padding: 1rem 0;
+    margin-bottom: 1rem;
+  }
+
+  .product__trust-badge {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 0.4rem;
+    flex: 1;
+  }
+
+  .product__trust-badge-icon {
+    width: 24px;
+    height: 24px;
+    object-fit: contain;
+    opacity: 0.7;
+  }
+
+  .product__trust-badge-label {
+    font-family: var(--font-body--family);
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--color-foreground);
+    opacity: 0.6;
+    line-height: 1.3;
+  }
+
   /* ── Accordions ── */
   .product__accordions {
     border-top: 1px solid var(--color-border);
@@ -485,6 +544,18 @@
     .product__accordion-content--has-image {
       grid-template-columns: 1fr;
       gap: 1rem;
+    }
+
+    .product__trust-badges {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 0.75rem;
+    }
+
+    .product__trust-badge {
+      flex-direction: row;
+      text-align: left;
+      gap: 0.75rem;
     }
   }
 {% endstylesheet %}
@@ -640,6 +711,25 @@
           "type": "image_picker",
           "id": "image",
           "label": "Image (optional)"
+        }
+      ]
+    },
+    {
+      "type": "trust_badge",
+      "name": "Trust Badge",
+      "settings": [
+        {
+          "type": "text",
+          "id": "icon",
+          "label": "Icon filename",
+          "default": "icon-licensed.svg",
+          "info": "SVG filename from assets/ (e.g., icon-licensed.svg)"
+        },
+        {
+          "type": "text",
+          "id": "label",
+          "label": "Label",
+          "default": "Trust badge"
         }
       ]
     }

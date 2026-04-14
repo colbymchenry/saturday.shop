@@ -12,9 +12,50 @@
     "main": {
       "type": "cart",
       "settings": {}
+    },
+    "trust-badges": {
+      "type": "trust-badges",
+      "blocks": {
+        "badge-licensed": {
+          "type": "badge",
+          "settings": {
+            "icon": "icon-licensed.svg",
+            "label": "Officially Licensed"
+          }
+        },
+        "badge-shipping": {
+          "type": "badge",
+          "settings": {
+            "icon": "icon-shipping.svg",
+            "label": "Free Shipping $100+"
+          }
+        },
+        "badge-returns": {
+          "type": "badge",
+          "settings": {
+            "icon": "icon-returns.svg",
+            "label": "Easy Returns & Exchanges"
+          }
+        },
+        "badge-guarantee": {
+          "type": "badge",
+          "settings": {
+            "icon": "icon-guarantee.svg",
+            "label": "Guarantee Compliments"
+          }
+        }
+      },
+      "block_order": [
+        "badge-licensed",
+        "badge-shipping",
+        "badge-returns",
+        "badge-guarantee"
+      ],
+      "settings": {}
     }
   },
   "order": [
-    "main"
+    "main",
+    "trust-badges"
   ]
 }
