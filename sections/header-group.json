@@ -17,18 +17,34 @@
         "announcement-1": {
           "type": "announcement",
           "settings": {
-            "text": "NEW DROP: WESTERN COLLECTION — SHOP NOW",
+            "text": "Free shipping on orders over $75",
             "url": ""
+          }
+        },
+        "announcement-2": {
+          "type": "announcement",
+          "settings": {
+            "text": "Officially Licensed Collegiate Apparel",
+            "url": ""
+          }
+        },
+        "announcement-3": {
+          "type": "announcement",
+          "settings": {
+            "text": "New: Western Collection — Shop Now",
+            "url": "/collections/western"
           }
         }
       },
       "block_order": [
-        "announcement-1"
+        "announcement-1",
+        "announcement-2",
+        "announcement-3"
       ],
       "settings": {
         "background_color": "#000000",
         "text_color": "#ffffff",
-        "interval": 3
+        "interval": 5
       }
     },
     "header": {

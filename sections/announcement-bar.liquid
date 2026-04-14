@@ -3,6 +3,7 @@
     class="announcement-bar full-width"
     style="background-color: {{ section.settings.background_color }}; color: {{ section.settings.text_color }};"
     data-interval="{{ section.settings.interval | times: 1000 }}"
+    data-transition="{{ section.settings.transition_style }}"
   >
     {% for block in section.blocks %}
       <div class="announcement-bar__slide {% if forloop.first %}announcement-bar__slide--active{% endif %}" {{ block.shopify_attributes }}>
@@ -28,6 +29,7 @@
     justify-content: center;
     padding: 12px var(--page-margin);
     min-height: 40px;
+    overflow: hidden;
   }
 
   .announcement-bar__slide {
@@ -45,6 +47,20 @@
   .announcement-bar__slide--active {
     opacity: 1;
     pointer-events: auto;
+  }
+
+  [data-transition="slide"] .announcement-bar__slide {
+    opacity: 1;
+    transform: translateX(100%);
+    transition: transform 0.45s ease;
+  }
+
+  [data-transition="slide"] .announcement-bar__slide--active {
+    transform: translateX(0);
+  }
+
+  [data-transition="slide"] .announcement-bar__slide--exit {
+    transform: translateX(-100%);
   }
 
   .announcement-bar__link,
@@ -71,6 +87,7 @@
       if (this.slides.length <= 1) return;
 
       this.current = 0;
+      this.transition = this.dataset.transition || 'fade';
       const interval = parseInt(this.dataset.interval) || 3000;
       this.timer = setInterval(() => this.next(), interval);
     }
@@ -80,9 +97,21 @@
     }
 
     next() {
-      this.slides[this.current].classList.remove('announcement-bar__slide--active');
+      const outgoing = this.slides[this.current];
       this.current = (this.current + 1) % this.slides.length;
-      this.slides[this.current].classList.add('announcement-bar__slide--active');
+      const incoming = this.slides[this.current];
+
+      if (this.transition === 'slide') {
+        outgoing.classList.add('announcement-bar__slide--exit');
+        outgoing.classList.remove('announcement-bar__slide--active');
+        incoming.classList.add('announcement-bar__slide--active');
+        outgoing.addEventListener('transitionend', () => {
+          outgoing.classList.remove('announcement-bar__slide--exit');
+        }, { once: true });
+      } else {
+        outgoing.classList.remove('announcement-bar__slide--active');
+        incoming.classList.add('announcement-bar__slide--active');
+      }
     }
   }
 
@@ -115,7 +144,17 @@
       "max": 10,
       "step": 1,
       "unit": "s",
-      "default": 3
+      "default": 5
+    },
+    {
+      "type": "select",
+      "id": "transition_style",
+      "label": "t:labels.transition",
+      "default": "fade",
+      "options": [
+        { "value": "fade", "label": "Fade" },
+        { "value": "slide", "label": "Slide" }
+      ]
     }
   ],
   "blocks": [
