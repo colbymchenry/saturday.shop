@@ -15,4 +15,6 @@ Key test patterns observed in e2e specs:
 
 **Scoping rule:** Always scope `product-card` / `product-carousel` locators to their parent section (e.g., `carousel.locator('product-card')` not `page.locator('product-card')`). The page has 60+ product-card elements across multiple sections; unscoped `.first()` picks up cards from other sections that may have `visibility: hidden` due to carousel entrance animations.
 
-**How to apply:** Match these conventions when writing new tests for carousel-based sections.
+**Shadow DOM pitfall:** Playwright pierces shadow DOM by default. `header svg` matches 100+ SVGs including those inside `<shopify-account>`, `<shopify-login-form>`, `<shop-login>`, and third-party widgets (slidecarthq). For header icon tests, scope to `.header__icons` or `.header__hamburger` children, and avoid selecting inside shadow roots of Shopify web components. Use `toBeLessThanOrEqual(18)` for 1.1rem SVGs (17.6px at 16px base), not `toBeLessThan(24)`.
+
+**How to apply:** Match these conventions when writing new tests for carousel-based sections or header/icon components.

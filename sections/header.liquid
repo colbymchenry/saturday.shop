@@ -22,7 +22,7 @@
 
 <header class="full-width">
   <button type="button" class="header__hamburger" aria-label="Open menu" data-menu-toggle>
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12h18"/><path d="M3 6h18"/><path d="M3 18h18"/></svg>
+    {{ 'icon-menu.svg' | inline_asset_content }}
   </button>
 
   <div class="header__logo">
@@ -242,14 +242,14 @@
   <div class="header__icons">
     <search-popover>
       <button type="button" class="header__icon" aria-label="Search" data-search-toggle>
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+        {{ 'icon-search.svg' | inline_asset_content }}
       </button>
 
       <div class="search-popover" hidden>
         <div class="search-popover__overlay"></div>
         <div class="search-popover__panel">
           <form action="{{ routes.search_url }}" method="get" class="search-popover__form">
-            <svg class="search-popover__input-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+            <span class="search-popover__input-icon">{{ 'icon-search.svg' | inline_asset_content }}</span>
             <input
               type="search"
               name="q"
@@ -259,7 +259,7 @@
               data-search-input
             >
             <button type="button" class="search-popover__close" data-search-close aria-label="Close search">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+              {{ 'icon-close.svg' | inline_asset_content }}
             </button>
           </form>
           <div class="search-popover__results" data-search-results></div>
@@ -288,7 +288,7 @@
   <div class="mobile-drawer__header">
     <span class="mobile-drawer__title">Menu</span>
     <button type="button" class="mobile-drawer__close" data-menu-close aria-label="Close menu">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+      {{ 'icon-close.svg' | inline_asset_content }}
     </button>
   </div>
   <div class="mobile-drawer__links">
@@ -1059,15 +1059,15 @@
   shopify-account {
     display: flex;
     align-items: center;
-    width: 24px;
+    width: 1.1rem;
     justify-content: center;
     overflow: hidden;
   }
 
   .header__cart-count {
     position: absolute;
-    top: -6px;
-    right: -8px;
+    top: -5px;
+    right: -7px;
     background-color: var(--color-foreground);
     color: var(--color-background);
     font-size: 0.6rem;
@@ -1081,8 +1081,8 @@
   }
 
   header svg {
-    width: 1.4rem;
-    height: 1.4rem;
+    width: 1.1rem;
+    height: 1.1rem;
   }
 
   /* Search popover */
@@ -1146,6 +1146,12 @@
     opacity: 0.4;
     width: 18px;
     height: 18px;
+    display: flex;
+  }
+
+  .search-popover__input-icon svg {
+    width: 100%;
+    height: 100%;
   }
 
   .search-popover__input {

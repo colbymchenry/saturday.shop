@@ -379,6 +379,78 @@ test.describe('Megamenu sidebar', () => {
   });
 });
 
+test.describe('Header icon sizing', () => {
+  test('header SVG icons render at reduced size', async ({ page }) => {
+    await page.goto('/');
+    // Scope to theme-controlled icon areas only (avoids shadow-DOM SVGs from
+    // shopify-account, shop-login, etc. which are not styled by the theme)
+    const iconsSvgs = page.locator('.header__icons > :not(search-popover):not(shopify-account) svg, .header__icons > search-popover > button svg');
+    const count = await iconsSvgs.count();
+    expect(count).toBeGreaterThanOrEqual(2);
+
+    for (let i = 0; i < count; i++) {
+      const box = await iconsSvgs.nth(i).boundingBox();
+      if (!box) continue; // hidden elements (e.g. search popover closed)
+      expect(box.width).toBeLessThanOrEqual(18);
+      expect(box.height).toBeLessThanOrEqual(18);
+      expect(box.width).toBeGreaterThan(0);
+    }
+  });
+
+  test('cart icon links to cart page', async ({ page }) => {
+    await page.goto('/');
+    const cartLink = page.locator('.header__icons a[aria-label="Cart"]');
+    await expect(cartLink).toHaveAttribute('href', /\/cart/);
+    await expect(cartLink.locator('svg')).toBeVisible();
+  });
+
+  test('search popover icons are visible when open', async ({ page }) => {
+    await page.goto('/');
+    await page.waitForFunction(() => customElements.get('search-popover'));
+    await page.locator('[data-search-toggle]').click();
+
+    await expect(page.locator('.search-popover__input-icon svg')).toBeVisible();
+    await expect(page.locator('.search-popover__close svg')).toBeVisible();
+  });
+});
+
+test.describe('Header icon sizing (mobile)', () => {
+  test.use({ viewport: { width: 375, height: 812 } });
+
+  test('hamburger icon contains SVG and is tappable', async ({ page }) => {
+    await page.goto('/');
+    const hamburger = page.locator('[data-menu-toggle]');
+    await expect(hamburger.locator('svg')).toBeVisible();
+
+    await hamburger.click();
+    await expect(page.locator('[data-mobile-drawer]')).toHaveClass(/mobile-drawer--open/);
+  });
+
+  test('mobile header SVGs match reduced sizing', async ({ page }) => {
+    await page.goto('/');
+    // Scope to theme-controlled SVGs only: hamburger + icon bar
+    // (avoids shadow-DOM SVGs from shopify-account, shop-login, slidecarthq, etc.)
+    const hamburgerSvg = page.locator('.header__hamburger svg');
+    const iconsSvgs = page.locator('.header__icons > :not(search-popover):not(shopify-account) svg, .header__icons > search-popover > button svg');
+
+    await expect(hamburgerSvg).toBeVisible();
+    const hamburgerBox = await hamburgerSvg.boundingBox();
+    expect(hamburgerBox).toBeTruthy();
+    expect(hamburgerBox!.width).toBeLessThanOrEqual(18);
+    expect(hamburgerBox!.height).toBeLessThanOrEqual(18);
+
+    const count = await iconsSvgs.count();
+    expect(count).toBeGreaterThanOrEqual(1);
+
+    for (let i = 0; i < count; i++) {
+      const box = await iconsSvgs.nth(i).boundingBox();
+      if (!box) continue;
+      expect(box.width).toBeLessThanOrEqual(18);
+      expect(box.height).toBeLessThanOrEqual(18);
+    }
+  });
+});
+
 test.describe('No horizontal overflow', () => {
   const pages = ['/', '/search?q=a', '/cart', '/collections/all'];
 
