@@ -54,7 +54,7 @@
     background: var(--color-cream, #f5f5f0);
     border-top: 1px solid var(--color-border);
     border-bottom: 1px solid var(--color-border);
-    padding: 5rem 0;
+    padding: var(--section-padding-block) 0;
   }
 
   .product-features__inner {
@@ -140,10 +140,6 @@
   }
 
   @media (max-width: 768px) {
-    .product-features {
-      padding: 3rem 0;
-    }
-
     .product-features__header {
       grid-template-columns: 1fr;
       gap: 1.5rem;

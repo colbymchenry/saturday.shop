@@ -157,7 +157,7 @@
 {% stylesheet %}
   /* ── Cart layout ── */
   .cart {
-    padding: 2.5rem 0 4rem;
+    padding-block: var(--section-padding-block);
   }
 
   .cart__header {
@@ -553,7 +553,7 @@
     align-items: center;
     justify-content: center;
     min-height: 50vh;
-    padding: 4rem 0;
+    padding-block: var(--section-padding-block);
   }
 
   .cart__empty-state {
@@ -631,7 +631,7 @@
 
   @media (max-width: 600px) {
     .cart {
-      padding: 1.5rem 0 3rem;
+      padding-block: var(--section-padding-block);
     }
 
     .cart__header {

@@ -56,6 +56,16 @@
         "unit": "px",
         "label": "t:labels.page_margin",
         "default": 20
+      },
+      {
+        "type": "range",
+        "id": "section_vertical_padding",
+        "min": 32,
+        "max": 96,
+        "step": 8,
+        "unit": "px",
+        "label": "t:labels.section_vertical_padding",
+        "default": 56
       }
     ]
   },

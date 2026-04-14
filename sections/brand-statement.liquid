@@ -28,7 +28,7 @@
   .brand-statement {
     display: grid;
     grid-template-columns: var(--content-grid);
-    padding: 80px 0;
+    padding: var(--section-padding-block) 0;
   }
 
   .brand-statement__inner {
@@ -102,12 +102,6 @@
 
   .brand-statement__button:hover {
     opacity: 0.85;
-  }
-
-  @media (max-width: 768px) {
-    .brand-statement {
-      padding: 56px 0;
-    }
   }
 {% endstylesheet %}
 

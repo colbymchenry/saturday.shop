@@ -24,8 +24,10 @@ test.describe('Search page', () => {
 
   test('product cards have image, title, and price', async ({ page }) => {
     await page.goto('/search?q=a');
-    const card = page.locator('product-card').first();
-    await expect(card.locator('.product-card__media img').first()).toBeVisible();
+    const card = page.locator('.search-results__grid product-card').first();
+    await card.scrollIntoViewIfNeeded();
+    await expect(card).toBeVisible({ timeout: 10000 });
+    await expect(card.locator('.product-card__image-slide--active img').first()).toBeVisible({ timeout: 10000 });
     await expect(card.locator('.product-card__title')).not.toBeEmpty();
     await expect(card.locator('.product-card__current-price')).not.toBeEmpty();
   });
@@ -88,6 +90,15 @@ test.describe('Search page', () => {
     await page.goto('/search?q=zzzzxqwerty');
     const empty = page.locator('.search-page__empty-message');
     await expect(empty).toBeVisible();
+  });
+
+  test('search page uses --section-padding-block for vertical spacing', async ({ page }) => {
+    await page.goto('/search');
+    const searchPage = page.locator('.search-page');
+    const paddingBlock = await searchPage.evaluate(el => getComputedStyle(el).paddingBlockStart);
+    const px = parseFloat(paddingBlock);
+    expect(px).toBeGreaterThan(0);
+    expect(px).toBeLessThanOrEqual(120);
   });
 
   test('footer is at bottom of page on search with few results', async ({ page }) => {

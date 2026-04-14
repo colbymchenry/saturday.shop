@@ -145,7 +145,8 @@
     "category_image": "Icon image",
     "category_image_info": "Optional small image shown beside the label (cropped to circle)",
     "social_media": "Social media",
-    "use_school_color": "Use school color"
+    "use_school_color": "Use school color",
+    "section_vertical_padding": "Section vertical padding"
   },
   "options": {
     "alignment": {

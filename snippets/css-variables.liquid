@@ -28,5 +28,7 @@
     --color-card-border: {{ settings.color_card_border }};
     --color-muted: {{ settings.color_muted }};
     --style-border-radius-inputs: {{ settings.input_corner_radius }}px;
+    --section-padding-block: clamp({{ settings.section_vertical_padding | times: 0.7 | round }}px, 5vw, {{ settings.section_vertical_padding }}px);
+    --section-padding-block-sm: clamp({{ settings.section_vertical_padding | times: 0.4 | round }}px, 3vw, {{ settings.section_vertical_padding | times: 0.7 | round }}px);
   }
 {% endstyle %}

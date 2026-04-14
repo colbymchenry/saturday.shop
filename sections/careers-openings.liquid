@@ -50,7 +50,7 @@
   .careers-openings {
     display: grid;
     grid-template-columns: var(--content-grid);
-    padding: 100px 0;
+    padding: var(--section-padding-block) 0;
   }
 
   .careers-openings__inner {
@@ -180,10 +180,6 @@
   }
 
   @media (max-width: 900px) {
-    .careers-openings {
-      padding: 72px 0;
-    }
-
     .careers-openings__role {
       grid-template-columns: 1fr;
       gap: 12px;

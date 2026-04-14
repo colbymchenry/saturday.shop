@@ -110,16 +110,18 @@ test.describe('Product Features section', () => {
     await expect(titles.nth(2)).toContainText(/officially licensed/i);
   });
 
-  test('features are in a 3-column grid on desktop', async ({ page }) => {
+  test('features are laid out in a row on desktop', async ({ page }) => {
     await page.setViewportSize({ width: 1200, height: 900 });
     await page.goto(AUBURN_PRODUCT);
 
     const grid = page.locator('.product-features__grid');
-    const columns = await grid.evaluate(
-      (el) => getComputedStyle(el).gridTemplateColumns
+    const display = await grid.evaluate(
+      (el) => getComputedStyle(el).display
     );
-    const colWidths = columns.split(' ').filter((c) => c.endsWith('px'));
-    expect(colWidths.length).toBe(3);
+    expect(display).toBe('flex');
+
+    const items = page.locator('.product-features__item');
+    await expect(items).toHaveCount(3);
   });
 
   test('feature items are on the same row on desktop', async ({ page }) => {
