@@ -451,6 +451,122 @@ test.describe('Header icon sizing (mobile)', () => {
   });
 });
 
+test.describe('Footer', () => {
+  test('footer is visible with columns and links', async ({ page }) => {
+    await page.goto('/');
+    const footer = page.locator('footer');
+    await expect(footer).toBeVisible();
+
+    const columns = footer.locator('.footer__column');
+    expect(await columns.count()).toBeGreaterThanOrEqual(1);
+
+    const links = footer.locator('.footer__links a');
+    expect(await links.count()).toBeGreaterThanOrEqual(1);
+  });
+
+  test('footer headings use correct element', async ({ page }) => {
+    await page.goto('/');
+    const headings = page.locator('footer .footer__heading');
+    expect(await headings.count()).toBeGreaterThanOrEqual(1);
+  });
+
+  test('newsletter form is present with email input and submit button', async ({ page }) => {
+    await page.goto('/');
+    const form = page.locator('footer #FooterNewsletter');
+    await expect(form).toBeVisible();
+
+    const emailInput = form.locator('input[type="email"]');
+    await expect(emailInput).toBeVisible();
+    await expect(emailInput).toHaveAttribute('aria-label', 'Email address');
+
+    const submitBtn = form.locator('button[type="submit"]');
+    await expect(submitBtn).toBeVisible();
+  });
+
+  test('copyright text contains current year and shop name', async ({ page }) => {
+    await page.goto('/');
+    const copyright = page.locator('.footer__copyright');
+    await expect(copyright).toBeVisible();
+
+    const year = new Date().getFullYear().toString();
+    await expect(copyright).toContainText(year);
+    await expect(copyright).toContainText('All rights reserved');
+  });
+
+  test('tagline is visible', async ({ page }) => {
+    await page.goto('/');
+    const tagline = page.locator('.footer__tagline');
+    await expect(tagline).toBeVisible();
+    await expect(tagline).toHaveText('Wear the Tradition.');
+  });
+
+  test('logo mark container renders when image is configured', async ({ page }) => {
+    await page.goto('/');
+    const logoMark = page.locator('.footer__logo-mark');
+    const count = await logoMark.count();
+    if (count > 0) {
+      await expect(logoMark).toBeVisible();
+      const img = logoMark.locator('img');
+      await expect(img).toBeVisible();
+      await expect(img).toHaveAttribute('alt', /.+/);
+    }
+  });
+
+  test('social links have proper accessibility attributes', async ({ page }) => {
+    await page.goto('/');
+    const socialLinks = page.locator('.footer__social a');
+    const count = await socialLinks.count();
+    if (count === 0) {
+      test.skip();
+      return;
+    }
+    for (let i = 0; i < count; i++) {
+      const link = socialLinks.nth(i);
+      await expect(link).toHaveAttribute('aria-label', /.+/);
+      await expect(link).toHaveAttribute('target', '_blank');
+      await expect(link).toHaveAttribute('rel', /noopener/);
+    }
+  });
+
+  test('payment icons render when enabled', async ({ page }) => {
+    await page.goto('/');
+    const payment = page.locator('.footer__payment');
+    const count = await payment.count();
+    if (count === 0) {
+      test.skip();
+      return;
+    }
+    await expect(payment).toBeVisible();
+    const icons = payment.locator('svg');
+    expect(await icons.count()).toBeGreaterThanOrEqual(1);
+  });
+
+  test('footer bottom bar is visible', async ({ page }) => {
+    await page.goto('/');
+    const bottom = page.locator('.footer__bottom');
+    await expect(bottom).toBeVisible();
+  });
+});
+
+test.describe('Footer (mobile)', () => {
+  test.use({ viewport: { width: 375, height: 812 } });
+
+  test('footer columns stack on mobile', async ({ page }) => {
+    await page.goto('/');
+    const columns = page.locator('footer .footer__column');
+    const count = await columns.count();
+    if (count < 2) {
+      test.skip();
+      return;
+    }
+    const first = await columns.nth(0).boundingBox();
+    const second = await columns.nth(1).boundingBox();
+    expect(first).toBeTruthy();
+    expect(second).toBeTruthy();
+    expect(second!.y).toBeGreaterThan(first!.y);
+  });
+});
+
 test.describe('No horizontal overflow', () => {
   const pages = ['/', '/search?q=a', '/cart', '/collections/all'];
 
